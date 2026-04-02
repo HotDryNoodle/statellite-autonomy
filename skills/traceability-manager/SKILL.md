@@ -3,7 +3,7 @@ name: traceability-manager
 description: 项目治理型 skill。用于维护 需求 -> contract -> code -> tests -> benchmark -> 决策日志 的可追踪闭环。
 version: 1.0.0
 depends_on:
-  - system-architect
+  - project-manager
 tools:
   - python3 tools/traceability-mcp/traceability_cli.py
   - python3 tools/nav-toolchain-mcp/toolchain_mcp.py
@@ -34,7 +34,7 @@ triggers:
 - contracts
 - 源码与测试入口
 - benchmark 报告
-- system-architect 的决策
+- `project-manager` 的调度与 `architecture-expert` 的决策
 - `traceability` CLI 生成结果
 
 ## 典型输出
@@ -60,7 +60,8 @@ triggers:
 
 ## 协作关系
 
-- 接受 `system-architect` 调度
+- 接受 `project-manager` 调度
+- 吸收 `architecture-expert` 的冻结约束
 - 与 `coding-skill`、`testing-skill`、`benchmark-evaluator` 协同
 
 ## 触发场景
@@ -74,7 +75,7 @@ triggers:
 1. 调用 `python3 tools/traceability-mcp/traceability_cli.py generate` 生成 `contract_index.json`、`trace.json` 和 markdown 报告。
 2. 按 ClauseId 查询缺失的 code / tests 证据。
 3. 更新映射表和覆盖率报告。
-4. 标记缺失链路和已知限制，并同步给 `system-architect`。
+4. 标记缺失链路和已知限制，并同步给 `project-manager`；涉及架构限制时同步给 `architecture-expert`。
 
 ## 交付物
 

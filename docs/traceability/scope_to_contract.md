@@ -15,7 +15,7 @@
 - 只记录当前迭代真正纳入实现或冻结的范围。
 - 不重复自动生成的 ClauseId 覆盖统计。
 - 新增目标时先补合同，再更新本表。
-- phase 路线由 `system-architect` 起草，但只在 `contract_freeze` 后写入本文件。
+- phase 路线由 `project-manager` 起草，但只在 `contract_freeze` 后写入本文件；涉及技术路线、模块边界、关键 trade-off 或 NFR 约束时，需吸收 `architecture-expert` 结论。
 
 ## Phase Roadmap
 

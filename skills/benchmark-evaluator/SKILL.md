@@ -3,7 +3,7 @@ name: benchmark-evaluator
 description: 评测与回归验证 skill。用于运行场景、收集产物、比较结果并形成 benchmark 结论。
 version: 1.0.0
 depends_on:
-  - system-architect
+  - project-manager
   - traceability-manager
 tools:
   - python3 tools/nav-toolchain-mcp/toolchain_mcp.py
@@ -51,12 +51,12 @@ triggers:
 
 ### 不应该做
 
-- 代替 system-architect 做系统设计
+- 代替 `architecture-expert` 做系统设计
 - 代替 coding-skill 修实现
 
 ## 协作关系
 
-- 接受 `system-architect` 调度
+- 接受 `project-manager` 调度
 - 依赖 `python3 tools/nav-toolchain-mcp/toolchain_mcp.py`
 - 与 `traceability-manager` 同步结果
 

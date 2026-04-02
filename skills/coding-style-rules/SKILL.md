@@ -13,109 +13,31 @@ triggers:
 
 # Coding Style Rules (v1.0)
 
-## Scope
+## TL;DR
 
-These rules apply to C++17 code in this repository (implementation + tests), unless a `*.contract.md` explicitly overrides them.
+- 只在 C++ 实现、C++ 测试、代码 review 时加载。
+- 强制项：`.clang-format`、PascalCase 类型/函数命名、Doxygen、`@contract/@verify/@covers`
+- 若修改 C++ 文件，完成前必须保证格式与注释规则一致。
 
-## Language (mandatory)
+## Load When
 
-- Responses should be in Chinese by default.
-- Code comments should be in Chinese unless the project explicitly requires English.
+- 新增或修改 `src/**/*.h`、`src/**/*.cpp`
+- 新增或修改 `tests/**/*.cpp`
+- 审查 C++ 风格、一致性、注释与追踪标签
 
-## Formatting (mandatory)
+## Must Follow
 
-- Use the repository `.clang-format` as the source of truth.
-- If you modify C++ files, they must be clang-formatted before considering work done.
+- 默认中文回复；代码注释默认中文，除非合同要求英文。
+- 使用仓库 `.clang-format` 作为格式来源。
+- 公共 API 和 contract boundary 使用 Doxygen 块注释 `/** ... */`
+- 函数/类型优先 PascalCase；局部变量与常量遵循模块既有一致性。
+- 禁止 silent fallback；时间尺度、坐标系、单位等依赖应显式化。
 
-## Doxygen comment style (mandatory, high priority)
+## Enforced By
 
-- Use block-style Doxygen comments as the default style:
-  - `/** ... */`
-- Avoid using per-line `///` style for new/updated comments unless a file already requires it for local consistency.
-- This style applies to both production code and tests.
+- Format source of truth: `.clang-format`
+- Detailed traceability / comment rules: `references/cpp-style-details.md`
 
-Supported standard Doxygen tags (non-exhaustive):
+## References
 
-- `@brief`
-- `@param` / `@tparam`
-- `@return`
-- `@note` / `@warning`
-- `@file` / `@ingroup`
-
-Traceability tags coexist in the same Doxygen block:
-
-- `@contract{ClauseId}`
-- `@verify{ClauseId}`
-- `@covers{ApiSymbol}`
-
-## Naming (mandatory)
-
-- Functions: PascalCase (e.g., `ComputeU`, `ICRFToITRF`)
-- Types: PascalCase (e.g., `TimeSys`, `EopProvider`)
-- Variables: lower_snake_case OR existing project convention (do not mix within the same file).
-- Constants: kPascalCase (e.g., `kSecPerDay`) OR existing project convention (do not mix within the same file).
-
-If the repository already uses a different convention in a specific module, follow the local convention and record it under Conformance -> Known deviations.
-
-## Design rules (mandatory)
-
-- Follow C++ Core Guidelines: ownership, RAII, error handling, and API design.
-- Avoid hidden global state for physics/data dependencies (e.g., EOP, leap seconds); prefer explicit injection or explicit object state.
-- Prefer types that make units/time-scale/frame explicit (names, structs, or strong typedefs).
-
-## Comments & docs (mandatory)
-
-Use Doxygen-style comments for public types/functions and for any API that represents a contract boundary.
-
-### Math in comments (required)
-
-For code that implements mathematical transformations, models, or derivations, document the math using LaTeX notation inside Doxygen comments.
-
-Rules:
-- Prefer Doxygen math environments so LaTeX commands render correctly in HTML:
-  - Inline math: `\f$ ... \f$`
-  - Block math: `\f[ ... \f]`
-- Define symbols and units locally when not obvious (at least once per file or per public API).
-
-### Traceability tags (required)
-
-This repository's info system requires stable anchor IDs for API/Test/Contract traceability.
-Use only the brace form tags below:
-
-- `@contract{ClauseId}` for source/API contract mapping.
-- `@verify{ClauseId}` for per-test clause verification mapping.
-- `@covers{ApiSymbol}` for per-test API coverage mapping.
-
-Anchor format constraints:
-
-- `ClauseId` must match `[A-Za-z][A-Za-z0-9_]*` (e.g., `RefSys_3_1`, `TimeSys_6_2`).
-- `ApiSymbol` should be fully-qualified where possible (e.g., `orbit::time::TimeSys::Set`).
-
-Placement constraints:
-
-- For production code (`source/`), place `@contract{...}` in the closest Doxygen block for the API/type/function implementing the clause.
-- For tests (`tests/`), each `TEST()` / `TEST_F()` must include at least one `@verify{...}` and one `@covers{...}` in the nearest comment block.
-- For tests (`tests/`), the nearest Doxygen comment block should include structured `@par` sections for readability:
-  - `@par 测试场景：`
-  - `@par 测试内容：`
-  - `@par 失败判定：`
-  - `@par 备注：`
-
-Valid examples:
-
-- `@contract{TimeSys_6_2}`
-- `@verify{RefSys_3_1}`
-- `@covers{orbit::ref::RefSys::GetTransform}`
-
-Invalid examples:
-
-- `@contract docs/requirements/RefSys.contract.md#3.1`
-- `@verify RefSys_3_1`
-- `@covers orbit::time::TimeSys::Set`
-
-Keep tags near the enforcing code/test logic. Do not use free-text alternatives like `CONTRACT xxx` in source comments.
-
-## Error handling
-
-- No silent fallback for missing external data/inputs when contracts require explicit failure.
-- Prefer explicit status/exception types as appropriate to the module's public API; be consistent within a module.
+- `references/cpp-style-details.md`

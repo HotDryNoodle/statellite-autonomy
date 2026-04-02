@@ -62,7 +62,8 @@ triggers:
 
 ## 协作关系
 
-- 上游：`system-architect`
+- 上游：`project-manager`
+- 架构输入：`architecture-expert`
 - 协同：`testing-skill`、`traceability-manager`
 - 工具：`python3 tools/nav-toolchain-mcp/toolchain_mcp.py`、`python3 tools/traceability-mcp/traceability_cli.py`
 

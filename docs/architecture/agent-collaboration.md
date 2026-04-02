@@ -26,7 +26,7 @@
 
 ### 1. `intake`
 
-- owner: `system-architect`
+- owner: `project-manager`
 - 输入：用户需求、现有合同、当前决策日志、当前 backlog
 - 退出条件：
   - 明确 `task_id`
@@ -36,10 +36,12 @@
 
 ### 2. `contract_freeze`
 
-- owner: `system-architect`
+- owner: `project-manager`
 - 协作：`pppar-expert` / `rdpod-analyst` 仅在领域边界相关时参与
+- 架构输入：`architecture-expert` 在技术路线、模块边界、关键 trade-off、NFR 约束、跨模块依赖拓扑变更时必须参与
 - 退出条件：
   - `affected_contracts` 已冻结
+  - 若涉及架构边界或关键技术取舍，已有 `architecture-expert` 设计结论
   - 若范围调整，先更新合同或 `docs/traceability/scope_to_contract.md`
   - 若形成新约束，更新 `docs/traceability/decision_log.md`
 
@@ -78,11 +80,12 @@
 
 ### 6. `acceptance`
 
-- owner: `system-architect`
+- owner: `project-manager`
 - 输入要求：
   - handoff `status=ready_for_acceptance`
   - backlog 和 activity log 已更新
 - 退出条件：
+  - 若本轮变更触及架构边界、NFR 或关键依赖，已有 `architecture-expert` 审核结论
   - 任务状态写回 `done` 或 `blocked`
   - 下一步 agent 或 backlog 去向明确
 
@@ -95,6 +98,12 @@
 - `benchmark`: 执行 `toolchain_mcp.py benchmark`，输出回归报告；在基线稳定前默认为非阻塞
 
 当前阶段的 CD 只负责 artifacts 与 release metadata，不做部署。
+
+## 角色分工
+
+- `project-manager`：流程 owner。负责需求分解、任务调度、状态推进、验收编排、里程碑管理，并对整体进度与质量负责。
+- `architecture-expert`：专家角色。接受 `project-manager` 调度，负责技术路线、模块边界、关键 trade-off、NFR 约束，以及跨模块数据/依赖拓扑设计。
+- `pppar-expert`、`rdpod-analyst`、`coding-skill`、`testing-skill`、`benchmark-evaluator`、`traceability-manager` 由 `project-manager` 编排；涉及架构决策时依赖 `architecture-expert` 结论。
 
 ## Handoff 协议
 

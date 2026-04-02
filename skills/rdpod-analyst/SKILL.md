@@ -3,7 +3,7 @@ name: rdpod-analyst
 description: RD-POD 研究型支撑 skill。用于 reduced-dynamic POD 的建模边界梳理、接口需求分析、失败语义约束和验证需求提炼。
 version: 1.0.0
 depends_on:
-  - system-architect
+  - project-manager
 tools:
   - contracts/rdpod_family.contract.md
 triggers:
@@ -54,12 +54,13 @@ Navigation 层 RD-POD 家族的研究支撑 agent。
 ### 不应该做
 
 - 直接替代 coding-skill 写主实现
-- 越过 system-architect 冻结系统接口
+- 越过 `project-manager` 冻结系统接口
 - 代替 benchmark-evaluator 做结果裁决
 
 ## 协作关系
 
-- 接受 `system-architect` 调度
+- 接受 `project-manager` 调度
+- 涉及系统架构时吸收 `architecture-expert` 结论
 - 与 `coding-skill`、`testing-skill`、`benchmark-evaluator` 协同
 
 ## 触发场景

@@ -16,15 +16,28 @@ Read these files before making architecture, code, or test changes:
 
 The repository workflow is:
 
-1. `system-architect` reduces the request and freezes the active contracts.
-2. Domain specialists provide constraints only when the task touches PPP or RD-POD scope.
-3. `coding-skill` implements code and adds `@contract` evidence.
-4. `testing-skill` adds verification and `@verify` / `@covers` evidence.
-5. Local toolchain commands run build, test, and traceability.
-6. `traceability-manager` checks evidence completeness and updates governance docs.
-7. `system-architect` closes the task with acceptance status and next backlog moves.
+1. `project-manager` reduces the request, coordinates active contracts, and owns task flow.
+2. `architecture-expert` provides architecture decisions when the task touches technical route, module boundaries, key trade-offs, or NFR constraints.
+3. Domain specialists provide constraints only when the task touches PPP or RD-POD scope.
+4. `coding-skill` implements code and adds `@contract` evidence.
+5. `testing-skill` adds verification and `@verify` / `@covers` evidence.
+6. Local toolchain commands run build, test, and traceability.
+7. `traceability-manager` checks evidence completeness and updates governance docs.
+8. `project-manager` closes the task with acceptance status and next backlog moves.
 
 Do not skip traceability before acceptance.
+
+## Policy Loading Rule
+
+`AGENTS.md` only carries global collaboration and governance constraints. Task-specific execution rules must be loaded through policy skills instead of being kept as always-on context.
+
+Use this routing by default:
+
+- C++ implementation / C++ test changes: load `coding-style-rules`
+- PlantUML architecture diagrams: load `plantuml-architecture-styleguide`
+- Commit / publish / PR / release-finalization tasks: load `commit-message-policy`
+
+`project-manager` is responsible for declaring which policy skills are active for the current task or handoff.
 
 ## Required Outputs Per Task
 
@@ -97,3 +110,4 @@ Before claiming completion:
 2. Update backlog status and evidence links.
 3. Record the handoff or completion in `docs/traceability/agent_activity_log.md`.
 4. Update `docs/traceability/decision_log.md` only if a new constraint is frozen.
+5. If the task includes commit or publish work, load `commit-message-policy` before preparing the final commit message.

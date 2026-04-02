@@ -3,7 +3,7 @@ name: pride-pppar-expert
 description: Use when the task involves installing, running, diagnosing, or explaining PRIDE-PPPAR for PPP-AR and LEO precise orbit workflows. Prefer the standalone PRIDE project at ~/projects/PRIDE-PPPAR, using its root source tree as implementation evidence and tools/PRIDE as the installed runtime.
 version: 1.0.0
 depends_on:
-  - system-architect
+  - project-manager
 tools:
   - /home/hotdry/projects/PRIDE-PPPAR
 triggers:

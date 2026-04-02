@@ -3,7 +3,7 @@ name: mission-planning-designer
 description: Mission Planning 层占位设计 skill。用于定义未来 mission planning 接口边界和与 prediction 的耦合约束。
 version: 1.0.0
 depends_on:
-  - system-architect
+  - project-manager
 tools:
   - contracts/mission_planning.contract.md
 triggers:
@@ -43,7 +43,8 @@ Mission Planning 层占位设计 agent。
 
 ## 协作关系
 
-- 接受 `system-architect` 调度
+- 接受 `project-manager` 调度
+- 涉及架构边界时吸收 `architecture-expert` 结论
 
 ## 触发场景
 

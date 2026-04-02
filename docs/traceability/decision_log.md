@@ -28,5 +28,26 @@
 - 仓库已初始化为 git repository，默认分支策略固定为 `main` / `develop` / `feature/<task-id>-<topic>`。
 - 仓库级 CI 只调用 repo-local CLI，不在 CI 中实现与本地不同的业务逻辑。
 - `unit::time` benchmark 第一阶段只覆盖 roundtrip、leap second boundary、UT1 dependency、invalid inputs 四类场景。
-- `docs/traceability/scope_to_contract.md` 中的 phase 路线由 `system-architect` 起草，但仅在 `contract_freeze` 后落盘。
+- `docs/traceability/scope_to_contract.md` 中的 phase 路线由 `project-manager` 起草，但仅在 `contract_freeze` 后落盘；涉及架构方向时吸收 `architecture-expert` 结论。
 - skill frontmatter 统一至少包含 `name`、`description`、`version`、`depends_on`、`tools`、`triggers`。
+
+## 2026-04-02 Governance Role Split
+
+- `system-architect` 角色拆分为 `project-manager` 与 `architecture-expert` 两个显式 skills。
+- `project-manager` 成为唯一流程 owner，负责 intake、contract freeze 编排、状态推进、验收编排与里程碑管理。
+- `architecture-expert` 作为被调度的专家角色，负责技术路线、模块边界、关键 trade-off、NFR 约束与跨模块依赖拓扑设计。
+- 所有当前有效流程文档与 skill 上游关系统一迁移到新双角色模型；历史 backlog 和 activity log 记录保留原名称，不做追溯改写。
+
+## 2026-04-02 Commit Message Relaxed Spec
+
+- 仓库提交信息规范冻结为 `commit-message-relaxed-spec.md` 中的放宽版格式。
+- 仓库提交信息校验采用 repo-local `commit-msg` hook，入口固定为 `.githooks/commit-msg`。
+- hook 安装命令固定为 `bash scripts/install_commit_msg_hook.sh`，通过 `core.hooksPath=.githooks` 激活。
+- 提交规则只在 commit / publish / PR / release-finalization 阶段通过 `commit-message-policy` skill 加载，不进入 `AGENTS.md` 常驻上下文。
+
+## 2026-04-02 Policy Skill Routing
+
+- `AGENTS.md` 只承载全局协作治理和 policy 路由规则，不承载 task-specific 规则正文。
+- `coding-style-rules`、`plantuml-architecture-styleguide`、`commit-message-policy` 统一作为按需加载的 policy skills。
+- policy skill 的 `SKILL.md` 首屏必须可快速读完；长示例和展开说明下沉到 `references/`。
+- 若规则存在配套脚本或执行入口，必须在 policy skill 的 `tools:` 和 `Enforced By` 中显式声明。
