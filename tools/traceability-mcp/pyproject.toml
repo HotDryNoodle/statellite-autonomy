@@ -1,0 +1,6 @@
+[project]
+name = "traceability-mcp"
+version = "0.1.0"
+description = "Traceability MCP for statellite-autonomy-plugin"
+requires-python = ">=3.11"
+dependencies = []

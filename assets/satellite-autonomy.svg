@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Satellite Autonomy">
+  <rect width="128" height="128" rx="24" fill="#1F4E79"/>
+  <circle cx="64" cy="64" r="20" fill="#F2F6FA"/>
+  <path d="M24 56 L48 48 L56 24 L72 24 L80 48 L104 56 L104 72 L80 80 L72 104 L56 104 L48 80 L24 72 Z" fill="none" stroke="#F2F6FA" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M18 64 H38 M90 64 H110 M64 18 V38 M64 90 V110" stroke="#8FC1E3" stroke-width="6" stroke-linecap="round"/>
+</svg>

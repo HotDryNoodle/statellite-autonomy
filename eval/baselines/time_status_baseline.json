@@ -1,0 +1,10 @@
+{
+  "time_invalid_inputs": {
+    "invalid_civil_rejected": true,
+    "invalid_gpst_rejected": true
+  },
+  "time_ut1_dependency": {
+    "missing_ut1_detected": true,
+    "ut1_available_after_set": true
+  }
+}

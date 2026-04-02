@@ -1,0 +1,14 @@
+{
+  "time_roundtrip_utc_tt_gpst": {
+    "elapsed_ns_per_iteration": 50000.0
+  },
+  "time_leap_second_boundary_2015": {
+    "elapsed_ns_per_iteration": 50000.0
+  },
+  "time_ut1_dependency": {
+    "elapsed_ns_per_iteration": 50000.0
+  },
+  "time_invalid_inputs": {
+    "elapsed_ns_per_iteration": 20000.0
+  }
+}

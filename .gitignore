@@ -1,0 +1,15 @@
+builddir/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.codex
+docs/_generated/
+eval/reports/
+tools/*/.venv/
+tools/*/__pycache__/
+data/
+subprojects/*
+!subprojects/*.wrap
+!subprojects/packagefiles/
+!subprojects/packagefiles/**

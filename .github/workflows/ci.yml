@@ -1,0 +1,72 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/**
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Meson and Ninja
+        run: python -m pip install meson ninja
+      - name: Build
+        run: python3 tools/nav-toolchain-mcp/toolchain_mcp.py build --reconfigure
+      - name: Test
+        run: python3 tools/nav-toolchain-mcp/toolchain_mcp.py test --no-rebuild
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meson-test-logs
+          path: builddir/meson-logs/
+
+  traceability-gate:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Meson and Ninja
+        run: python -m pip install meson ninja
+      - name: Quality gate
+        run: python3 scripts/check_quality.py --report-json
+      - name: Upload traceability artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: traceability-artifacts
+          path: docs/_generated/traceability/
+
+  benchmark:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Meson and Ninja
+        run: python -m pip install meson ninja
+      - name: Run benchmark
+        run: python3 tools/nav-toolchain-mcp/toolchain_mcp.py benchmark --report-path eval/reports/time_benchmark_report.json
+      - name: Upload benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-report
+          path: eval/reports/time_benchmark_report.json

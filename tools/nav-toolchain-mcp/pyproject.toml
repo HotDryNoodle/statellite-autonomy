@@ -1,0 +1,9 @@
+[project]
+name = "nav-toolchain-mcp"
+version = "0.1.0"
+description = "Local Meson toolchain MCP for statellite-autonomy-plugin"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+nav-toolchain = "toolchain_mcp:main"

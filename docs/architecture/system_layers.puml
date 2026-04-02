@@ -1,0 +1,61 @@
+@startuml architecture
+!theme aws-orange
+
+skinparam componentStyle rectangle
+skinparam defaultFontSize 11
+skinparam defaultFontColor #000000
+skinparam componentFontColor #000000
+skinparam linetype ortho
+skinparam ArrowThickness 0.8
+skinparam LineThickness 0.8
+skinparam ranksep 28
+skinparam nodesep 20
+skinparam shadowing false
+skinparam DefaultTextAlignment left
+
+skinparam note {
+  BackgroundColor #FFFFFF
+  BorderColor #BBBBBB
+  FontColor #444444
+}
+
+skinparam componentBackgroundColor<<core>> #FFF3CD
+skinparam componentBorderColor<<core>>     #C88719
+skinparam componentBackgroundColor<<algo>> #E3F2FD
+skinparam componentBorderColor<<algo>>     #1565C0
+skinparam componentBackgroundColor<<util>> #F2F2F2
+skinparam componentBorderColor<<util>>     #616161
+
+top to bottom direction
+title Satellite Autonomy Plugin Initial Layering
+
+package "Shared Unit" {
+  component "==<size:14><b>unit::time</b></size>\n统一时间表示\n显式尺度转换" <<core>> as Time
+}
+
+package "Navigation" {
+  component "==<size:14><b>PPP Family</b></size>\n合同占位\n后续接 PRIDE" <<algo>> as PPP
+  component "==<size:14><b>RD-POD Family</b></size>\n合同占位\n研究支撑" <<algo>> as RDPOD
+}
+
+package "Future Layers" {
+  component "==<size:14><b>Prediction</b></size>\n接口占位\n状态传播" <<algo>> as Prediction
+  component "==<size:14><b>Mission Planning</b></size>\n接口占位\n任务规划" <<algo>> as Planning
+}
+
+package "Engineering" {
+  component "==<size:14><b>NavToolchainMCP</b></size>\nbuild test traceability" <<util>> as MCP
+  component "==<size:14><b>Traceability</b></size>\n合同到代码\n代码到测试" <<util>> as Trace
+}
+
+Time --> PPP
+Time --> RDPOD
+PPP --> Prediction
+RDPOD --> Prediction
+Prediction --> Planning
+MCP ..> Time
+MCP ..> PPP
+MCP ..> RDPOD
+Trace ..> Time
+Trace ..> Prediction
+@enduml
