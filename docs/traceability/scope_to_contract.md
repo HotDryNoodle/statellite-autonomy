@@ -1,18 +1,20 @@
 # Scope To Contract
 
-本文件记录当前阶段主动纳入管理的工程目标，以及它们对应的合同边界。
+本文件记录已经冻结的 phase 历史、scope 变迁和 contract 绑定演进。
 
+当前执行态、当前 phase 和当前 blocker 不在本文件中维护。
 
-| 当前工程目标               | 对应合同                                   |
-| -------------------- | -------------------------------------- |
-| 建立公共时间基础模块闭环         | `contracts/time_system.contract.md`    |
-| 冻结公共层与业务层边界          | `contracts/layer_boundary.contract.md` |
-| 冻结 Navigation 第一阶段范围 | `contracts/navigation.contract.md`     |
+| 冻结范围 | 对应合同 |
+| --- | --- |
+| 建立公共时间基础模块闭环 | `contracts/time_system.contract.md` |
+| 冻结公共层与业务层边界 | `contracts/layer_boundary.contract.md` |
+| 冻结 Navigation 第一阶段范围 | `contracts/navigation.contract.md` |
 
 
 维护规则：
 
 - 只记录当前迭代真正纳入实现或冻结的范围。
+- 不记录 current focus、current blockers 或 active tasks。
 - 不重复自动生成的 ClauseId 覆盖统计。
 - 新增目标时先补合同，再更新本表。
 - phase 路线由 `project-manager` 起草，但只在 `contract_freeze` 后写入本文件；涉及技术路线、模块边界、关键 trade-off 或 NFR 约束时，需吸收 `architecture-expert` 结论。

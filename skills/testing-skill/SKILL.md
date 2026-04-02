@@ -34,6 +34,8 @@ triggers:
 ## 典型输入
 
 - active contracts
+- current focus
+- active context
 - 生产代码入口
 - 失败语义与容差约束
 
@@ -71,7 +73,7 @@ triggers:
 
 ## 工作流程
 
-1. 读取 active contracts。
+1. 按固定读取顺序读取 current focus、task board、active context 和 active contracts。
 2. 抽取 invariants、failure contracts、容差来源。
 3. 设计测试场景和标签。
 4. 实现带 `@verify/@covers` 的 GTest。

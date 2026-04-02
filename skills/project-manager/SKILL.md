@@ -5,8 +5,12 @@ version: 1.0.0
 depends_on: []
 tools:
   - docs/architecture/agent-collaboration.md
+  - docs/memory/working/current_focus.md
+  - docs/memory/short_term/task_board.md
+  - docs/memory/short_term/active_context.md
   - docs/traceability/decision_log.md
   - docs/traceability/scope_to_contract.md
+  - docs/traceability/known_limitations.md
 triggers:
   - planning
   - coordination
@@ -29,23 +33,24 @@ triggers:
 - 组织 `contract_freeze`、implementation、verification、traceability、acceptance 的阶段流转。
 - 调度 `architecture-expert`、`pppar-expert`、`rdpod-analyst`、`coding-skill`、`testing-skill`、`benchmark-evaluator`、`traceability-manager`。
 - 为当前任务声明需要激活的 policy skills。
-- 维护 backlog、activity log、acceptance 结论与下一轮 backlog 去向。
+- 维护 working memory、short-term memory、activity log、acceptance 结论与下一轮 archive 去向。
 - 对整体进度、质量和交付状态负责。
 
 ## 典型输入
 
 - 用户需求
 - `contracts/*.contract.md`
+- `docs/memory/*.md`
 - `docs/traceability/*.md`
 - benchmark / test 结果
-- 当前 backlog 与 handoff 记录
+- 当前 short-term tasks 与 handoff 记录
 
 ## 典型输出
 
 - 任务分解与里程碑
 - active contracts 清单
 - 调度与 handoff 结论
-- 验收结论与下一轮 backlog
+- 验收结论与下一轮 short-term / archive 安排
 
 ## 明确边界
 
@@ -71,23 +76,24 @@ triggers:
 
 - 新增功能或模块
 - 需要任务拆解与角色编排
-- 里程碑验收与 backlog 重排
+- 里程碑验收与 short-term / archive 重排
 - 合同冻结和范围管理
 - 需要声明当前任务的 policy loading
 
 ## 工作流程
 
-1. 归约需求与影响范围。
-2. 识别受影响 contract、架构议题与技能角色。
-3. 声明当前任务需要加载的 policy skills。
-4. 调度 `architecture-expert` 与相关专家形成冻结输入。
-5. 分派实现、测试、评测与追踪任务。
-6. 汇总工具链结果，形成验收结论和下一轮安排。
+1. 按固定读取顺序装载 working、short-term 与 long-term memory。
+2. 归约需求与影响范围。
+3. 识别受影响 contract、架构议题与技能角色。
+4. 声明当前任务需要加载的 policy skills。
+5. 调度 `architecture-expert` 与相关专家形成冻结输入。
+6. 分派实现、测试、评测与追踪任务。
+7. 汇总工具链结果，形成验收结论和下一轮安排。
 
 ## 交付物
 
 - 任务分解与 handoff 清单
 - 更新后的治理文档
 - 验收结论
-- 下一轮待办
+- 下一轮 short-term / archive 去向
 - 当前任务激活的 policy skills 清单

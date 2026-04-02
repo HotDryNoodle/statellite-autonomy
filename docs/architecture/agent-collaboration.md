@@ -27,12 +27,14 @@
 ### 1. `intake`
 
 - owner: `project-manager`
-- 输入：用户需求、现有合同、当前决策日志、当前 backlog
+- 输入：用户需求、现有合同、当前 working memory、当前 short-term memory、当前决策日志
 - 退出条件：
   - 明确 `task_id`
   - 明确目标与非目标
   - 明确候选影响合同
-  - `docs/backlog.md` 已创建或更新任务行
+  - `docs/memory/working/current_focus.md` 已更新
+  - `docs/memory/short_term/task_board.md` 已创建或更新任务行
+  - `docs/memory/short_term/active_context.md` 已同步当前 scope / gates / handoff expectations
 
 ### 2. `contract_freeze`
 
@@ -83,18 +85,19 @@
 - owner: `project-manager`
 - 输入要求：
   - handoff `status=ready_for_acceptance`
-  - backlog 和 activity log 已更新
+  - short-term memory 和 activity log 已更新
 - 退出条件：
   - 若本轮变更触及架构边界、NFR 或关键依赖，已有 `architecture-expert` 审核结论
   - 任务状态写回 `done` 或 `blocked`
-  - 下一步 agent 或 backlog 去向明确
+  - 下一步 agent 或 task archive 去向明确
 
 ## CI/CD 职责
 
 仓库级自动化默认映射本地 CLI，不在 CI 中引入与本地不同的业务逻辑：
 
 - `build-and-test`: 执行 build / test，并上传 `meson-logs`
-- `traceability-gate`: 执行 traceability 与 `check_quality.py`，上传生成证据
+- `traceability-gate`: 执行 traceability、baseline/schema/tag checks，并上传 traceability runtime 证据；该 job 不生成 dashboard
+- `project-dashboard`: 在 traceability 之后生成项目状态看板与 machine-readable status，并上传 runtime artifacts；该 job 不重复 build / test
 - `benchmark`: 执行 `toolchain_mcp.py benchmark`，输出回归报告；在基线稳定前默认为非阻塞
 
 当前阶段的 CD 只负责 artifacts 与 release metadata，不做部署。
@@ -144,3 +147,20 @@ notes:
 
 - 公共层：`unit::time`
 - Navigation / Prediction / Mission Planning：边界与占位
+
+## 默认读取顺序
+
+agents 默认按以下顺序读取上下文：
+
+1. `AGENTS.md`
+2. `docs/memory/working/current_focus.md`
+3. `docs/memory/short_term/task_board.md`
+4. `docs/memory/short_term/active_context.md`
+5. `docs/traceability/known_limitations.md`
+6. `docs/traceability/scope_to_contract.md`
+7. `docs/traceability/decision_log.md`（按需）
+8. `docs/traceability/agent_activity_log.md`（按需）
+9. relevant `contracts/*.contract.md`
+10. relevant `skills/*/SKILL.md`
+
+`docs/_generated/` 只用于 CI runtime 产物与人类查看，不进入默认读取链路。

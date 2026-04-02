@@ -75,7 +75,7 @@ TOOLS = [
     },
     {
         "name": "nav_toolchain_benchmark",
-        "description": "Generate the current benchmark report placeholder for a target build configuration.",
+        "description": "Generate the current benchmark report for a target build configuration.",
         "inputSchema": {
             "type": "object",
             "properties": {

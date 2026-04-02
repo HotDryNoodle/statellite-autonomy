@@ -6,6 +6,8 @@ depends_on:
   - project-manager
 tools:
   - docs/architecture/agent-collaboration.md
+  - docs/memory/working/current_focus.md
+  - docs/memory/short_term/active_context.md
   - docs/traceability/decision_log.md
   - docs/traceability/scope_to_contract.md
 triggers:
@@ -35,6 +37,7 @@ triggers:
 ## 典型输入
 
 - 用户需求与上游 handoff
+- 当前 focus 与当前 iteration context
 - `contracts/*.contract.md`
 - `docs/traceability/*.md`
 - 现有模块拓扑、benchmark / test 结果
@@ -75,7 +78,7 @@ triggers:
 
 ## 工作流程
 
-1. 读取上游冻结目标与受影响合同。
+1. 按固定读取顺序读取 current focus、active context、受影响合同与冻结约束。
 2. 分析模块边界、依赖方向、关键 trade-off 与 NFR 风险。
 3. 形成架构结论并回传给 `project-manager`。
 4. 在需要时补充决策日志约束与验收关注点。

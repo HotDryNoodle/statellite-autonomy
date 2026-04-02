@@ -25,7 +25,7 @@ triggers:
 
 ## 核心职责
 
-- 维护 `docs/traceability/*.md` 映射。
+- 维护 `docs/traceability/*.md` 中的长期治理记忆、冻结约束与任务历史。
 - 通过仓库内 `traceability` CLI 提取 contract / code / tests 证据。
 - 记录关键决策与已知限制。
 
@@ -41,6 +41,7 @@ triggers:
 
 - scope_to_contract 映射
 - decision_log / known_limitations 更新
+- task archive 更新
 - 自动证据产物索引
 - decision_log / known_limitations
 
@@ -74,7 +75,7 @@ triggers:
 
 1. 调用 `python3 tools/traceability-mcp/traceability_cli.py generate` 生成 `contract_index.json`、`trace.json` 和 markdown 报告。
 2. 按 ClauseId 查询缺失的 code / tests 证据。
-3. 更新映射表和覆盖率报告。
+3. 更新长期治理映射、task archive 和覆盖率报告。
 4. 标记缺失链路和已知限制，并同步给 `project-manager`；涉及架构限制时同步给 `architecture-expert`。
 
 ## 交付物

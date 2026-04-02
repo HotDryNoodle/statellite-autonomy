@@ -309,7 +309,7 @@ def make_parser() -> argparse.ArgumentParser:
     add_common(benchmark)
     benchmark.add_argument(
         "--report-path",
-        default="eval/reports/benchmark-placeholder.json",
+        default="eval/reports/time_benchmark_report.json",
     )
     benchmark.set_defaults(handler=cmd_benchmark)
 

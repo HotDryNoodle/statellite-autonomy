@@ -36,6 +36,8 @@ triggers:
 ## 典型输入
 
 - active contracts
+- current focus
+- active context
 - 已冻结接口
 - 当前源码树
 - 决策日志
@@ -75,7 +77,7 @@ triggers:
 
 ## 工作流程
 
-1. 读取 active contracts。
+1. 按固定读取顺序读取 current focus、task board、active context 和 active contracts。
 2. 提取条款清单、失败语义和 test obligation。
 3. 映射 ClauseId 到代码位置。
 4. 编写实现并补 `@contract` 标签。

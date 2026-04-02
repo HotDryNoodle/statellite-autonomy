@@ -51,3 +51,11 @@
 - `coding-style-rules`、`plantuml-architecture-styleguide`、`commit-message-policy` 统一作为按需加载的 policy skills。
 - policy skill 的 `SKILL.md` 首屏必须可快速读完；长示例和展开说明下沉到 `references/`。
 - 若规则存在配套脚本或执行入口，必须在 policy skill 的 `tools:` 和 `Enforced By` 中显式声明。
+
+## 2026-04-02 Memory Layer Split
+
+- `docs/memory/working/` 固定为当前执行快照入口，默认文件为 `current_focus.md`，采用单文件覆盖模式。
+- `docs/memory/short_term/` 固定为当前迭代状态入口，默认文件为 `task_board.md` 与 `active_context.md`。
+- `docs/traceability/` 固定为长期治理记忆、冻结约束与任务历史，不再承载当前 task blocker、当前任务状态或当前焦点。
+- `docs/_generated/` 固定为 CI runtime 产物目录，不进入默认 agent 读取顺序，也不作为长期 RAG 输入。
+- agents 的默认读取顺序固定为 `AGENTS.md -> working memory -> short-term memory -> known_limitations -> scope_to_contract -> decision_log / agent_activity_log (按需) -> relevant contracts -> relevant skills`。

@@ -7,10 +7,15 @@ This file is the single entrypoint for agent collaboration in this repository.
 Read these files before making architecture, code, or test changes:
 
 1. `docs/architecture/agent-collaboration.md`
-2. `docs/traceability/scope_to_contract.md`
-3. `docs/traceability/decision_log.md`
-4. Relevant `contracts/*.contract.md`
-5. Relevant `skills/*/SKILL.md`
+2. `docs/memory/working/current_focus.md`
+3. `docs/memory/short_term/task_board.md`
+4. `docs/memory/short_term/active_context.md`
+5. `docs/traceability/known_limitations.md`
+6. `docs/traceability/scope_to_contract.md`
+7. `docs/traceability/decision_log.md` when frozen constraints or prior decisions are relevant
+8. `docs/traceability/agent_activity_log.md` when recent execution history is relevant
+9. Relevant `contracts/*.contract.md`
+10. Relevant `skills/*/SKILL.md`
 
 ## Default Workflow
 
@@ -23,7 +28,7 @@ The repository workflow is:
 5. `testing-skill` adds verification and `@verify` / `@covers` evidence.
 6. Local toolchain commands run build, test, and traceability.
 7. `traceability-manager` checks evidence completeness and updates governance docs.
-8. `project-manager` closes the task with acceptance status and next backlog moves.
+8. `project-manager` closes the task with acceptance status and next task/archive moves.
 
 Do not skip traceability before acceptance.
 
@@ -43,7 +48,9 @@ Use this routing by default:
 
 Every task must leave these artifacts updated when applicable:
 
-- `docs/backlog.md`
+- `docs/memory/working/current_focus.md`
+- `docs/memory/short_term/task_board.md`
+- `docs/memory/short_term/active_context.md`
 - `docs/traceability/agent_activity_log.md`
 - `docs/traceability/decision_log.md` for frozen decisions only
 - Contract, code, test, and generated traceability evidence when behavior changes
@@ -71,6 +78,8 @@ python3 tools/nav-toolchain-mcp/toolchain_mcp.py traceability
 python3 tools/nav-toolchain-mcp/toolchain_mcp.py benchmark --report-path eval/reports/time_benchmark_report.json
 python3 tools/traceability-mcp/traceability_cli.py status
 python3 scripts/check_quality.py --report-json
+python3 scripts/check_quality.py --report-json --skip-build-test --skip-project-dashboard
+python3 scripts/render_project_dashboard.py
 ```
 
 `.mcp.template.json` is only a manual template. It is not part of the default startup path.
@@ -87,8 +96,11 @@ Each accepted task maps to one branch and one `task_id`.
 ## Hard Constraints
 
 - Contracts are the source of truth for behavior and boundaries.
-- `docs/traceability/` stores human governance only.
-- `docs/_generated/traceability/` stores generated evidence only.
+- `docs/memory/working/` stores the current execution snapshot only.
+- `docs/memory/short_term/` stores active iteration state only.
+- `docs/traceability/` stores long-term governance memory, frozen constraints, and task history only.
+- `docs/_generated/` stores CI-generated runtime status and evidence only.
+- The default agent read order must not include `docs/_generated/`.
 - Keep the plugin workflow `skills`-only by default; use CLI or manual stdio MCP only when needed.
 - Do not add automatic project MCP startup back into the default flow.
 - Do not implement business modules outside the currently frozen contract scope unless the scope files are updated first.
@@ -98,16 +110,19 @@ Each accepted task maps to one branch and one `task_id`.
 Before editing:
 
 1. Identify the active contracts.
-2. Add or update the task row in `docs/backlog.md`.
-3. Record the task start in `docs/traceability/agent_activity_log.md`.
-4. Confirm the next downstream agent and acceptance target.
+2. Update `docs/memory/working/current_focus.md`.
+3. Add or update the task row in `docs/memory/short_term/task_board.md`.
+4. Update `docs/memory/short_term/active_context.md` when scope, gates, or policy skills change.
+5. Record the task start in `docs/traceability/agent_activity_log.md`.
+6. Confirm the next downstream agent and acceptance target.
 
 ## Task Close Checklist
 
 Before claiming completion:
 
 1. Run `python3 scripts/check_quality.py --report-json`.
-2. Update backlog status and evidence links.
+2. Update working and short-term memory status plus evidence links.
 3. Record the handoff or completion in `docs/traceability/agent_activity_log.md`.
 4. Update `docs/traceability/decision_log.md` only if a new constraint is frozen.
-5. If the task includes commit or publish work, load `commit-message-policy` before preparing the final commit message.
+5. Move completed tasks out of short-term memory once they are archived in `docs/traceability/task_archive.md`.
+6. If the task includes commit or publish work, load `commit-message-policy` before preparing the final commit message.
