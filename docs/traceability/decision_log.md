@@ -40,10 +40,17 @@
 
 ## 2026-04-02 Commit Message Relaxed Spec
 
-- 仓库提交信息规范冻结为 `commit-message-relaxed-spec.md` 中的放宽版格式。
+- 仓库曾使用 header-only 的放宽版提交格式；该历史决策已被后续严格结构化规范替代。
 - 仓库提交信息校验采用 repo-local `commit-msg` hook，入口固定为 `.githooks/commit-msg`。
 - hook 安装命令固定为 `bash scripts/install_commit_msg_hook.sh`，通过 `core.hooksPath=.githooks` 激活。
 - 提交规则只在 commit / publish / PR / release-finalization 阶段通过 `commit-message-policy` skill 加载，不进入 `AGENTS.md` 常驻上下文。
+
+## 2026-04-03 Commit Message Structured Spec
+
+- 仓库提交信息规范冻结为 `skills/commit-message-policy/` 下的严格结构化格式。
+- 每个提交信息都必须包含 `Goal`、`Changes`、`Contracts`、`Traceability`、`Validation`、`Refs` 六个 section；无内容时必须填写 `None`。
+- section 标签固定使用英文关键字加冒号，section 内容尽量使用中文。
+- `scripts/validate_commit_message.py` 与 `.githooks/commit-msg` 必须按该严格格式拒绝缺失 section 或顺序错误的提交信息。
 
 ## 2026-04-02 Policy Skill Routing
 
