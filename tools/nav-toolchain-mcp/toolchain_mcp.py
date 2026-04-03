@@ -41,7 +41,7 @@ def load_json(path: Path) -> dict:
 
 
 def benchmark_binary(build_dir: Path) -> Path:
-    return build_dir / "tests" / "time_benchmark"
+    return build_dir / "product" / "tests" / "time_benchmark"
 
 
 def run_benchmark_scenario(binary: Path, scenario: dict) -> dict:

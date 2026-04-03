@@ -21,8 +21,8 @@ triggers:
 
 ## Load When
 
-- 新增或修改 `src/**/*.h`、`src/**/*.cpp`
-- 新增或修改 `tests/**/*.cpp`
+- 新增或修改 `product/src/**/*.h`、`product/src/**/*.cpp`
+- 新增或修改 `product/tests/**/*.cpp`
 - 审查 C++ 风格、一致性、注释与追踪标签
 
 ## Must Follow

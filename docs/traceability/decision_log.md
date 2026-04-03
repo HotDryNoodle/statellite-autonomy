@@ -4,7 +4,7 @@
 
 ## 2026-03-31 Initialization
 
-- 公共时间模块归属 `src/unit/time`，命名空间固定为 `unit::time`。
+- 公共时间模块归属 `product/src/unit/time`，命名空间固定为 `unit::time`。
 - 第一阶段只对 `unit::time` 做代码与测试闭环，Navigation / Prediction / Mission Planning 先冻结边界。
 - 方法型 skills 直接拷贝进本仓库，避免外部引用漂移。
 - `pppar-expert` 以 `/home/hotdry/projects/PRIDE-PPPAR` 为唯一权威知识源。
@@ -66,3 +66,10 @@
 - `docs/traceability/` 固定为长期治理记忆、冻结约束与任务历史，不再承载当前 task blocker、当前任务状态或当前焦点。
 - `docs/_generated/` 固定为 CI runtime 产物目录，不进入默认 agent 读取顺序，也不作为长期 RAG 输入。
 - agents 的默认读取顺序固定为 `AGENTS.md -> working memory -> short-term memory -> known_limitations -> scope_to_contract -> decision_log / agent_activity_log (按需) -> relevant contracts -> relevant skills`。
+
+## 2026-04-03 Harness Product Split
+
+- 仓库结构冻结为根目录治理层 + `harness/` 控制面 + `product/` 产品面。
+- `project-manager` 继续作为唯一流程 owner；`architecture-expert` 只在被调度时给出架构冻结结论。
+- 根目录 CLI 入口保持稳定，即使真实源码与测试迁移到 `product/`。
+- `harness/runtime/` 只保存可重建运行态，不替代 `docs/memory/` 或 `docs/traceability/`。

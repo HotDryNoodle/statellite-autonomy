@@ -14,3 +14,9 @@
 - `docs/_generated/traceability/clause_trace_matrix.md`
 - `docs/_generated/traceability/contract_coverage_summary.md`
 - `docs/_generated/traceability/verify_coverage_summary.md`
+
+扫描范围：
+
+- `contracts/*.contract.md`
+- `product/src/**/*.h`
+- `product/tests/**/*.cpp`

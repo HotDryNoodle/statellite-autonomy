@@ -9,6 +9,7 @@
 | 建立公共时间基础模块闭环 | `contracts/time_system.contract.md` |
 | 冻结公共层与业务层边界 | `contracts/layer_boundary.contract.md` |
 | 冻结 Navigation 第一阶段范围 | `contracts/navigation.contract.md` |
+| 冻结 harness/product 双树边界与工作流 | `contracts/harness_product_boundary.contract.md`, `contracts/harness_workflow.contract.md` |
 
 
 维护规则：
@@ -24,6 +25,7 @@
 | Phase | 目标 | 主合同 | 状态 |
 | --- | --- | --- | --- |
 | Phase 1 | `unit::time` 公共时间基础模块闭环 | `contracts/time_system.contract.md`, `contracts/layer_boundary.contract.md` | done |
+| Phase 1.5 | `harness/` 与 `product/` 双树重构、工作流与入口冻结 | `contracts/harness_product_boundary.contract.md`, `contracts/harness_workflow.contract.md`, `contracts/layer_boundary.contract.md` | done |
 | Phase 2 | `navigation/ppp` 第一批接口与实现收口 | `contracts/navigation.contract.md`, `contracts/ppp_family.contract.md` | planned |
 | Phase 3 | `navigation/rdpod` 家族建模与验证闭环 | `contracts/navigation.contract.md`, `contracts/rdpod_family.contract.md` | planned |
 | Phase 4 | `prediction` 接口与 handoff 约束收口 | `contracts/prediction.contract.md`, `contracts/state_handoff_navigation_to_prediction.contract.md` | planned |

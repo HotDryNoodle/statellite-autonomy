@@ -7,15 +7,16 @@ This file is the single entrypoint for agent collaboration in this repository.
 Read these files before making architecture, code, or test changes:
 
 1. `docs/architecture/agent-collaboration.md`
-2. `docs/memory/working/current_focus.md`
-3. `docs/memory/short_term/task_board.md`
-4. `docs/memory/short_term/active_context.md`
-5. `docs/traceability/known_limitations.md`
-6. `docs/traceability/scope_to_contract.md`
-7. `docs/traceability/decision_log.md` when frozen constraints or prior decisions are relevant
-8. `docs/traceability/agent_activity_log.md` when recent execution history is relevant
-9. Relevant `contracts/*.contract.md`
-10. Relevant `skills/*/SKILL.md`
+2. `docs/architecture/harness_product_split.md` when the task touches repository structure, orchestration, or toolchain boundaries
+3. `docs/memory/working/current_focus.md`
+4. `docs/memory/short_term/task_board.md`
+5. `docs/memory/short_term/active_context.md`
+6. `docs/traceability/known_limitations.md`
+7. `docs/traceability/scope_to_contract.md`
+8. `docs/traceability/decision_log.md` when frozen constraints or prior decisions are relevant
+9. `docs/traceability/agent_activity_log.md` when recent execution history is relevant
+10. Relevant `contracts/*.contract.md`
+11. Relevant `skills/*/SKILL.md`
 
 ## Default Workflow
 
@@ -96,6 +97,7 @@ Each accepted task maps to one branch and one `task_id`.
 ## Hard Constraints
 
 - Contracts are the source of truth for behavior and boundaries.
+- `harness/` manages orchestration artifacts and runtime state only; `product/` manages buildable source and tests.
 - `docs/memory/working/` stores the current execution snapshot only.
 - `docs/memory/short_term/` stores active iteration state only.
 - `docs/traceability/` stores long-term governance memory, frozen constraints, and task history only.

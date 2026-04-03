@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "task_state",
+  "type": "object",
+  "required": [
+    "task_id",
+    "goal",
+    "phase",
+    "owner",
+    "allowed_next_states",
+    "evidence_refs",
+    "blocking_issues",
+    "updated_at"
+  ],
+  "properties": {
+    "task_id": {"type": "string", "minLength": 1},
+    "goal": {"type": "string", "minLength": 1},
+    "phase": {
+      "type": "string",
+      "enum": [
+        "intake",
+        "contract_freeze",
+        "implementation",
+        "verification",
+        "traceability",
+        "acceptance"
+      ]
+    },
+    "owner": {"type": "string", "minLength": 1},
+    "allowed_next_states": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "blocking_issues": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "updated_at": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": true
+}

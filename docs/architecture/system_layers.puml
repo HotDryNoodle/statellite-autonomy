@@ -27,7 +27,12 @@ skinparam componentBackgroundColor<<util>> #F2F2F2
 skinparam componentBorderColor<<util>>     #616161
 
 top to bottom direction
-title Satellite Autonomy Plugin Initial Layering
+title Satellite Autonomy Plugin Harness/Product Layering
+
+package "Harness Control Plane" {
+  component "==<size:14><b>Project Manager</b></size>\n唯一流程 owner\nphase orchestration" <<core>> as PM
+  component "==<size:14><b>Harness Runtime</b></size>\ntask state\nhandoff replay" <<util>> as Harness
+}
 
 package "Shared Unit" {
   component "==<size:14><b>unit::time</b></size>\n统一时间表示\n显式尺度转换" <<core>> as Time
@@ -48,6 +53,8 @@ package "Engineering" {
   component "==<size:14><b>Traceability</b></size>\n合同到代码\n代码到测试" <<util>> as Trace
 }
 
+PM --> Harness
+Harness ..> MCP
 Time --> PPP
 Time --> RDPOD
 PPP --> Prediction
@@ -58,4 +65,5 @@ MCP ..> PPP
 MCP ..> RDPOD
 Trace ..> Time
 Trace ..> Prediction
+Trace ..> Harness
 @enduml

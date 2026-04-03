@@ -15,3 +15,7 @@
 - `--native-file`：本机工具链覆盖
 - `--meson-option key=value`：透传 `-Dkey=value`
 - `--reconfigure`：强制重新配置
+
+说明：
+
+- 根目录 Meson 入口保持不变，但真实产品源码位于 `product/src/`。

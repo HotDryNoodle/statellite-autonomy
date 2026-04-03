@@ -13,3 +13,7 @@
 - `--no-rebuild`
 - `--cross-file`
 - `--native-file`
+
+说明：
+
+- 真实测试源码位于 `product/tests/`，但命令入口保持不变。

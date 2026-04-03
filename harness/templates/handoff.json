@@ -1,0 +1,11 @@
+{
+  "task_id": "",
+  "phase": "",
+  "from_agent": "",
+  "to_agent": "",
+  "summary": "",
+  "relevant_contracts": [],
+  "evidence_refs": [],
+  "blocking_issues": [],
+  "recommended_actions": []
+}

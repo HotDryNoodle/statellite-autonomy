@@ -5,6 +5,7 @@
 本仓库采用 `skills` 常驻、repo-local CLI 手动触发的协作模式：
 
 - 默认入口：`AGENTS.md`
+- 结构基线：根目录治理层 + `harness/` 控制面 + `product/` 产品面
 - 默认工具：`python3 tools/nav-toolchain-mcp/toolchain_mcp.py`、`python3 tools/traceability-mcp/traceability_cli.py`
 - `.mcp.template.json` 仅作为手动模板，不进入默认自动启动链路
 - 默认分支策略：`main` 稳定、`develop` 集成、`feature/<task-id>-<topic>` 交付、`spike/<topic>` 探索
@@ -145,7 +146,7 @@ notes:
 
 ## 当前实装范围
 
-- 公共层：`unit::time`
+- 公共层：`product/src/unit/time`
 - Navigation / Prediction / Mission Planning：边界与占位
 
 ## 默认读取顺序
@@ -153,14 +154,15 @@ notes:
 agents 默认按以下顺序读取上下文：
 
 1. `AGENTS.md`
-2. `docs/memory/working/current_focus.md`
-3. `docs/memory/short_term/task_board.md`
-4. `docs/memory/short_term/active_context.md`
-5. `docs/traceability/known_limitations.md`
-6. `docs/traceability/scope_to_contract.md`
-7. `docs/traceability/decision_log.md`（按需）
-8. `docs/traceability/agent_activity_log.md`（按需）
-9. relevant `contracts/*.contract.md`
-10. relevant `skills/*/SKILL.md`
+2. `docs/architecture/harness_product_split.md`（结构或 orchestration 相关任务按需）
+3. `docs/memory/working/current_focus.md`
+4. `docs/memory/short_term/task_board.md`
+5. `docs/memory/short_term/active_context.md`
+6. `docs/traceability/known_limitations.md`
+7. `docs/traceability/scope_to_contract.md`
+8. `docs/traceability/decision_log.md`（按需）
+9. `docs/traceability/agent_activity_log.md`（按需）
+10. relevant `contracts/*.contract.md`
+11. relevant `skills/*/SKILL.md`
 
 `docs/_generated/` 只用于 CI runtime 产物与人类查看，不进入默认读取链路。

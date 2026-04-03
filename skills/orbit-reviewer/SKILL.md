@@ -5,8 +5,8 @@ version: 1.0.0
 depends_on: []
 tools:
   - contracts/
-  - src/
-  - tests/
+  - product/src/
+  - product/tests/
 triggers:
   - review
   - risk-check

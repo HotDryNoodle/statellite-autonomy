@@ -2,7 +2,9 @@
 
 本仓库现在采用“双层结构”：
 
-- 工程仓库根目录：`src/`、`tests/`、`contracts/`、`docs/`、`tools/`
+- 工程仓库根目录：`contracts/`、`docs/`、`skills/`、`tools/`、`plugins/`
+- harness 控制面：`harness/`
+- product 产品面：`product/src/`、`product/tests/`
 - 干净 plugin bundle：`plugins/statellite-autonomy-plugin/`
 
 真正提供给 Codex 加载的是：

@@ -47,7 +47,7 @@ def symbol_near(lines: list[str], line_no: int) -> str:
 
 def scan_code(repo_root: Path) -> dict[str, list[dict[str, object]]]:
     evidence: dict[str, list[dict[str, object]]] = {}
-    for path in sorted((repo_root / "src").rglob("*")):
+    for path in sorted((repo_root / "product" / "src").rglob("*")):
         if path.suffix not in {".h", ".hpp", ".hh", ".cpp", ".cc", ".cxx"}:
             continue
         lines = path.read_text(encoding="utf-8").splitlines()
@@ -69,7 +69,7 @@ def scan_tests(repo_root: Path) -> tuple[dict[str, list[dict[str, object]]], dic
     verifies: dict[str, list[dict[str, object]]] = {}
     covers: dict[str, list[dict[str, object]]] = {}
 
-    for path in sorted((repo_root / "tests").rglob("*.cpp")):
+    for path in sorted((repo_root / "product" / "tests").rglob("*.cpp")):
         lines = path.read_text(encoding="utf-8").splitlines()
         rel = str(path.relative_to(repo_root))
         comment_buffer: list[str] = []

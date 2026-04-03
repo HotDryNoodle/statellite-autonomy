@@ -1,13 +1,14 @@
 # statellite-autonomy-plugin
 
-Contract-driven satellite autonomy engineering workspace with local skills, traceability tooling, and Meson/GTest-based validation.
+Contract-driven satellite autonomy engineering workspace with a harness control plane, a product engineering tree, local skills, traceability tooling, and Meson/GTest-based validation.
 
 ## Repository Layout
 
 - `contracts/`: contract source of truth
+- `docs/`: architecture, memory, toolchain, and governance docs
 - `skills/`: repo-local agent roles and workflows
-- `src/`: implementation
-- `tests/`: verification
+- `harness/`: orchestration artifacts, schemas, templates, and runtime helpers
+- `product/`: implementation and verification trees
 - `tools/`: local toolchain and traceability CLIs / MCP servers
 - `docs/traceability/`: governance docs
 - `docs/_generated/traceability/`: generated evidence

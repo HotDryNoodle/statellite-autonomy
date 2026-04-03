@@ -1,5 +1,5 @@
 /**
- * @file tests/test_time.cpp
+ * @file product/tests/test_time.cpp
  * @ingroup tests
  * @brief TimeSys 合同条款的单元测试验证（GTest）。
  */

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "handoff",
+  "type": "object",
+  "required": [
+    "task_id",
+    "phase",
+    "from_agent",
+    "to_agent",
+    "summary",
+    "relevant_contracts",
+    "evidence_refs",
+    "blocking_issues",
+    "recommended_actions"
+  ],
+  "properties": {
+    "task_id": {"type": "string", "minLength": 1},
+    "phase": {"type": "string", "minLength": 1},
+    "from_agent": {"type": "string", "minLength": 1},
+    "to_agent": {"type": "string", "minLength": 1},
+    "summary": {"type": "string"},
+    "relevant_contracts": {"type": "array", "items": {"type": "string"}},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "blocking_issues": {"type": "array", "items": {"type": "string"}},
+    "recommended_actions": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

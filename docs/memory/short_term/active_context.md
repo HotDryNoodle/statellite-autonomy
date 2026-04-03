@@ -2,23 +2,23 @@
 
 ## Current Scope
 
-- Tighten commit message validation from relaxed header-only format to a strict structured template.
-- Require `Goal`、`Changes`、`Contracts`、`Traceability`、`Validation`、`Refs` sections in every commit message.
-- Keep the repository hook entrypoint at `.githooks/commit-msg`.
-- Keep section labels fixed in English and encourage body content in Chinese.
+- Harness/product dual-tree is now the canonical repository structure.
+- Product scope remains platform-only after the migration; Navigation / Prediction / Mission Planning stay at their current implementation maturity.
+- Future feature work should start from `product/` for code and from `harness/` for orchestration/runtime artifacts.
 
 ## Active Policy Skills
 
-- `commit-message-policy`
+- none
 
 ## Acceptance Gates
 
 - `python3 scripts/check_quality.py --report-json`
 - `python3 tools/traceability-mcp/traceability_cli.py status`
-- `python3 scripts/validate_commit_message.py <message-file>`
+- `python3 tools/nav-toolchain-mcp/toolchain_mcp.py benchmark --report-path eval/reports/time_benchmark_report.json`
 
 ## Handoff Expectations
 
 - Keep `docs/_generated/` out of the default agent read chain.
-- Keep commit message validation strict and deterministic.
-- Keep required section names stable so hook, examples, and policy docs do not drift.
+- Keep `project-manager` as the only flow owner and `architecture-expert` as an invoked specialist.
+- Keep harness responsible for orchestration artifacts and product responsible for buildable business code.
+- Keep root CLI entrypoints stable after `product/src/` and `product/tests/` become the only product code roots.

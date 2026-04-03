@@ -66,11 +66,11 @@ def format_command_output(stdout: str, stderr: str) -> str:
 
 
 def contract_evidence_sources() -> Iterable[Path]:
-    yield from sorted(REPO_ROOT.glob("src/**/*.h"))
+    yield from sorted(REPO_ROOT.glob("product/src/**/*.h"))
 
 
 def test_sources() -> Iterable[Path]:
-    yield from sorted(REPO_ROOT.glob("tests/**/*.cpp"))
+    yield from sorted(REPO_ROOT.glob("product/tests/**/*.cpp"))
 
 
 def extract_contract_ids(text: str) -> list[str]:
@@ -307,6 +307,7 @@ def main() -> int:
             )
         )
     commands.append(("traceability_generate", [sys.executable, str(TOOLCHAIN), "traceability"]))
+    commands.append(("harness_tests", [sys.executable, "-m", "unittest", "discover", "-s", "harness/tests", "-p", "test_*.py"]))
     if not args.skip_project_dashboard:
         commands.append(("project_dashboard", [sys.executable, str(RENDER_DASHBOARD)]))
 

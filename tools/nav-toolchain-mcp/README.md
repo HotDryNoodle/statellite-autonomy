@@ -1,6 +1,12 @@
 # Nav Tool
 
-本目录提供基于 Meson 的工程入口与 stdio MCP server：
+本目录提供基于 Meson 的工程入口与 stdio MCP server。
+
+当前仓库采用根目录治理层 + `harness/` + `product/` 双树结构：
+
+- Meson 根入口保持在仓库根目录
+- 真实产品源码位于 `product/src/`
+- 真实测试与 benchmark runner 位于 `product/tests/`
 
 - `build`
 - `test`

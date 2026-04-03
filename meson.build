@@ -27,10 +27,7 @@ endif
 
 sap_module_deps = {}
 
-subdir('src')
-if enable_tests
-    subdir('tests')
-endif
+subdir('product')
 
 summary({
     'Project': meson.project_name(),

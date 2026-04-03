@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "review_feedback",
+  "type": "object",
+  "required": [
+    "task_id",
+    "summary",
+    "issues_found",
+    "contract_violations",
+    "risks",
+    "confidence",
+    "suggested_next_owner",
+    "recommended_actions"
+  ],
+  "properties": {
+    "task_id": {"type": "string", "minLength": 1},
+    "summary": {"type": "string"},
+    "issues_found": {"type": "array", "items": {"type": "string"}},
+    "contract_violations": {"type": "array", "items": {"type": "string"}},
+    "risks": {"type": "array", "items": {"type": "string"}},
+    "confidence": {"type": "string"},
+    "suggested_next_owner": {"type": "string"},
+    "recommended_actions": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

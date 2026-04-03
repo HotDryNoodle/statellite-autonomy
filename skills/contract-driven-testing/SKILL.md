@@ -5,7 +5,7 @@ version: 1.0.0
 depends_on: []
 tools:
   - contracts/*.contract.md
-  - tests/
+  - product/tests/
 triggers:
   - test-design
   - acceptance
