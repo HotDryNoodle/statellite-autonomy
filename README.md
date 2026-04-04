@@ -6,21 +6,22 @@ Contract-driven satellite autonomy engineering workspace with a harness control 
 
 - `contracts/`: contract source of truth
 - `docs/`: architecture, memory, toolchain, and governance docs
-- `skills/`: repo-local agent roles and workflows
+- `skills/`: maintained agent roles and workflows
+- `.agents/skills`: Codex project-level discovery path for the maintained `skills/` inventory
 - `harness/`: orchestration artifacts, schemas, templates, and runtime helpers
 - `product/`: implementation and verification trees
-- `tools/`: local toolchain and traceability CLIs / MCP servers
+- `tools/`: local toolchain and traceability CLIs
 - `docs/traceability/`: governance docs
 - `docs/_generated/traceability/`: generated evidence
 
 ## Quick Start
 
 ```bash
-python3 tools/nav-toolchain-mcp/toolchain_mcp.py build --reconfigure
-python3 tools/nav-toolchain-mcp/toolchain_mcp.py test --no-rebuild
-python3 tools/nav-toolchain-mcp/toolchain_mcp.py traceability
-python3 tools/nav-toolchain-mcp/toolchain_mcp.py benchmark --report-path eval/reports/time_benchmark_report.json
-python3 tools/traceability-mcp/traceability_cli.py status
+python3 tools/nav-toolchain-cli/toolchain_cli.py build --reconfigure
+python3 tools/nav-toolchain-cli/toolchain_cli.py test --no-rebuild
+python3 tools/nav-toolchain-cli/toolchain_cli.py traceability --yes
+python3 tools/nav-toolchain-cli/toolchain_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes
+python3 tools/traceability-cli/traceability_cli.py status
 python3 scripts/check_quality.py --report-json
 ```
 
@@ -28,4 +29,4 @@ python3 scripts/check_quality.py --report-json
 
 Start from `AGENTS.md`. That file defines the repository workflow, required artifacts, and approved tool entrypoints.
 
-This repository keeps Codex plugin startup `skills`-only by default. Local MCP servers remain manual tools and are not auto-registered on session start.
+This repository follows the default Codex project layout: root `AGENTS.md`, project `.agents/skills`, and repo-local CLI entrypoints. Repo-local engineering tools remain plain CLIs and are not exposed through project Codex config.

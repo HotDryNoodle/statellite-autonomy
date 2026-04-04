@@ -73,3 +73,17 @@
 - `project-manager` 继续作为唯一流程 owner；`architecture-expert` 只在被调度时给出架构冻结结论。
 - 根目录 CLI 入口保持稳定，即使真实源码与测试迁移到 `product/`。
 - `harness/runtime/` 只保存可重建运行态，不替代 `docs/memory/` 或 `docs/traceability/`。
+
+## 2026-04-03 Codex Project Default Layout
+
+- 仓库默认 Codex 入口冻结为根 `AGENTS.md` + 项目 `.agents/skills` + repo-local CLI。
+- 根 `skills/` 继续作为技能内容维护目录，`.agents/skills` 只承担项目级发现职责。
+- 停止维护 plugin bundle、`.codex-plugin/`、`.mcp.template.json` 和本地 plugin 安装脚本作为默认仓库入口。
+- 仓库当前不引入项目级 `.codex/config.toml`；只有在确实需要 trusted-project overrides 或项目级 Codex 配置时再单独引入。
+
+## 2026-04-03 Repo-Local CLI First Tooling
+
+- `tools/nav-toolchain-cli/` 与 `tools/traceability-cli/` 成为仓库内唯一受支持的工程工具入口；原 `*-mcp` 目录、`server.py` 包装和 `scripts/run_uv_mcp.sh` 不再维护。
+- side-effectful CLI 子命令必须至少提供 `--dry-run` 预演能力；写报告或生成产物的入口应提供显式确认开关。
+- 顶层与子命令 `--help` 必须包含可直接复制的 `Examples`，错误输出必须带可执行示例或下一步提示。
+- `traceability-cli` 的 `status` / `query-clause` 默认只读取现有产物；需要重生成时通过 `--refresh` 显式触发。

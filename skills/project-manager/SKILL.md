@@ -70,7 +70,7 @@ triggers:
 
 - 上游：用户需求与目标
 - 下游：`architecture-expert`、`pppar-expert`、`rdpod-analyst`、`coding-skill`、`testing-skill`、`benchmark-evaluator`、`traceability-manager`
-- 工具：`tools/nav-toolchain-mcp`
+- 工具：`tools/nav-toolchain-cli`
 
 ## 触发场景
 

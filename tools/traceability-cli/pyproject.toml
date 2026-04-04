@@ -1,0 +1,9 @@
+[project]
+name = "traceability-cli"
+version = "0.1.0"
+description = "Traceability CLI for statellite-autonomy-plugin"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+traceability-cli = "traceability_cli:main"

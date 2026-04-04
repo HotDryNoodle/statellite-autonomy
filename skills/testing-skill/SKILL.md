@@ -5,8 +5,8 @@ version: 1.0.0
 depends_on:
   - contract-driven-testing
 tools:
-  - python3 tools/nav-toolchain-mcp/toolchain_mcp.py
-  - python3 tools/traceability-mcp/traceability_cli.py
+  - python3 tools/nav-toolchain-cli/toolchain_cli.py
+  - python3 tools/traceability-cli/traceability_cli.py
 triggers:
   - testing
   - verification
@@ -63,7 +63,7 @@ triggers:
 - 上游：`project-manager`
 - 架构输入：`architecture-expert`
 - 协同：`coding-skill`、`traceability-manager`
-- 工具：`python3 tools/nav-toolchain-mcp/toolchain_mcp.py`、`python3 tools/traceability-mcp/traceability_cli.py`
+- 工具：`python3 tools/nav-toolchain-cli/toolchain_cli.py`、`python3 tools/traceability-cli/traceability_cli.py`
 
 ## 触发场景
 

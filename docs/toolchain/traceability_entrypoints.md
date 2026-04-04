@@ -1,11 +1,10 @@
 # Traceability Entrypoints
 
-- `python3 tools/nav-toolchain-mcp/toolchain_mcp.py traceability`
+- `python3 tools/nav-toolchain-cli/toolchain_cli.py traceability --yes`
 - `./scripts/nav-toolchain traceability`
-- `UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/nav-toolchain-mcp python tools/nav-toolchain-mcp/toolchain_mcp.py traceability`
-- `python3 tools/traceability-mcp/traceability_cli.py status`
-- `python3 tools/traceability-mcp/traceability_cli.py query-clause TimeSys_4_4_4`
-- `scripts/run_uv_mcp.sh tools/traceability-mcp tools/traceability-mcp/server.py`
+- `UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/nav-toolchain-cli python tools/nav-toolchain-cli/toolchain_cli.py traceability --yes`
+- `python3 tools/traceability-cli/traceability_cli.py status`
+- `python3 tools/traceability-cli/traceability_cli.py query-clause TimeSys_4_4_4`
 
 生成产物：
 

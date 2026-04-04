@@ -22,9 +22,9 @@ jobs:
       - name: Install Meson and Ninja
         run: python -m pip install meson ninja
       - name: Build
-        run: python3 tools/nav-toolchain-mcp/toolchain_mcp.py build --reconfigure
+        run: python3 tools/nav-toolchain-cli/toolchain_cli.py build --reconfigure
       - name: Test
-        run: python3 tools/nav-toolchain-mcp/toolchain_mcp.py test --no-rebuild
+        run: python3 tools/nav-toolchain-cli/toolchain_cli.py test --no-rebuild
       - name: Upload test logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -80,7 +80,7 @@ jobs:
       - name: Install Meson and Ninja
         run: python -m pip install meson ninja
       - name: Run benchmark
-        run: python3 tools/nav-toolchain-mcp/toolchain_mcp.py benchmark --report-path eval/reports/time_benchmark_report.json
+        run: python3 tools/nav-toolchain-cli/toolchain_cli.py benchmark --report-path eval/reports/time_benchmark_report.json
       - name: Upload benchmark report
         if: always()
         uses: actions/upload-artifact@v4

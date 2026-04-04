@@ -1,12 +1,11 @@
 # Build Entrypoints
 
-- `python3 tools/nav-toolchain-mcp/toolchain_mcp.py build`
+- `python3 tools/nav-toolchain-cli/toolchain_cli.py build`
 - `./scripts/nav-toolchain build`
-- `UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/nav-toolchain-mcp python tools/nav-toolchain-mcp/toolchain_mcp.py build`
-- `python3 tools/nav-toolchain-mcp/toolchain_mcp.py build --cross-file <path> --native-file <path>`
+- `UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/nav-toolchain-cli python tools/nav-toolchain-cli/toolchain_cli.py build`
+- `python3 tools/nav-toolchain-cli/toolchain_cli.py build --cross-file <path> --native-file <path>`
 - `meson setup builddir`
 - `meson compile -C builddir`
-- `scripts/run_uv_mcp.sh tools/nav-toolchain-mcp tools/nav-toolchain-mcp/server.py`
 
 支持项：
 
@@ -15,6 +14,7 @@
 - `--native-file`：本机工具链覆盖
 - `--meson-option key=value`：透传 `-Dkey=value`
 - `--reconfigure`：强制重新配置
+- `--dry-run`：预览将执行的命令与写入目标
 
 说明：
 

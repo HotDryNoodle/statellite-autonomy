@@ -6,7 +6,7 @@ depends_on:
   - project-manager
   - traceability-manager
 tools:
-  - python3 tools/nav-toolchain-mcp/toolchain_mcp.py
+  - python3 tools/nav-toolchain-cli/toolchain_cli.py
 triggers:
   - benchmark
   - regression
@@ -57,7 +57,7 @@ triggers:
 ## 协作关系
 
 - 接受 `project-manager` 调度
-- 依赖 `python3 tools/nav-toolchain-mcp/toolchain_mcp.py`
+- 依赖 `python3 tools/nav-toolchain-cli/toolchain_cli.py`
 - 与 `traceability-manager` 同步结果
 
 ## 触发场景

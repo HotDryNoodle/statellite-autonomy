@@ -2,9 +2,10 @@
 
 ## Summary
 
-- 仓库根目录保留治理入口：`contracts/`、`docs/`、`skills/`、`tools/`、`plugins/`。
+- 仓库根目录保留治理入口：`contracts/`、`docs/`、`skills/`、`.agents/`、`tools/`。
 - `harness/` 承载协作控制面：状态机、工件 schema、模板、runtime 事件与最小 orchestrator CLI。
 - `product/` 承载真实产品工程：`src/`、`tests/`、Meson 子构建入口。
+- Codex 项目发现入口固定为根 `AGENTS.md` + `.agents/skills`；不再依赖 plugin bundle 或项目 MCP 配置。
 
 ## Role Model
 
@@ -29,8 +30,8 @@
 ## Stable Entrypoints
 
 - 根目录 Meson 入口保持稳定，但只做薄封装并转交 `product/`。
-- `python3 tools/nav-toolchain-mcp/toolchain_mcp.py`
-- `python3 tools/traceability-mcp/traceability_cli.py`
+- `python3 tools/nav-toolchain-cli/toolchain_cli.py`
+- `python3 tools/traceability-cli/traceability_cli.py`
 - `python3 scripts/check_quality.py --report-json`
 
 ## Runtime And Governance

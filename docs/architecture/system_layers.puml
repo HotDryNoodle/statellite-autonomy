@@ -49,20 +49,20 @@ package "Future Layers" {
 }
 
 package "Engineering" {
-  component "==<size:14><b>NavToolchainMCP</b></size>\nbuild test traceability" <<util>> as MCP
+  component "==<size:14><b>NavToolchainCLI</b></size>\nbuild test traceability" <<util>> as Toolchain
   component "==<size:14><b>Traceability</b></size>\n合同到代码\n代码到测试" <<util>> as Trace
 }
 
 PM --> Harness
-Harness ..> MCP
+Harness ..> Toolchain
 Time --> PPP
 Time --> RDPOD
 PPP --> Prediction
 RDPOD --> Prediction
 Prediction --> Planning
-MCP ..> Time
-MCP ..> PPP
-MCP ..> RDPOD
+Toolchain ..> Time
+Toolchain ..> PPP
+Toolchain ..> RDPOD
 Trace ..> Time
 Trace ..> Prediction
 Trace ..> Harness

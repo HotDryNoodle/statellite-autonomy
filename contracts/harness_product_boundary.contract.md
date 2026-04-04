@@ -32,9 +32,9 @@ Contract：
 
 Contract：
 
-- 仓库根目录继续承载 `contracts/`、`docs/`、`skills/`、`tools/`、`plugins/` 等治理与入口层。
+- 仓库根目录继续承载 `contracts/`、`docs/`、`skills/`、`.agents/`、`tools/` 等治理与入口层。
 - 根目录 CLI 入口必须保持稳定；`src/` 与 `tests/` 迁入 `product/` 后，用户仍通过现有 repo-local 命令完成 build/test/traceability。
-- plugin bundle 默认仍为 `skills`-only，不把 harness runtime 或 repo-local MCP 自动注册进启动链路。
+- Codex 默认项目入口固定为根 `AGENTS.md` + 项目 `.agents/skills`，不把 harness runtime 或额外 repo-local 集成暴露为项目级自动启动配置。
 
 ## 3. 测试要求（verify）
 

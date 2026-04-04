@@ -5,8 +5,8 @@ version: 1.0.0
 depends_on:
   - project-manager
 tools:
-  - python3 tools/traceability-mcp/traceability_cli.py
-  - python3 tools/nav-toolchain-mcp/toolchain_mcp.py
+  - python3 tools/traceability-cli/traceability_cli.py
+  - python3 tools/nav-toolchain-cli/toolchain_cli.py
 triggers:
   - traceability
   - governance
@@ -73,7 +73,7 @@ triggers:
 
 ## 工作流程
 
-1. 调用 `python3 tools/traceability-mcp/traceability_cli.py generate` 生成 `contract_index.json`、`trace.json` 和 markdown 报告。
+1. 调用 `python3 tools/traceability-cli/traceability_cli.py generate --yes` 生成 `contract_index.json`、`trace.json` 和 markdown 报告。
 2. 按 ClauseId 查询缺失的 code / tests 证据。
 3. 更新长期治理映射、task archive 和覆盖率报告。
 4. 标记缺失链路和已知限制，并同步给 `project-manager`；涉及架构限制时同步给 `architecture-expert`。

@@ -67,7 +67,7 @@ triggers:
 
 - 上游：`project-manager`
 - 协同：`pppar-expert`、`rdpod-analyst`、`coding-skill`、`testing-skill`、`traceability-manager`
-- 工具：`tools/nav-toolchain-mcp`
+- 工具：`tools/nav-toolchain-cli`
 
 ## 触发场景
 

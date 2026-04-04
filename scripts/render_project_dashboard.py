@@ -15,7 +15,7 @@ from dashboard_common import parse_task_board
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "_generated"
-TRACEABILITY = REPO_ROOT / "tools" / "traceability-mcp" / "traceability_cli.py"
+TRACEABILITY = REPO_ROOT / "tools" / "traceability-cli" / "traceability_cli.py"
 
 WORKING_PATH = REPO_ROOT / "docs" / "memory" / "working" / "current_focus.md"
 TASK_BOARD_PATH = REPO_ROOT / "docs" / "memory" / "short_term" / "task_board.md"

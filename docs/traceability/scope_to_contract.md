@@ -10,6 +10,8 @@
 | 冻结公共层与业务层边界 | `contracts/layer_boundary.contract.md` |
 | 冻结 Navigation 第一阶段范围 | `contracts/navigation.contract.md` |
 | 冻结 harness/product 双树边界与工作流 | `contracts/harness_product_boundary.contract.md`, `contracts/harness_workflow.contract.md` |
+| 冻结 Codex 项目默认入口与技能发现路径 | `contracts/layer_boundary.contract.md`, `contracts/harness_product_boundary.contract.md` |
+| 冻结 repo-local engineering tools 的 CLI-first 入口与帮助语义 | `contracts/layer_boundary.contract.md`, `contracts/harness_product_boundary.contract.md` |
 
 
 维护规则：

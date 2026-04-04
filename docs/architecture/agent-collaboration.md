@@ -2,12 +2,12 @@
 
 ## 协作基线
 
-本仓库采用 `skills` 常驻、repo-local CLI 手动触发的协作模式：
+本仓库采用官方默认项目发现模型与 repo-local CLI 手动触发的协作模式：
 
 - 默认入口：`AGENTS.md`
+- 项目 skill 发现：`.agents/skills`（内容维护在根 `skills/`）
 - 结构基线：根目录治理层 + `harness/` 控制面 + `product/` 产品面
-- 默认工具：`python3 tools/nav-toolchain-mcp/toolchain_mcp.py`、`python3 tools/traceability-mcp/traceability_cli.py`
-- `.mcp.template.json` 仅作为手动模板，不进入默认自动启动链路
+- 默认工具：`python3 tools/nav-toolchain-cli/toolchain_cli.py`、`python3 tools/traceability-cli/traceability_cli.py`
 - 默认分支策略：`main` 稳定、`develop` 集成、`feature/<task-id>-<topic>` 交付、`spike/<topic>` 探索
 
 ## 任务生命周期
@@ -73,8 +73,8 @@
 
 - owner: `traceability-manager`
 - 必跑命令：
-  - `python3 tools/nav-toolchain-mcp/toolchain_mcp.py traceability`
-  - `python3 tools/traceability-mcp/traceability_cli.py status`
+  - `python3 tools/nav-toolchain-cli/toolchain_cli.py traceability --yes`
+  - `python3 tools/traceability-cli/traceability_cli.py status`
   - `python3 scripts/check_quality.py --report-json`
 - 退出条件：
   - 生成证据成功
@@ -99,7 +99,7 @@
 - `build-and-test`: 执行 build / test，并上传 `meson-logs`
 - `traceability-gate`: 执行 traceability、baseline/schema/tag checks，并上传 traceability runtime 证据；该 job 不生成 dashboard
 - `project-dashboard`: 在 traceability 之后生成项目状态看板与 machine-readable status，并上传 runtime artifacts；该 job 不重复 build / test
-- `benchmark`: 执行 `toolchain_mcp.py benchmark`，输出回归报告；在基线稳定前默认为非阻塞
+- `benchmark`: 执行 `toolchain_cli.py benchmark`，输出回归报告；在基线稳定前默认为非阻塞
 
 当前阶段的 CD 只负责 artifacts 与 release metadata，不做部署。
 
@@ -163,6 +163,6 @@ agents 默认按以下顺序读取上下文：
 8. `docs/traceability/decision_log.md`（按需）
 9. `docs/traceability/agent_activity_log.md`（按需）
 10. relevant `contracts/*.contract.md`
-11. relevant `skills/*/SKILL.md`
+11. relevant `.agents/skills/*/SKILL.md`（内容维护在 `skills/*/SKILL.md`）
 
 `docs/_generated/` 只用于 CI runtime 产物与人类查看，不进入默认读取链路。

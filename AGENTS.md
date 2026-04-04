@@ -16,7 +16,7 @@ Read these files before making architecture, code, or test changes:
 8. `docs/traceability/decision_log.md` when frozen constraints or prior decisions are relevant
 9. `docs/traceability/agent_activity_log.md` when recent execution history is relevant
 10. Relevant `contracts/*.contract.md`
-11. Relevant `skills/*/SKILL.md`
+11. Relevant project skills discovered through `.agents/skills/*/SKILL.md` and maintained in `skills/*/SKILL.md`
 
 ## Default Workflow
 
@@ -70,20 +70,20 @@ Use the handoff fields defined in `docs/architecture/agent-collaboration.md`:
 
 ## Approved Local Entrypoints
 
-Use repo-local commands. Do not rely on auto-started project MCP servers.
+Use repo-local commands. Do not rely on auto-started project integrations or project MCP config.
 
 ```bash
-python3 tools/nav-toolchain-mcp/toolchain_mcp.py build --reconfigure
-python3 tools/nav-toolchain-mcp/toolchain_mcp.py test --no-rebuild
-python3 tools/nav-toolchain-mcp/toolchain_mcp.py traceability
-python3 tools/nav-toolchain-mcp/toolchain_mcp.py benchmark --report-path eval/reports/time_benchmark_report.json
-python3 tools/traceability-mcp/traceability_cli.py status
+python3 tools/nav-toolchain-cli/toolchain_cli.py build --reconfigure
+python3 tools/nav-toolchain-cli/toolchain_cli.py test --no-rebuild
+python3 tools/nav-toolchain-cli/toolchain_cli.py traceability --yes
+python3 tools/nav-toolchain-cli/toolchain_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes
+python3 tools/traceability-cli/traceability_cli.py status
 python3 scripts/check_quality.py --report-json
 python3 scripts/check_quality.py --report-json --skip-build-test --skip-project-dashboard
 python3 scripts/render_project_dashboard.py
 ```
 
-`.mcp.template.json` is only a manual template. It is not part of the default startup path.
+This repository does not keep project-level MCP config in the default Codex startup path.
 
 ## Git And Branching
 
@@ -103,7 +103,7 @@ Each accepted task maps to one branch and one `task_id`.
 - `docs/traceability/` stores long-term governance memory, frozen constraints, and task history only.
 - `docs/_generated/` stores CI-generated runtime status and evidence only.
 - The default agent read order must not include `docs/_generated/`.
-- Keep the plugin workflow `skills`-only by default; use CLI or manual stdio MCP only when needed.
+- Keep the default Codex project path aligned to root `AGENTS.md`, project `.agents/skills`, and repo-local CLI.
 - Do not add automatic project MCP startup back into the default flow.
 - Do not implement business modules outside the currently frozen contract scope unless the scope files are updated first.
 

@@ -16,8 +16,8 @@ from dashboard_common import TASK_BOARD_HEADER, parse_task_board
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-TOOLCHAIN = REPO_ROOT / "tools" / "nav-toolchain-mcp" / "toolchain_mcp.py"
-TRACEABILITY = REPO_ROOT / "tools" / "traceability-mcp" / "traceability_cli.py"
+TOOLCHAIN = REPO_ROOT / "tools" / "nav-toolchain-cli" / "toolchain_cli.py"
+TRACEABILITY = REPO_ROOT / "tools" / "traceability-cli" / "traceability_cli.py"
 RENDER_DASHBOARD = REPO_ROOT / "scripts" / "render_project_dashboard.py"
 BASELINE_STATUS = {
     "contract_count": 8,
@@ -306,8 +306,9 @@ def main() -> int:
                 ("test", [sys.executable, str(TOOLCHAIN), "test", "--no-rebuild"]),
             )
         )
-    commands.append(("traceability_generate", [sys.executable, str(TOOLCHAIN), "traceability"]))
+    commands.append(("traceability_generate", [sys.executable, str(TOOLCHAIN), "traceability", "--yes"]))
     commands.append(("harness_tests", [sys.executable, "-m", "unittest", "discover", "-s", "harness/tests", "-p", "test_*.py"]))
+    commands.append(("cli_tests", [sys.executable, "-m", "unittest", "discover", "-s", "tools/tests", "-p", "test_*.py"]))
     if not args.skip_project_dashboard:
         commands.append(("project_dashboard", [sys.executable, str(RENDER_DASHBOARD)]))
 

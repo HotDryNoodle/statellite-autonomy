@@ -1,0 +1,9 @@
+[project]
+name = "nav-toolchain-cli"
+version = "0.1.0"
+description = "Local Meson toolchain CLI for statellite-autonomy-plugin"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+nav-toolchain = "toolchain_cli:main"
