@@ -104,10 +104,25 @@ def load_state(task_id: str) -> dict[str, Any]:
     return json.loads(state_path(task_id).read_text(encoding="utf-8"))
 
 
+def load_events(task_id: str) -> list[dict[str, Any]]:
+    history: list[dict[str, Any]] = []
+    event_file = events_path(task_id)
+    if not event_file.exists():
+        return history
+    for line in event_file.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            history.append(json.loads(line))
+    return history
+
+
 def append_event(task_id: str, payload: dict[str, Any]) -> None:
     event_file = events_path(task_id)
     with event_file.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
+
+
+def has_event(task_id: str, event_name: str) -> bool:
+    return any(event.get("event") == event_name for event in load_events(task_id))
 
 
 def ensure_section_file(path: Path, title: str, sections: tuple[str, ...]) -> None:
@@ -510,36 +525,39 @@ def close_task_internal(
     handoff_ref = write_artifact(task_id, "handoff", handoff, suffix="acceptance")
     state["owner"] = "project-manager"
     state["current_artifact_ref"] = handoff_ref
+    state["affected_contracts"] = context["affected_contracts"]
     state["acceptance_status"] = status
     state["acceptance_summary"] = acceptance_summary
     state["handoff_ref"] = handoff_ref
+    state["evidence_refs"] = combined_evidence
     state["updated_at"] = init_event(task_id, state["phase"], state["owner"], state["goal"])["timestamp"]
     write_json(state_path(task_id), state)
-    append_event(
-        task_id,
-        close_task_event(
+    if not has_event(task_id, "close_task"):
+        append_event(
             task_id,
-            owner=state["owner"],
-            status=status,
-            acceptance_summary=acceptance_summary,
-            evidence_refs=combined_evidence,
-        ),
-    )
-    prepend_activity_log_row(
-        "| "
-        + " | ".join(
-            [
-                state["updated_at"],
-                "project-manager",
+            close_task_event(
                 task_id,
-                "`docs/memory/working/current_focus.md`, `docs/memory/short_term/task_board.md`, `docs/traceability/agent_activity_log.md`",
-                ", ".join(f"`{contract}`" for contract in context["affected_contracts"]) or "`none`",
-                "`none`",
-                f"closed task at acceptance with status={status} and handoff={handoff_ref}",
-            ]
+                owner=state["owner"],
+                status=status,
+                acceptance_summary=acceptance_summary,
+                evidence_refs=combined_evidence,
+            ),
         )
-        + " |"
-    )
+        prepend_activity_log_row(
+            "| "
+            + " | ".join(
+                [
+                    state["updated_at"],
+                    "project-manager",
+                    task_id,
+                    "`docs/memory/working/current_focus.md`, `docs/memory/short_term/task_board.md`, `docs/traceability/agent_activity_log.md`",
+                    ", ".join(f"`{contract}`" for contract in context["affected_contracts"]) or "`none`",
+                    "`none`",
+                    f"closed task at acceptance with status={status} and handoff={handoff_ref}",
+                ]
+            )
+            + " |"
+        )
     return {
         "task_state": state,
         "handoff_ref": handoff_ref,
@@ -603,38 +621,77 @@ def archive_task_internal(
     archive_ref = artifact_ref_for_path(TASK_ARCHIVE_PATH)
     state["archived"] = True
     state["archive_ref"] = archive_ref
+    state["affected_contracts"] = context["affected_contracts"]
     state["acceptance_status"] = status
     state["acceptance_summary"] = final_summary
+    state["evidence_refs"] = combined_evidence
     state["updated_at"] = init_event(task_id, state["phase"], "project-manager", state["goal"])["timestamp"]
     write_json(state_path(task_id), state)
-    append_event(
-        task_id,
-        archive_task_event(
+    if not has_event(task_id, "archive_task"):
+        append_event(
             task_id,
-            owner="project-manager",
-            status=status,
-            archive_ref=archive_ref,
-        ),
-    )
-    prepend_activity_log_row(
-        "| "
-        + " | ".join(
-            [
-                state["updated_at"],
-                "project-manager",
+            archive_task_event(
                 task_id,
-                "`docs/memory/working/current_focus.md`, `docs/memory/short_term/task_board.md`, `docs/memory/short_term/active_context.md`, `docs/traceability/task_archive.md`, `docs/traceability/agent_activity_log.md`",
-                ", ".join(f"`{contract}`" for contract in context["affected_contracts"]) or "`none`",
-                "`none`",
-                f"archived task with status={status} into {archive_ref} and cleared short-term memory",
-            ]
+                owner="project-manager",
+                status=status,
+                archive_ref=archive_ref,
+            ),
         )
-        + " |"
-    )
+        prepend_activity_log_row(
+            "| "
+            + " | ".join(
+                [
+                    state["updated_at"],
+                    "project-manager",
+                    task_id,
+                    "`docs/memory/working/current_focus.md`, `docs/memory/short_term/task_board.md`, `docs/memory/short_term/active_context.md`, `docs/traceability/task_archive.md`, `docs/traceability/agent_activity_log.md`",
+                    ", ".join(f"`{contract}`" for contract in context["affected_contracts"]) or "`none`",
+                    "`none`",
+                    f"archived task with status={status} into {archive_ref} and cleared short-term memory",
+                ]
+            )
+            + " |"
+        )
     return {
         "task_state": state,
         "archive_ref": archive_ref,
         "archive_row": archive_row,
+    }
+
+
+def sync_governance_for_task(task_id: str) -> dict[str, Any]:
+    state = load_state(task_id)
+    context = load_task_context(state)
+    affected_contracts = context["affected_contracts"] or list(state.get("affected_contracts", []))
+    task_brief_ref = context["task_brief_ref"]
+    handoff_ref = context["handoff_ref"]
+
+    if state.get("archived", False):
+        archive_payload = archive_task_internal(
+            task_id,
+            status=str(state.get("acceptance_status", "done") or "done"),
+            acceptance_summary=str(state.get("acceptance_summary", "") or ""),
+            evidence_refs=list(state.get("evidence_refs", [])),
+        )
+        return {
+            "status": "ok",
+            "mode": "archived",
+            "task_state": archive_payload["task_state"],
+            "archive_ref": archive_payload["archive_ref"],
+        }
+
+    sync_governance_memory(
+        state,
+        affected_contracts=affected_contracts,
+        task_brief_ref=task_brief_ref,
+        handoff_ref=handoff_ref,
+    )
+    return {
+        "status": "ok",
+        "mode": "active",
+        "task_state": state,
+        "task_brief_ref": task_brief_ref,
+        "handoff_ref": handoff_ref,
     }
 
 
@@ -644,6 +701,7 @@ def init_task_state(
     *,
     phase: str,
     owner: str,
+    affected_contracts: list[str] | None = None,
     trace_id: str = "",
     run_attempt: int = 1,
     parent_trace_id: str = "",
@@ -663,6 +721,8 @@ def init_task_state(
         parent_trace_id=parent_trace_id,
         session_backend=session_backend,
     )
+    state["affected_contracts"] = affected_contracts or []
+    state["archived"] = False
     write_json(state_path(task_id), state)
     event = init_event(
         task_id,
@@ -743,6 +803,7 @@ def dispatch_expert_for_task(
     updated_state = result["task_state"]
     if not updated_state.get("session_backend"):
         updated_state["session_backend"] = adapter.session_backend.backend_id
+    updated_state["affected_contracts"] = affected_contracts
     updated_state["updated_at"] = init_event(
         task_id,
         updated_state["phase"],
@@ -778,6 +839,7 @@ def cmd_init_task(args: argparse.Namespace) -> int:
         args.goal,
         phase=args.phase,
         owner=args.owner,
+        affected_contracts=args.contract,
         trace_id=args.trace_id,
         run_attempt=args.run_attempt,
         parent_trace_id=args.parent_trace_id,
@@ -817,13 +879,7 @@ def cmd_advance(args: argparse.Namespace) -> int:
 
 
 def cmd_replay(args: argparse.Namespace) -> int:
-    history: list[dict[str, Any]] = []
-    event_file = events_path(args.task_id)
-    if event_file.exists():
-        for line in event_file.read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                history.append(json.loads(line))
-    print(json.dumps(history, indent=2, ensure_ascii=False))
+    print(json.dumps(load_events(args.task_id), indent=2, ensure_ascii=False))
     return 0
 
 
@@ -903,9 +959,20 @@ def cmd_archive_task(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_sync_governance(args: argparse.Namespace) -> int:
+    try:
+        payload = sync_governance_for_task(args.task_id)
+    except ValueError as exc:
+        raise SystemExit(f"{exc} for {args.task_id}") from exc
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
 def cmd_pm_workflow(args: argparse.Namespace) -> int:
     steps: list[dict[str, Any]] = []
     artifacts: dict[str, str] = {}
+    if (args.knowledge_query or args.note) and (args.skip_dispatch or not args.agent):
+        raise SystemExit("pm-workflow knowledge query/note requires expert dispatch")
     if state_path(args.task_id).exists():
         state = load_state(args.task_id)
     else:
@@ -914,6 +981,7 @@ def cmd_pm_workflow(args: argparse.Namespace) -> int:
             args.goal,
             phase="intake",
             owner=args.owner,
+            affected_contracts=args.contract,
             trace_id=args.trace_id,
             run_attempt=args.run_attempt,
             parent_trace_id=args.parent_trace_id,
@@ -974,12 +1042,13 @@ def cmd_pm_workflow(args: argparse.Namespace) -> int:
 
     if state["phase"] != "contract_freeze":
         raise SystemExit(
-            f"pm-workflow requires task phase intake or contract_freeze before dispatch; got {state['phase']}"
+            f"pm-workflow requires task phase intake or contract_freeze before orchestration; got {state['phase']}"
         )
 
+    state["affected_contracts"] = args.contract or list(state.get("affected_contracts", []))
     task_brief = build_task_brief_artifact(
         state,
-        affected_contracts=args.contract,
+        affected_contracts=state["affected_contracts"],
         clause_refs=args.clause_ref,
         success_criteria=args.success_criteria,
         input_refs=args.input_ref,
@@ -992,27 +1061,30 @@ def cmd_pm_workflow(args: argparse.Namespace) -> int:
         suffix=state["phase"],
     )
     state["current_artifact_ref"] = task_brief_ref
+    state["task_brief_ref"] = task_brief_ref
     write_json(state_path(args.task_id), state)
     artifacts["task_brief"] = task_brief_ref
     steps.append({"step": "task-brief", "artifact_ref": task_brief_ref})
 
-    dispatch_result = dispatch_expert_for_task(
-        args.task_id,
-        agent_name=args.agent,
-        affected_contracts=args.contract,
-        knowledge_query=args.knowledge_query,
-        note_path=args.note,
-        handoff_summary=args.summary,
-    )
-    state = dispatch_result["task_state"]
-    steps.append(
-        {
-            "step": "dispatch-expert",
-            "phase": state["phase"],
-            "owner": state["owner"],
-            "session_ref": dispatch_result["session_ref"],
-        }
-    )
+    dispatch_result: dict[str, Any] | None = None
+    if not args.skip_dispatch and args.agent:
+        dispatch_result = dispatch_expert_for_task(
+            args.task_id,
+            agent_name=args.agent,
+            affected_contracts=state["affected_contracts"],
+            knowledge_query=args.knowledge_query,
+            note_path=args.note,
+            handoff_summary=args.summary,
+        )
+        state = dispatch_result["task_state"]
+        steps.append(
+            {
+                "step": "dispatch-expert",
+                "phase": state["phase"],
+                "owner": state["owner"],
+                "session_ref": dispatch_result["session_ref"],
+            }
+        )
 
     if args.advance_to:
         next_owner = args.next_owner or infer_owner_for_phase(args.advance_to)
@@ -1021,20 +1093,39 @@ def cmd_pm_workflow(args: argparse.Namespace) -> int:
             target_phase=args.advance_to,
             owner=next_owner,
             note=args.advance_note
-            or f"pm-workflow advanced task after {args.agent} expert dispatch",
+            or (
+                f"pm-workflow advanced task after {args.agent} expert dispatch"
+                if dispatch_result is not None
+                else "pm-workflow advanced task without expert dispatch"
+            ),
         )
         steps.append({"step": "advance", "phase": state["phase"], "owner": state["owner"]})
 
     handoff = build_handoff_artifact(
         state,
-        from_agent=args.agent,
+        from_agent=args.agent if dispatch_result is not None else "project-manager",
         to_agent=state["owner"],
-        summary=args.summary or f"{args.agent} completed expert dispatch",
-        relevant_contracts=args.contract,
-        evidence_refs=list(dict.fromkeys((dispatch_result["knowledge_context"] or {}).get("refs", []))),
+        summary=args.summary
+        or (
+            f"{args.agent} completed expert dispatch"
+            if dispatch_result is not None
+            else "project-manager prepared downstream handoff without expert dispatch"
+        ),
+        relevant_contracts=state["affected_contracts"],
+        evidence_refs=list(
+            dict.fromkeys(
+                (dispatch_result["knowledge_context"] or {}).get("refs", [])
+                if dispatch_result is not None
+                else list(state.get("evidence_refs", []))
+            )
+        ),
         blocking_issues=list(state.get("blocking_issues", [])),
         recommended_actions=args.recommended_action
-        or [f"Resume {args.agent} session for follow-up evidence if implementation uncovers contract gaps."],
+        or (
+            [f"Resume {args.agent} session for follow-up evidence if implementation uncovers contract gaps."]
+            if dispatch_result is not None
+            else ["Proceed with implementation against the frozen contracts and current task brief."]
+        ),
     )
     handoff_ref = write_artifact(
         args.task_id,
@@ -1043,12 +1134,13 @@ def cmd_pm_workflow(args: argparse.Namespace) -> int:
         suffix=state["phase"],
     )
     state["current_artifact_ref"] = handoff_ref
+    state["handoff_ref"] = handoff_ref
     write_json(state_path(args.task_id), state)
     artifacts["handoff"] = handoff_ref
     steps.append({"step": "handoff", "artifact_ref": handoff_ref})
     sync_governance_memory(
         state,
-        affected_contracts=args.contract,
+        affected_contracts=state["affected_contracts"],
         task_brief_ref=task_brief_ref,
         handoff_ref=handoff_ref,
     )
@@ -1057,11 +1149,12 @@ def cmd_pm_workflow(args: argparse.Namespace) -> int:
     payload = {
         "status": "ok",
         "task_state": state,
-        "knowledge_context": dispatch_result["knowledge_context"],
-        "session_ref": dispatch_result["session_ref"],
         "artifacts": artifacts,
         "steps": steps,
     }
+    if dispatch_result is not None:
+        payload["knowledge_context"] = dispatch_result["knowledge_context"]
+        payload["session_ref"] = dispatch_result["session_ref"]
     if state["phase"] == "acceptance" and args.close_task:
         close_payload = close_task_internal(
             args.task_id,
@@ -1095,6 +1188,7 @@ def build_parser() -> argparse.ArgumentParser:
     init_task.add_argument("--goal", required=True)
     init_task.add_argument("--phase", choices=PHASE_ORDER, default="intake")
     init_task.add_argument("--owner", default="project-manager")
+    init_task.add_argument("--contract", action="append", default=[])
     init_task.add_argument("--trace-id", default="")
     init_task.add_argument("--run-attempt", type=int, default=1)
     init_task.add_argument("--parent-trace-id", default="")
@@ -1149,16 +1243,21 @@ def build_parser() -> argparse.ArgumentParser:
     archive_task.add_argument("--evidence", action="append", default=[])
     archive_task.set_defaults(handler=cmd_archive_task)
 
+    sync_governance = subparsers.add_parser("sync-governance")
+    sync_governance.add_argument("--task-id", required=True)
+    sync_governance.set_defaults(handler=cmd_sync_governance)
+
     pm_workflow = subparsers.add_parser("pm-workflow")
     pm_workflow.add_argument("--task-id", required=True)
     pm_workflow.add_argument("--goal", required=True)
-    pm_workflow.add_argument("--agent", default="pppar_expert_agent")
+    pm_workflow.add_argument("--agent", default="")
+    pm_workflow.add_argument("--skip-dispatch", action="store_true")
     pm_workflow.add_argument("--contract", action="append", required=True, default=[])
-    pm_workflow.add_argument("--clause-ref", action="append", default=["PppFamily_4_1"])
+    pm_workflow.add_argument("--clause-ref", action="append", default=[])
     pm_workflow.add_argument(
         "--success-criteria",
         action="append",
-        default=["expert dispatch completed with isolated session and knowledge evidence"],
+        default=["official task lifecycle is recorded through harness control-plane artifacts"],
     )
     pm_workflow.add_argument("--input-ref", action="append", default=[])
     pm_workflow.add_argument(

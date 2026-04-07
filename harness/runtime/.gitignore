@@ -1,2 +1,9 @@
 *
 !.gitignore
+!tasks/
+tasks/*
+!tasks/**/
+!tasks/**/task_state.json
+!tasks/**/events.jsonl
+!tasks/**/artifacts/
+!tasks/**/artifacts/*.json

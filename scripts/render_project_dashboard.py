@@ -10,7 +10,12 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from dashboard_common import parse_task_board
+from dashboard_common import (
+    ACTIVE_CONTEXT_SECTIONS,
+    WORKING_SECTIONS,
+    parse_bullet_sections,
+    parse_task_board,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -24,49 +29,11 @@ KNOWN_LIMITATIONS_PATH = REPO_ROOT / "docs" / "traceability" / "known_limitation
 DECISION_LOG_PATH = REPO_ROOT / "docs" / "traceability" / "decision_log.md"
 ACTIVITY_LOG_PATH = REPO_ROOT / "docs" / "traceability" / "agent_activity_log.md"
 
-WORKING_SECTIONS = (
-    "Current Phase",
-    "In Progress",
-    "Current Blockers",
-    "Active Contracts",
-    "Next Acceptance Target",
-    "Next Agent",
-)
-ACTIVE_CONTEXT_SECTIONS = (
-    "Current Scope",
-    "Active Policy Skills",
-    "Acceptance Gates",
-    "Handoff Expectations",
-)
 LIMITATION_SECTIONS = ("Accepted Limitations", "Open Risks")
+
+
 def read_lines(path: Path) -> list[str]:
     return path.read_text(encoding="utf-8").splitlines()
-
-
-def parse_bullet_sections(path: Path, allowed_sections: tuple[str, ...]) -> dict[str, list[str]]:
-    lines = read_lines(path)
-    sections = {name: [] for name in allowed_sections}
-    current: str | None = None
-
-    for line in lines[1:]:
-        if line.startswith("## "):
-            title = line[3:].strip()
-            if title not in sections:
-                raise ValueError(f"{path.relative_to(REPO_ROOT)} contains unexpected section: {title}")
-            current = title
-            continue
-        if not line.strip():
-            continue
-        if current is None:
-            raise ValueError(f"{path.relative_to(REPO_ROOT)} contains content outside a section")
-        if not line.startswith("- "):
-            raise ValueError(f"{path.relative_to(REPO_ROOT)} contains non-bullet content in section {current}")
-        sections[current].append(line[2:].strip())
-
-    for title in allowed_sections:
-        if not sections[title]:
-            raise ValueError(f"{path.relative_to(REPO_ROOT)} missing content for section: {title}")
-    return sections
 
 
 def run_traceability_status() -> dict[str, object]:

@@ -1,0 +1,12 @@
+{
+  "task_id": "COLLAB-TEST",
+  "goal": "exercise harness runtime",
+  "phase": "intake",
+  "owner": "project-manager",
+  "allowed_next_states": [
+    "contract_freeze"
+  ],
+  "evidence_refs": [],
+  "blocking_issues": [],
+  "updated_at": "2026-04-03T06:33:30.544913+00:00"
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.1",
+  "task_id": "COLLAB-014",
+  "goal": "Refactor main-path prompt docs for concise role-specific loading",
+  "phase": "acceptance",
+  "owner": "project-manager",
+  "allowed_next_states": [],
+  "evidence_refs": [
+    "python3 -m unittest discover -s scripts/tests -p 'test_*.py'",
+    "python3 scripts/check_quality.py --report-json --skip-build-test --skip-project-dashboard",
+    "python3 scripts/check_quality.py --report-json"
+  ],
+  "blocking_issues": [],
+  "trace_id": "",
+  "run_attempt": 1,
+  "parent_trace_id": "",
+  "session_backend": "local-jsonl",
+  "session_refs": {},
+  "current_artifact_ref": "harness/runtime/tasks/COLLAB-014/artifacts/handoff.acceptance.json",
+  "pending_approvals": [],
+  "affected_contracts": [
+    "contracts/harness_workflow.contract.md",
+    "contracts/harness_product_boundary.contract.md"
+  ],
+  "archived": true,
+  "updated_at": "2026-04-07T09:00:52.017541+00:00",
+  "task_brief_ref": "harness/runtime/tasks/COLLAB-014/artifacts/task_brief.contract_freeze.json",
+  "handoff_ref": "harness/runtime/tasks/COLLAB-014/artifacts/handoff.acceptance.json",
+  "acceptance_status": "done",
+  "acceptance_summary": "compressed main-path prompt docs, moved PM SOP to references, and added prompt-doc quality gates",
+  "archive_ref": "docs/traceability/task_archive.md"
+}

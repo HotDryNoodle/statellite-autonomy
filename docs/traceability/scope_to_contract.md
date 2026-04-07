@@ -14,6 +14,8 @@
 | 冻结 repo-local engineering tools 的 CLI-first 入口与帮助语义 | `contracts/layer_boundary.contract.md`, `contracts/harness_product_boundary.contract.md` |
 | 冻结 Agents SDK v1 harness adapter、expert registry、tool allowlist 与 workflow eval 骨架 | `contracts/harness_workflow.contract.md`, `contracts/harness_product_boundary.contract.md`, `contracts/layer_boundary.contract.md` |
 | 冻结 CLI-only Obsidian expert bridge、`pppar_expert_agent` 独立 session 与 PPP family v1 | `contracts/harness_workflow.contract.md`, `contracts/harness_product_boundary.contract.md`, `contracts/navigation.contract.md`, `contracts/ppp_family.contract.md` |
+| 冻结 harness control-plane 强制入口、runtime record 保留策略与 governance sync 门禁 | `contracts/harness_workflow.contract.md`, `contracts/harness_product_boundary.contract.md` |
+| 冻结 prompt-doc 主路径压缩、PM role-specific loading 与 progressive disclosure 门禁 | `contracts/harness_workflow.contract.md`, `contracts/harness_product_boundary.contract.md` |
 
 
 维护规则：
@@ -32,6 +34,8 @@
 | Phase 1.5 | `harness/` 与 `product/` 双树重构、工作流与入口冻结 | `contracts/harness_product_boundary.contract.md`, `contracts/harness_workflow.contract.md`, `contracts/layer_boundary.contract.md` | done |
 | Phase 1.6 | Agents SDK v1 harness adapter、expert governance 与 workflow eval 骨架 | `contracts/harness_workflow.contract.md`, `contracts/harness_product_boundary.contract.md`, `contracts/layer_boundary.contract.md` | done |
 | Phase 1.7 | CLI-only Obsidian expert bridge、`pppar_expert_agent` 独立 session、PPP family v1 | `contracts/harness_workflow.contract.md`, `contracts/harness_product_boundary.contract.md`, `contracts/navigation.contract.md`, `contracts/ppp_family.contract.md` | done |
+| Phase 1.8 | Harness governance hard cutover、official runtime records、runtime-vs-memory quality gate | `contracts/harness_workflow.contract.md`, `contracts/harness_product_boundary.contract.md` | done |
+| Phase 1.9 | Prompt-doc entrypoint compaction、PM references 化与 role-specific default loading | `contracts/harness_workflow.contract.md`, `contracts/harness_product_boundary.contract.md` | done |
 | Phase 2 | `navigation/ppp` 第一批接口与实现收口 | `contracts/navigation.contract.md`, `contracts/ppp_family.contract.md` | planned |
 | Phase 3 | `navigation/rdpod` 家族建模与验证闭环 | `contracts/navigation.contract.md`, `contracts/rdpod_family.contract.md` | planned |
 | Phase 4 | `prediction` 接口与 handoff 约束收口 | `contracts/prediction.contract.md`, `contracts/state_handoff_navigation_to_prediction.contract.md` | planned |

@@ -14,9 +14,9 @@
   - 只记录 `Accepted Limitations` 与 `Open Risks`。
   - 不记录当前 blocker 或当前任务状态。
 - `agent_activity_log.md`
-  - 记录任务阶段流转和近期执行历史。
+  - 记录任务阶段流转和近期执行历史；默认由 `harness_cli` 同步。
 - `task_archive.md`
-  - 记录从 short-term memory 迁出的已完成任务。
+  - 记录从 short-term memory 迁出的已完成任务；默认由 `archive-task` 同步。
 
 自动生成的 ClauseId 证据、覆盖率和矩阵统一放在：
 
@@ -27,6 +27,8 @@
 - `docs/memory/working/current_focus.md`
 - `docs/memory/short_term/task_board.md`
 - `docs/memory/short_term/active_context.md`
+
+从 `COLLAB-013` 起，这些 `docs/memory/*` 文件默认也由 `harness_cli` 从 `harness/runtime/tasks/<task_id>/` 的正式任务控制面记录同步；它们不再是独立的 primary mutation surface。
 
 推荐理解方式：
 

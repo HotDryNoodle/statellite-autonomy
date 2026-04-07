@@ -1,11 +1,27 @@
 #!/usr/bin/env python3
-"""Shared helpers for memory/dashboard validation and rendering."""
+"""Shared helpers for governance docs, runtime policy, and dashboard parsing."""
 
 from __future__ import annotations
 
+import json
+import re
 from pathlib import Path
 
 
+WORKING_SECTIONS = (
+    "Current Phase",
+    "In Progress",
+    "Current Blockers",
+    "Active Contracts",
+    "Next Acceptance Target",
+    "Next Agent",
+)
+ACTIVE_CONTEXT_SECTIONS = (
+    "Current Scope",
+    "Active Policy Skills",
+    "Acceptance Gates",
+    "Handoff Expectations",
+)
 TASK_STATUSES = {
     "active",
     "planned",
@@ -23,6 +39,42 @@ TASK_BOARD_HEADER = [
     "acceptance",
     "blockers",
 ]
+TASK_ARCHIVE_HEADER = [
+    "task_id",
+    "title",
+    "owner_agent",
+    "affected_contracts",
+    "status",
+    "acceptance",
+    "evidence",
+]
+TASK_ID_PATTERN = re.compile(r"^(?P<prefix>[A-Za-z_]+)-(?P<number>\d+)(?:[-_].*)?$")
+
+
+def parse_bullet_sections(path: Path, allowed_sections: tuple[str, ...]) -> dict[str, list[str]]:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    sections = {name: [] for name in allowed_sections}
+    current: str | None = None
+
+    for line in lines[1:]:
+        if line.startswith("## "):
+            title = line[3:].strip()
+            if title not in sections:
+                raise ValueError(f"{path} contains unexpected section: {title}")
+            current = title
+            continue
+        if not line.strip():
+            continue
+        if current is None:
+            raise ValueError(f"{path} contains content outside a section")
+        if not line.startswith("- "):
+            raise ValueError(f"{path} contains non-bullet content in section {current}")
+        sections[current].append(line[2:].strip())
+
+    for title in allowed_sections:
+        if not sections[title]:
+            raise ValueError(f"{path} missing content for section: {title}")
+    return sections
 
 
 def parse_markdown_table(path: Path) -> tuple[list[str], list[dict[str, str]]]:
@@ -55,3 +107,87 @@ def parse_task_board(path: Path) -> list[dict[str, str]]:
         if status not in TASK_STATUSES:
             raise ValueError(f"{path} contains unsupported task status: {status}")
     return rows
+
+
+def parse_task_archive(path: Path) -> list[dict[str, str]]:
+    header, rows = parse_markdown_table(path)
+    if header != TASK_ARCHIVE_HEADER:
+        raise ValueError(f"{path} has an unexpected task archive header: {header}")
+    return rows
+
+
+def task_status_for_phase(phase: str) -> str:
+    if phase == "implementation":
+        return "ready_for_impl"
+    if phase == "verification":
+        return "ready_for_verify"
+    if phase in {"traceability", "acceptance"}:
+        return "ready_for_acceptance"
+    if phase in {"intake", "contract_freeze"}:
+        return "planned"
+    return "active"
+
+
+def load_governance_policy(repo_root: Path) -> dict[str, object]:
+    path = repo_root / "harness" / "config" / "governance_policy.json"
+    default_policy: dict[str, object] = {
+        "version": "1.0",
+        "runtime_required_from_task_id": "COLLAB-013",
+        "legacy_task_ids": [],
+    }
+    if not path.exists():
+        return default_policy
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload.get("legacy_task_ids", []), list):
+        raise ValueError(f"{path} legacy_task_ids must be a list")
+    default_policy.update(payload)
+    return default_policy
+
+
+def _task_cutover_key(task_id: str) -> tuple[str, int] | None:
+    match = TASK_ID_PATTERN.match(task_id)
+    if match is None:
+        return None
+    return match.group("prefix"), int(match.group("number"))
+
+
+def requires_runtime_record(task_id: str, policy: dict[str, object]) -> bool:
+    legacy_task_ids = {str(item) for item in policy.get("legacy_task_ids", [])}
+    if task_id in legacy_task_ids:
+        return False
+    cutoff = str(policy.get("runtime_required_from_task_id", "")).strip()
+    if not cutoff:
+        return True
+    if task_id == cutoff:
+        return True
+    task_key = _task_cutover_key(task_id)
+    cutoff_key = _task_cutover_key(cutoff)
+    if task_key is not None and cutoff_key is not None and task_key[0] == cutoff_key[0]:
+        return task_key[1] >= cutoff_key[1]
+    return True
+
+
+def task_state_path(repo_root: Path, task_id: str) -> Path:
+    return repo_root / "harness" / "runtime" / "tasks" / task_id / "task_state.json"
+
+
+def task_events_path(repo_root: Path, task_id: str) -> Path:
+    return repo_root / "harness" / "runtime" / "tasks" / task_id / "events.jsonl"
+
+
+def load_task_state(repo_root: Path, task_id: str) -> dict[str, object] | None:
+    path = task_state_path(repo_root, task_id)
+    if not path.exists():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_task_events(repo_root: Path, task_id: str) -> list[dict[str, object]]:
+    path = task_events_path(repo_root, task_id)
+    if not path.exists():
+        return []
+    events: list[dict[str, object]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            events.append(json.loads(line))
+    return events

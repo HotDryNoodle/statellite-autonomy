@@ -102,3 +102,17 @@
 - fresh expert knowledge lookup 必须要求 Obsidian app 已在本机运行；若运行门禁未打开，harness 直接阻断而不是绕过或静默降级。
 - `pppar_expert_agent` 的 session 命名空间冻结为 `expert/<task_id>/pppar_expert_agent`；不得与 `coding/`、`testing/`、`eval/` 会话复用或交叉 resume。
 - `contracts/ppp_family.contract.md` 从占位版升级为 v1：PRIDE-PPPAR 仍是权威实现源，Obsidian supplemental knowledge 只能增强解释，不能覆盖 PRIDE 证据。
+
+## 2026-04-07 Harness Governance Hard Cutover
+
+- 从 `COLLAB-013` 起，正式任务必须保留 `harness/runtime/tasks/<task_id>/` 下的最小控制面记录，至少包括 `task_state.json` 与 `events.jsonl`。
+- `docs/memory/*`、`docs/traceability/agent_activity_log.md`、`docs/traceability/task_archive.md` 继续保留为人类可读治理文档，但默认视为 `harness_cli` 同步出来的镜像，而不是独立主状态机。
+- 新任务启动默认使用 `python3 harness/orchestrator/harness_cli.py pm-workflow`；不需要 expert dispatch 的一般任务使用 `--skip-dispatch`，而不是绕开 harness。
+- phase 推进固定通过 `advance` / `pm-workflow`，acceptance 固定通过 `close-task` / `archive-task`，治理漂移修复固定通过 `sync-governance`。
+
+## 2026-04-07 Prompt Doc Progressive Disclosure
+
+- `AGENTS.md`、`skills/project-manager/SKILL.md`、`docs/architecture/agent-collaboration.md` 只保留主路径最小入口信息，默认控制在 100 行内。
+- detailed command cookbook 与 role-specific load routing 下沉到 `skills/project-manager/references/`，入口层不再重复维护完整 SOP。
+- 默认读链按角色分流：全局入口只保留最小共识，`decision_log.md`、`agent_activity_log.md`、`agent-collaboration.md` 等长文档改为 conditional load。
+- `scripts/check_quality.py` 负责阻断 prompt docs 回退到超长首屏或重复 SOP 的状态。

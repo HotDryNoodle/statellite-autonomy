@@ -36,6 +36,6 @@
 
 ## Runtime And Governance
 
-- `harness/runtime/` 只存可重建运行态，不承载长期治理记忆。
-- 当前执行快照仍写入 `docs/memory/`。
-- 冻结约束、历史活动和长期决策仍写入 `docs/traceability/`。
+- `harness/runtime/tasks/<task_id>/` 现在保留正式任务的最小控制面记录：`task_state.json`、`events.jsonl` 与必要 artifacts。
+- `docs/memory/` 继续承载当前执行快照，但默认由 `harness_cli` 从 runtime state 同步，不再作为独立主状态机。
+- 冻结约束、历史活动和长期决策仍写入 `docs/traceability/`；这些治理文档仍然不是 runtime event log 的替代品。

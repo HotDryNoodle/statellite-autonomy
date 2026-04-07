@@ -40,6 +40,7 @@ class HarnessCliTest(unittest.TestCase):
             "harness/agents_runtime/sessions.py",
             "harness/agents_runtime/tracing.py",
             "harness/config/agent_registry.json",
+            "harness/config/governance_policy.json",
             "harness/config/knowledge_registry.json",
             "harness/config/tool_allowlist.json",
             "harness/schemas/handoff.schema.json",
@@ -420,6 +421,89 @@ esac
             )
             self.assertEqual(len(resumed_payload["messages"]), 2)
 
+    def test_pm_workflow_supports_general_tasks_without_expert_dispatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            (repo / "harness" / "runtime").mkdir(parents=True)
+            runtime_cli = self.stage_runtime_repo(repo)
+
+            workflow = self.run_cli(
+                runtime_cli,
+                "pm-workflow",
+                "--task-id",
+                "COLLAB-TEST",
+                "--goal",
+                "run PM workflow without expert",
+                "--contract",
+                "contracts/harness_workflow.contract.md",
+                "--skip-dispatch",
+                cwd=repo,
+            )
+            self.assertEqual(workflow.returncode, 0, workflow.stderr)
+            payload = json.loads(workflow.stdout)
+            self.assertEqual(payload["task_state"]["phase"], "implementation")
+            self.assertEqual(payload["task_state"]["owner"], "coding_agent")
+            self.assertEqual([step["step"] for step in payload["steps"]], [
+                "init-task",
+                "advance",
+                "task-brief",
+                "advance",
+                "handoff",
+                "sync-governance",
+            ])
+
+            handoff = json.loads((repo / payload["artifacts"]["handoff"]).read_text(encoding="utf-8"))
+            self.assertEqual(handoff["from_agent"], "project-manager")
+            self.assertEqual(handoff["to_agent"], "coding_agent")
+
+    def test_sync_governance_repairs_active_docs_from_runtime_state(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            (repo / "harness" / "runtime").mkdir(parents=True)
+            runtime_cli = self.stage_runtime_repo(repo)
+
+            workflow = self.run_cli(
+                runtime_cli,
+                "pm-workflow",
+                "--task-id",
+                "COLLAB-TEST",
+                "--goal",
+                "repair governance docs",
+                "--contract",
+                "contracts/harness_workflow.contract.md",
+                "--skip-dispatch",
+                cwd=repo,
+            )
+            self.assertEqual(workflow.returncode, 0, workflow.stderr)
+
+            (repo / "docs/memory/working/current_focus.md").write_text(
+                "# Current Focus\n\n## Current Phase\n- `verification`\n\n## In Progress\n- `COLLAB-TEST`: drift\n\n## Current Blockers\n- none\n\n## Active Contracts\n- none\n\n## Next Acceptance Target\n- none\n\n## Next Agent\n- `testing_agent`\n",
+                encoding="utf-8",
+            )
+            (repo / "docs/memory/short_term/task_board.md").write_text(
+                "# Task Board\n\n| task_id | title | owner_agent | affected_contracts | status | acceptance | blockers |\n| --- | --- | --- | --- | --- | --- | --- |\n| COLLAB-TEST | drift | testing_agent | none | ready_for_verify | none | none |\n",
+                encoding="utf-8",
+            )
+
+            repaired = self.run_cli(
+                runtime_cli,
+                "sync-governance",
+                "--task-id",
+                "COLLAB-TEST",
+                cwd=repo,
+            )
+            self.assertEqual(repaired.returncode, 0, repaired.stderr)
+            payload = json.loads(repaired.stdout)
+            self.assertEqual(payload["mode"], "active")
+
+            current_focus = (repo / "docs/memory/working/current_focus.md").read_text(encoding="utf-8")
+            self.assertIn("`implementation`", current_focus)
+            self.assertIn("COLLAB-TEST", current_focus)
+
+            task_board = (repo / "docs/memory/short_term/task_board.md").read_text(encoding="utf-8")
+            self.assertIn("| COLLAB-TEST |", task_board)
+            self.assertIn("ready_for_impl", task_board)
+
     def test_close_task_with_archive_clears_short_term_and_updates_archive(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)
@@ -463,6 +547,25 @@ esac
             )
             self.assertEqual(history[-2]["event"], "close_task")
             self.assertEqual(history[-1]["event"], "archive_task")
+
+            repeated = self.run_cli(
+                runtime_cli,
+                "close-task",
+                "--task-id",
+                "COLLAB-TEST",
+                "--acceptance-summary",
+                "accepted and archived",
+                "--evidence",
+                "python3 scripts/check_quality.py --report-json",
+                "--archive",
+                cwd=repo,
+            )
+            self.assertEqual(repeated.returncode, 0, repeated.stderr)
+            replay = json.loads(
+                self.run_cli(runtime_cli, "replay", "--task-id", "COLLAB-TEST", cwd=repo).stdout
+            )
+            self.assertEqual(len([event for event in replay if event["event"] == "close_task"]), 1)
+            self.assertEqual(len([event for event in replay if event["event"] == "archive_task"]), 1)
 
     def test_pm_workflow_can_close_and_archive_existing_acceptance_task(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

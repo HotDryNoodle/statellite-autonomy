@@ -36,6 +36,16 @@ Contract：
 - harness 必须保留足够的事件记录以支持 replay。
 - runtime 事件用于复盘，不直接替代长期 decision log 或 activity log。
 
+### 2.4 控制面入口与治理同步
+@contract{HarnessWorkflow_2_4}
+
+Contract：
+
+- 正式任务必须先在 `harness/runtime/tasks/<task_id>/` 生成 `task_state` 与 runtime events，再同步 `docs/memory/*` 和相关治理记录。
+- 新任务启动默认走 `harness/orchestrator/harness_cli.py pm-workflow`；不需要 expert dispatch 的任务必须使用 `pm-workflow --skip-dispatch`，而不是绕开 harness。
+- phase 推进必须通过 `advance` 或 `pm-workflow`；acceptance 收尾必须通过 `close-task` / `archive-task`。
+- `current_focus.md`、`task_board.md`、`active_context.md`、`agent_activity_log.md`、`task_archive.md` 默认只允许作为 harness 同步结果更新；漂移修复通过 `sync-governance` 进行。
+
 ## 3. 测试要求（verify）
 
 @verify{HarnessWorkflow_3_1}
@@ -48,6 +58,11 @@ Contract：
 - 目的：验证 harness 能生成最小 task_state 并回放事件。
 - 关联合同：`@contract{HarnessWorkflow_2_2}` `@contract{HarnessWorkflow_2_3}`
 
+@verify{HarnessWorkflow_3_3}
+
+- 目的：验证正式任务通过 harness CLI 进入生命周期，并能把 runtime state 同步到治理 docs。
+- 关联合同：`@contract{HarnessWorkflow_2_4}` `@contract{HarnessWorkflow_2_2}`
+
 ## 附录A：设计约束表
 
 | ClauseId | 说明 |
@@ -55,6 +70,7 @@ Contract：
 | `@contract{HarnessWorkflow_2_1}` | 生命周期状态机 |
 | `@contract{HarnessWorkflow_2_2}` | 核心工件 |
 | `@contract{HarnessWorkflow_2_3}` | 反馈与回放 |
+| `@contract{HarnessWorkflow_2_4}` | 控制面入口与治理同步 |
 
 ## 附录B：测试验证表
 
@@ -62,3 +78,4 @@ Contract：
 | --- | --- |
 | `@verify{HarnessWorkflow_3_1}` | phase transition 校验 |
 | `@verify{HarnessWorkflow_3_2}` | task state 与 replay |
+| `@verify{HarnessWorkflow_3_3}` | control-plane 入口与治理同步 |

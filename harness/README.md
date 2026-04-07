@@ -10,5 +10,5 @@
 - `schemas/`: 工件 JSON schema
 - `templates/`: markdown / json 工件模板
 - `session_policies/`: 会话隔离与允许上下文约束
-- `runtime/`: 可重建的 task runtime 状态；默认不纳入长期治理
+- `runtime/`: 正式任务的控制面 runtime 状态与最小 artifacts；它不替代 `docs/memory/` 或 `docs/traceability/`，但从 `COLLAB-013` 起成为正式任务的必备记录
 - `tests/`: harness 轻量 Python 回归测试

@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.1",
+  "task_id": "COLLAB-013",
+  "goal": "Harden harness governance so official tasks must flow through the control plane",
+  "phase": "acceptance",
+  "owner": "project-manager",
+  "allowed_next_states": [],
+  "evidence_refs": [
+    "python3 -m unittest discover -s harness/tests -p 'test_*.py'",
+    "python3 -m unittest discover -s tools/tests -p 'test_*.py'",
+    "python3 -m unittest discover -s scripts/tests -p 'test_*.py'",
+    "python3 scripts/check_quality.py --report-json"
+  ],
+  "blocking_issues": [],
+  "trace_id": "",
+  "run_attempt": 1,
+  "parent_trace_id": "",
+  "session_backend": "local-jsonl",
+  "session_refs": {},
+  "current_artifact_ref": "",
+  "pending_approvals": [],
+  "affected_contracts": [
+    "contracts/harness_workflow.contract.md",
+    "contracts/harness_product_boundary.contract.md"
+  ],
+  "archived": true,
+  "acceptance_status": "done",
+  "acceptance_summary": "harness becomes the default control plane, governance docs become synchronized mirrors, and runtime-vs-memory quality gates now block bypass paths",
+  "archive_ref": "docs/traceability/task_archive.md",
+  "updated_at": "2026-04-07T18:12:00+08:00"
+}

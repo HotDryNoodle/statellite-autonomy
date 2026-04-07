@@ -1,0 +1,20 @@
+{
+  "task_id": "COLLAB-014",
+  "phase": "acceptance",
+  "from_agent": "project-manager",
+  "to_agent": "none",
+  "summary": "compressed main-path prompt docs, moved PM SOP to references, and added prompt-doc quality gates",
+  "relevant_contracts": [
+    "contracts/harness_workflow.contract.md",
+    "contracts/harness_product_boundary.contract.md"
+  ],
+  "evidence_refs": [
+    "python3 -m unittest discover -s scripts/tests -p 'test_*.py'",
+    "python3 scripts/check_quality.py --report-json --skip-build-test --skip-project-dashboard",
+    "python3 scripts/check_quality.py --report-json"
+  ],
+  "blocking_issues": [],
+  "recommended_actions": [
+    "Archive task when short-term memory can be cleared."
+  ]
+}
