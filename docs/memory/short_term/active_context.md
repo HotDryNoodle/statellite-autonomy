@@ -7,6 +7,9 @@
 - Future feature work should start from `product/` for code and from `harness/` for orchestration/runtime artifacts.
 - Codex project integration is migrating back to the official default project layout: root `AGENTS.md`, project `.agents/skills`, and repo-local CLI only.
 - Repo-local engineering tools now use `*-cli` layout only; MCP wrapper/server remnants have been removed.
+- Harness now contains an Agents SDK-oriented runtime adapter scaffold, shared transition logic, expert registry, tool allowlist, and workflow eval fixtures.
+- The adapter reuses the existing harness state machine; future work must not introduce a second phase-transition rule set.
+- Runtime execution remains synchronous and repo-native; hosted retrieval and background mode remain future-phase work.
 
 ## Active Policy Skills
 
@@ -26,3 +29,5 @@
 - Keep root CLI entrypoints stable after `product/src/` and `product/tests/` become the only product code roots.
 - Remove plugin-bundle and project MCP-config entrypoints from the default Codex path.
 - Treat the two repo-local tools as copy-pastable CLIs first: command examples in help, dry-run for side-effectful commands, and actionable error messages.
+- Keep `project-manager` as the only orchestrator even after adding an `architecture_expert_agent`.
+- Treat `harness-expert-system-supplement.md` and `plan.md` as implementation inputs; the repo contracts remain the runtime source of truth.

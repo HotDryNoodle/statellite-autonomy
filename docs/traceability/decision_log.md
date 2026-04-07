@@ -87,3 +87,11 @@
 - side-effectful CLI 子命令必须至少提供 `--dry-run` 预演能力；写报告或生成产物的入口应提供显式确认开关。
 - 顶层与子命令 `--help` 必须包含可直接复制的 `Examples`，错误输出必须带可执行示例或下一步提示。
 - `traceability-cli` 的 `status` / `query-clause` 默认只读取现有产物；需要重生成时通过 `--refresh` 显式触发。
+
+## 2026-04-07 Agents SDK Harness Adapter V1
+
+- `harness/` 新增 Agents SDK-oriented runtime adapter，但现有 phase 状态机与 schema 仍是规范源；adapter 必须复用而不是复制 transition 逻辑。
+- v1 自动化拓扑明确包含 `architecture_expert_agent`，且仅在 `contract_freeze` 命中架构/NFR/层边界条件时由 PM handoff。
+- curator 固定为 `project-manager` 内嵌步骤；knowledge patch proposal 必须 human-in-the-loop 审批后才能写回 repo 规范源。
+- resume 只允许在相同 session backend 路径与凭据下继续；跨环境静默恢复必须拒绝。
+- tool wrapper allowlist 与 expert-contract registry 必须作为单一配置源，供 guardrail、adapter 与单元测试共用。

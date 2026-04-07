@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "tools": {
+    "build": {
+      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "build"],
+      "allowed_params": ["build_dir", "cross_file", "native_file", "reconfigure", "meson_option", "compile_arg", "dry_run", "yes"],
+      "artifact_params": []
+    },
+    "test": {
+      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "test"],
+      "allowed_params": ["build_dir", "test_name", "no_rebuild", "cross_file", "native_file", "reconfigure", "meson_option", "dry_run", "yes"],
+      "artifact_params": []
+    },
+    "traceability": {
+      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "traceability"],
+      "allowed_params": ["output_dir", "dry_run", "yes"],
+      "artifact_params": ["output_dir"]
+    },
+    "benchmark": {
+      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "benchmark"],
+      "allowed_params": ["build_dir", "cross_file", "native_file", "report_path", "dry_run", "yes"],
+      "artifact_params": ["report_path"]
+    },
+    "status": {
+      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "status"],
+      "allowed_params": ["build_dir", "cross_file", "native_file"],
+      "artifact_params": []
+    }
+  }
+}

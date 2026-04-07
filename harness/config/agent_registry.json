@@ -1,0 +1,76 @@
+{
+  "version": "1.0",
+  "agents": {
+    "architecture_expert_agent": {
+      "status": "active",
+      "kind": "architecture",
+      "allowed_contracts": [
+        "contracts/layer_boundary.contract.md",
+        "contracts/harness_product_boundary.contract.md",
+        "contracts/harness_workflow.contract.md"
+      ],
+      "eval_dataset": "eval/agent_workflow/architecture_expert"
+    },
+    "pppar_expert_agent": {
+      "status": "active",
+      "kind": "expert",
+      "allowed_contracts": [
+        "contracts/navigation.contract.md",
+        "contracts/ppp_family.contract.md"
+      ],
+      "eval_dataset": "eval/agent_workflow/pppar_expert"
+    },
+    "rdpod_analyst_agent": {
+      "status": "active",
+      "kind": "expert",
+      "allowed_contracts": [
+        "contracts/navigation.contract.md",
+        "contracts/rdpod_family.contract.md"
+      ],
+      "eval_dataset": "eval/agent_workflow/rdpod_analyst"
+    },
+    "coding_agent": {
+      "status": "active",
+      "kind": "implementation",
+      "allowed_contracts": [
+        "contracts/harness_product_boundary.contract.md",
+        "contracts/harness_workflow.contract.md",
+        "contracts/layer_boundary.contract.md",
+        "contracts/navigation.contract.md",
+        "contracts/ppp_family.contract.md",
+        "contracts/rdpod_family.contract.md",
+        "contracts/prediction.contract.md",
+        "contracts/mission_planning.contract.md",
+        "contracts/state_handoff_navigation_to_prediction.contract.md",
+        "contracts/time_system.contract.md"
+      ],
+      "eval_dataset": "eval/agent_workflow/coding"
+    },
+    "testing_agent": {
+      "status": "active",
+      "kind": "verification",
+      "allowed_contracts": [
+        "contracts/harness_product_boundary.contract.md",
+        "contracts/harness_workflow.contract.md",
+        "contracts/layer_boundary.contract.md",
+        "contracts/navigation.contract.md",
+        "contracts/ppp_family.contract.md",
+        "contracts/rdpod_family.contract.md",
+        "contracts/prediction.contract.md",
+        "contracts/mission_planning.contract.md",
+        "contracts/state_handoff_navigation_to_prediction.contract.md",
+        "contracts/time_system.contract.md"
+      ],
+      "eval_dataset": "eval/agent_workflow/testing"
+    },
+    "eval_agent": {
+      "status": "active",
+      "kind": "tool_router",
+      "allowed_contracts": [
+        "contracts/harness_product_boundary.contract.md",
+        "contracts/harness_workflow.contract.md"
+      ],
+      "eval_dataset": "eval/agent_workflow/eval"
+    }
+  }
+}

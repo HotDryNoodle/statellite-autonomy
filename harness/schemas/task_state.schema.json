@@ -3,6 +3,7 @@
   "title": "task_state",
   "type": "object",
   "required": [
+    "schema_version",
     "task_id",
     "goal",
     "phase",
@@ -10,9 +11,17 @@
     "allowed_next_states",
     "evidence_refs",
     "blocking_issues",
+    "trace_id",
+    "run_attempt",
+    "parent_trace_id",
+    "session_backend",
+    "session_refs",
+    "current_artifact_ref",
+    "pending_approvals",
     "updated_at"
   ],
   "properties": {
+    "schema_version": {"type": "string", "minLength": 1},
     "task_id": {"type": "string", "minLength": 1},
     "goal": {"type": "string", "minLength": 1},
     "phase": {
@@ -37,6 +46,18 @@
       "items": {"type": "string"}
     },
     "blocking_issues": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "trace_id": {"type": "string", "minLength": 0},
+    "run_attempt": {"type": "integer"},
+    "parent_trace_id": {"type": "string", "minLength": 0},
+    "session_backend": {"type": "string", "minLength": 0},
+    "session_refs": {
+      "type": "object"
+    },
+    "current_artifact_ref": {"type": "string", "minLength": 0},
+    "pending_approvals": {
       "type": "array",
       "items": {"type": "string"}
     },

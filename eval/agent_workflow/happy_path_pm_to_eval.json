@@ -1,0 +1,12 @@
+{
+  "task_id": "EVAL-HAPPY-001",
+  "goal": "exercise PM to expert to coding to testing to eval flow",
+  "expected_agents": [
+    "project_manager_agent",
+    "architecture_expert_agent",
+    "pppar_expert_agent",
+    "coding_agent",
+    "testing_agent",
+    "eval_agent"
+  ]
+}

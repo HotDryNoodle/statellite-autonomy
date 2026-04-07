@@ -5,33 +5,20 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from runtime_model import (
+    PHASE_ORDER,
+    advance_event,
+    allowed_next_states,
+    default_task_state,
+    init_event,
+    validate_transition,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_ROOT = REPO_ROOT / "harness" / "runtime" / "tasks"
-PHASE_ORDER = (
-    "intake",
-    "contract_freeze",
-    "implementation",
-    "verification",
-    "traceability",
-    "acceptance",
-)
-ALLOWED_NEXT = {
-    "intake": ["contract_freeze"],
-    "contract_freeze": ["implementation"],
-    "implementation": ["verification", "contract_freeze"],
-    "verification": ["traceability", "implementation"],
-    "traceability": ["acceptance", "implementation", "verification"],
-    "acceptance": [],
-}
-
-
-def now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 def task_dir(task_id: str) -> Path:
@@ -70,27 +57,28 @@ def cmd_init_task(args: argparse.Namespace) -> int:
     ensure_task_dir(args.task_id)
     if state_path(args.task_id).exists() and not args.force:
         raise SystemExit(f"task already exists: {args.task_id}")
-    state = {
-        "task_id": args.task_id,
-        "goal": args.goal,
-        "phase": args.phase,
-        "owner": args.owner,
-        "allowed_next_states": ALLOWED_NEXT[args.phase],
-        "evidence_refs": [],
-        "blocking_issues": [],
-        "updated_at": now_iso(),
-    }
-    write_json(state_path(args.task_id), state)
-    append_event(
+    state = default_task_state(
         args.task_id,
-        {
-            "timestamp": state["updated_at"],
-            "event": "init_task",
-            "phase": args.phase,
-            "owner": args.owner,
-            "goal": args.goal,
-        },
+        args.goal,
+        args.owner,
+        args.phase,
+        trace_id=args.trace_id,
+        run_attempt=args.run_attempt,
+        parent_trace_id=args.parent_trace_id,
+        session_backend=args.session_backend,
     )
+    write_json(state_path(args.task_id), state)
+    event = init_event(
+        args.task_id,
+        args.phase,
+        args.owner,
+        args.goal,
+        trace_id=state["trace_id"],
+        run_attempt=state["run_attempt"],
+        parent_trace_id=state["parent_trace_id"],
+    )
+    event["timestamp"] = state["updated_at"]
+    append_event(args.task_id, event)
     print(json.dumps(state, indent=2, ensure_ascii=False))
     return 0
 
@@ -110,33 +98,38 @@ def cmd_status(args: argparse.Namespace) -> int:
 def cmd_advance(args: argparse.Namespace) -> int:
     state = load_state(args.task_id)
     current = state["phase"]
-    allowed = ALLOWED_NEXT[current]
-    if args.phase not in allowed:
-        raise SystemExit(
-            f"illegal phase transition for {args.task_id}: {current} -> {args.phase}; allowed={allowed}"
-        )
+    try:
+        validate_transition(current, args.phase)
+    except ValueError as exc:
+        raise SystemExit(f"{exc} for {args.task_id}") from exc
     state["phase"] = args.phase
     state["owner"] = args.owner or state["owner"]
-    state["allowed_next_states"] = ALLOWED_NEXT[args.phase]
-    state["updated_at"] = now_iso()
+    state["allowed_next_states"] = allowed_next_states(args.phase)
+    state["updated_at"] = init_event(
+        args.task_id,
+        args.phase,
+        state["owner"],
+        state["goal"],
+    )["timestamp"]
     if args.evidence:
         state["evidence_refs"].extend(args.evidence)
     if args.blocker:
         state["blocking_issues"] = args.blocker
     write_json(state_path(args.task_id), state)
-    append_event(
+    event = advance_event(
         args.task_id,
-        {
-            "timestamp": state["updated_at"],
-            "event": "advance",
-            "from_phase": current,
-            "to_phase": args.phase,
-            "owner": state["owner"],
-            "evidence_refs": args.evidence or [],
-            "blocking_issues": args.blocker or [],
-            "note": args.note or "",
-        },
+        current,
+        args.phase,
+        state["owner"],
+        evidence_refs=args.evidence,
+        blocking_issues=args.blocker,
+        note=args.note or "",
+        trace_id=state.get("trace_id", ""),
+        run_attempt=state.get("run_attempt", 1),
+        parent_trace_id=state.get("parent_trace_id", ""),
     )
+    event["timestamp"] = state["updated_at"]
+    append_event(args.task_id, event)
     print(json.dumps(state, indent=2, ensure_ascii=False))
     return 0
 
@@ -161,6 +154,10 @@ def build_parser() -> argparse.ArgumentParser:
     init_task.add_argument("--goal", required=True)
     init_task.add_argument("--phase", choices=PHASE_ORDER, default="intake")
     init_task.add_argument("--owner", default="project-manager")
+    init_task.add_argument("--trace-id", default="")
+    init_task.add_argument("--run-attempt", type=int, default=1)
+    init_task.add_argument("--parent-trace-id", default="")
+    init_task.add_argument("--session-backend", default="")
     init_task.add_argument("--force", action="store_true")
     init_task.set_defaults(handler=cmd_init_task)
 

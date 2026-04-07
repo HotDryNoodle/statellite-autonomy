@@ -9,6 +9,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CLI = REPO_ROOT / "harness" / "orchestrator" / "harness_cli.py"
+RUNTIME_MODEL = REPO_ROOT / "harness" / "orchestrator" / "runtime_model.py"
 
 
 class HarnessCliTest(unittest.TestCase):
@@ -27,6 +28,10 @@ class HarnessCliTest(unittest.TestCase):
             (repo / "harness" / "runtime").mkdir(parents=True)
             runtime_cli = repo / "harness" / "orchestrator" / "harness_cli.py"
             runtime_cli.write_text(CLI.read_text(encoding="utf-8"), encoding="utf-8")
+            (repo / "harness" / "orchestrator" / "runtime_model.py").write_text(
+                RUNTIME_MODEL.read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
 
             init = self.run_cli(
                 runtime_cli,
@@ -64,6 +69,10 @@ class HarnessCliTest(unittest.TestCase):
             (repo / "harness" / "runtime").mkdir(parents=True)
             runtime_cli = repo / "harness" / "orchestrator" / "harness_cli.py"
             runtime_cli.write_text(CLI.read_text(encoding="utf-8"), encoding="utf-8")
+            (repo / "harness" / "orchestrator" / "runtime_model.py").write_text(
+                RUNTIME_MODEL.read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
 
             init = self.run_cli(
                 runtime_cli,

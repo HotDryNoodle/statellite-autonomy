@@ -5,7 +5,7 @@
 - Navigation / Prediction / Mission Planning 暂无业务实现。
 - PPP / RD-POD 合同仍为占位版本。
 - `nav-toolchain` 和 `traceability` 当前作为仓库内 plain CLI 工具维护，不走 Codex 项目级配置自动加载。
-- harness 当前只实现最小 orchestrator CLI 与工件 schema，不包含自动多 agent 执行引擎。
+- harness 当前只实现 Agents SDK v1 adapter 骨架、本地 session/backend 规则和 workflow 测试脚手架；尚未接入真实 OpenAI hosted tracing、background mode 或 hosted retrieval。
 
 ## Open Risks
 

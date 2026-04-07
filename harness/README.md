@@ -5,6 +5,8 @@
 当前内容：
 
 - `orchestrator/`: 最小 task CLI 与 phase transition 规则
+- `agents_runtime/`: Agents SDK v1 adapter、registry、allowlist、session/tracing helpers
+- `config/`: tool allowlist 与 expert registry
 - `schemas/`: 工件 JSON schema
 - `templates/`: markdown / json 工件模板
 - `session_policies/`: 会话隔离与允许上下文约束

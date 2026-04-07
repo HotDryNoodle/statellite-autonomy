@@ -12,6 +12,7 @@
 | 冻结 harness/product 双树边界与工作流 | `contracts/harness_product_boundary.contract.md`, `contracts/harness_workflow.contract.md` |
 | 冻结 Codex 项目默认入口与技能发现路径 | `contracts/layer_boundary.contract.md`, `contracts/harness_product_boundary.contract.md` |
 | 冻结 repo-local engineering tools 的 CLI-first 入口与帮助语义 | `contracts/layer_boundary.contract.md`, `contracts/harness_product_boundary.contract.md` |
+| 冻结 Agents SDK v1 harness adapter、expert registry、tool allowlist 与 workflow eval 骨架 | `contracts/harness_workflow.contract.md`, `contracts/harness_product_boundary.contract.md`, `contracts/layer_boundary.contract.md` |
 
 
 维护规则：
@@ -28,6 +29,7 @@
 | --- | --- | --- | --- |
 | Phase 1 | `unit::time` 公共时间基础模块闭环 | `contracts/time_system.contract.md`, `contracts/layer_boundary.contract.md` | done |
 | Phase 1.5 | `harness/` 与 `product/` 双树重构、工作流与入口冻结 | `contracts/harness_product_boundary.contract.md`, `contracts/harness_workflow.contract.md`, `contracts/layer_boundary.contract.md` | done |
+| Phase 1.6 | Agents SDK v1 harness adapter、expert governance 与 workflow eval 骨架 | `contracts/harness_workflow.contract.md`, `contracts/harness_product_boundary.contract.md`, `contracts/layer_boundary.contract.md` | done |
 | Phase 2 | `navigation/ppp` 第一批接口与实现收口 | `contracts/navigation.contract.md`, `contracts/ppp_family.contract.md` | planned |
 | Phase 3 | `navigation/rdpod` 家族建模与验证闭环 | `contracts/navigation.contract.md`, `contracts/rdpod_family.contract.md` | planned |
 | Phase 4 | `prediction` 接口与 handoff 约束收口 | `contracts/prediction.contract.md`, `contracts/state_handoff_navigation_to_prediction.contract.md` | planned |

@@ -1,0 +1,8 @@
+{
+  "task_id": "EVAL-NEG-002",
+  "agent": "pppar_expert_agent",
+  "affected_contracts": [
+    "contracts/rdpod_family.contract.md"
+  ],
+  "expected_result": "rejected"
+}

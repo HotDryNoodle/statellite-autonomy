@@ -1,0 +1,7 @@
+{
+  "task_id": "EVAL-NEG-001",
+  "goal": "reject illegal intake to verification transition",
+  "from_phase": "intake",
+  "to_phase": "verification",
+  "expected_result": "rejected"
+}

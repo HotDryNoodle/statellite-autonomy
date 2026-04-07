@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "test_task",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "artifact_version",
+    "task_id",
+    "affected_contracts",
+    "clause_refs"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "minLength": 1},
+    "artifact_version": {"type": "string", "minLength": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "affected_contracts": {"type": "array", "items": {"type": "string"}},
+    "clause_refs": {"type": "array", "items": {"type": "string"}},
+    "test_targets": {"type": "array", "items": {"type": "string"}},
+    "notes": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}
