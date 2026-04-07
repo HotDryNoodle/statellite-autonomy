@@ -2,14 +2,21 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from harness.agents_runtime.allowlist import execute_tool
 from harness.agents_runtime.artifacts import validate_artifact_payload
+from harness.agents_runtime.knowledge import knowledge_context_from_tool_result
 from harness.agents_runtime.registry import ExpertRegistry, load_expert_registry
-from harness.agents_runtime.sessions import LocalSessionBackend, validate_resume_backend
+from harness.agents_runtime.sessions import (
+    LocalSessionBackend,
+    session_ref_for_agent,
+    validate_agent_session,
+    validate_resume_backend,
+)
 from harness.agents_runtime.tracing import redact_text
 from harness.orchestrator.runtime_model import allowed_next_states, validate_transition
 
@@ -95,9 +102,108 @@ class HarnessRuntimeAdapter:
             "tool_name": result.tool_name,
             "command": result.command,
             "return_code": result.return_code,
+            "stdout": result.stdout_excerpt,
+            "stderr": result.stderr_excerpt,
             "stdout_excerpt": redact_text(result.stdout_excerpt),
             "stderr_excerpt": redact_text(result.stderr_excerpt),
             "artifact_paths": result.artifact_paths,
+        }
+
+    def dispatch_expert(
+        self,
+        task_state: dict[str, Any],
+        agent_name: str,
+        affected_contracts: list[str],
+        *,
+        knowledge_query: str = "",
+        note_path: str = "",
+        handoff_summary: str = "",
+    ) -> dict[str, Any]:
+        if knowledge_query and note_path:
+            raise ValueError("knowledge_query and note_path are mutually exclusive")
+        self.validate_expert_contracts(agent_name, affected_contracts)
+        session_ref = session_ref_for_agent(task_state["task_id"], agent_name)
+        updated_state = dict(task_state)
+        updated_state["owner"] = agent_name
+        updated_state["session_refs"] = dict(task_state.get("session_refs", {}))
+        updated_state["session_refs"][agent_name] = session_ref
+        self.session_backend.append_message(
+            session_ref,
+            "project_manager",
+            handoff_summary or task_state["goal"],
+        )
+
+        knowledge_context: dict[str, Any] | None = None
+        if knowledge_query:
+            tool_result = self.execute_allowed_tool(
+                "knowledge_search",
+                {"agent": agent_name, "query": knowledge_query},
+            )
+            if tool_result["return_code"] != 0:
+                raise ValueError(
+                    tool_result["stderr_excerpt"]
+                    or tool_result["stdout_excerpt"]
+                    or "knowledge_search failed"
+                )
+            knowledge_context = knowledge_context_from_tool_result(
+                task_state["task_id"],
+                agent_name,
+                "knowledge_search",
+                knowledge_query,
+                tool_result,
+            )
+        elif note_path:
+            tool_result = self.execute_allowed_tool(
+                "knowledge_read",
+                {"agent": agent_name, "note": note_path},
+            )
+            if tool_result["return_code"] != 0:
+                raise ValueError(
+                    tool_result["stderr_excerpt"]
+                    or tool_result["stdout_excerpt"]
+                    or "knowledge_read failed"
+                )
+            knowledge_context = knowledge_context_from_tool_result(
+                task_state["task_id"],
+                agent_name,
+                "knowledge_read",
+                note_path,
+                tool_result,
+            )
+
+        if knowledge_context is not None:
+            errors = validate_artifact_payload("knowledge_context", knowledge_context)
+            if errors:
+                raise ValueError("; ".join(errors))
+            updated_state["current_artifact_ref"] = knowledge_context["artifact_ref"]
+            updated_state["evidence_refs"] = list(task_state.get("evidence_refs", []))
+            updated_state["evidence_refs"].extend(knowledge_context["refs"])
+            self.session_backend.append_message(
+                session_ref,
+                "knowledge_context",
+                json.dumps(knowledge_context, ensure_ascii=False),
+            )
+
+        return {
+            "task_state": updated_state,
+            "session_ref": session_ref,
+            "knowledge_context": knowledge_context,
+        }
+
+    def resume_agent_session(
+        self,
+        task_state: dict[str, Any],
+        agent_name: str,
+        session_backend_ref: LocalSessionBackend,
+    ) -> dict[str, Any]:
+        validate_resume_backend(task_state, session_backend_ref)
+        session_ref = validate_agent_session(task_state, agent_name)
+        return {
+            "task_id": task_state["task_id"],
+            "phase": task_state["phase"],
+            "agent_name": agent_name,
+            "session_ref": session_ref,
+            "messages": session_backend_ref.read_messages(session_ref),
         }
 
 

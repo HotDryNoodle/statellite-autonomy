@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "agents": {
+    "pppar_expert_agent": {
+      "enabled": true,
+      "vault_name": "expert-system",
+      "allowed_note_roots": [
+        "pppar/"
+      ],
+      "repo_reference_roots": [
+        "skills/pppar-expert/references/",
+        "/home/hotdry/projects/PRIDE-PPPAR/"
+      ],
+      "authority_mode": "repo_first"
+    }
+  }
+}

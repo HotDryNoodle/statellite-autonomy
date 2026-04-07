@@ -8,5 +8,11 @@
     "coding_agent",
     "testing_agent",
     "eval_agent"
-  ]
+  ],
+  "knowledge_step": {
+    "agent": "pppar_expert_agent",
+    "tool": "knowledge_read",
+    "note": "pppar/pride-pppar-filtering.md",
+    "expected_source_mode": "obsidian_cli"
+  }
 }

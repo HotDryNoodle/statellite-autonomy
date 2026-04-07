@@ -1,0 +1,8 @@
+{
+  "task_id": "EVAL-NEG-003",
+  "agent": "pppar_expert_agent",
+  "tool": "knowledge_search",
+  "query": "ambiguity",
+  "expected_result": "blocked",
+  "expected_error": "Obsidian must already be running before knowledge commands can execute."
+}

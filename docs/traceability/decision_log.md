@@ -95,3 +95,10 @@
 - curator 固定为 `project-manager` 内嵌步骤；knowledge patch proposal 必须 human-in-the-loop 审批后才能写回 repo 规范源。
 - resume 只允许在相同 session backend 路径与凭据下继续；跨环境静默恢复必须拒绝。
 - tool wrapper allowlist 与 expert-contract registry 必须作为单一配置源，供 guardrail、adapter 与单元测试共用。
+
+## 2026-04-07 CLI-Only Obsidian Expert Bridge And PPP Family V1
+
+- `expert-system` Obsidian vault 只能通过 repo-local `toolchain_cli.py knowledge ...` wrapper 访问；不得直接读取或写入 vault 文档。
+- fresh expert knowledge lookup 必须要求 Obsidian app 已在本机运行；若运行门禁未打开，harness 直接阻断而不是绕过或静默降级。
+- `pppar_expert_agent` 的 session 命名空间冻结为 `expert/<task_id>/pppar_expert_agent`；不得与 `coding/`、`testing/`、`eval/` 会话复用或交叉 resume。
+- `contracts/ppp_family.contract.md` 从占位版升级为 v1：PRIDE-PPPAR 仍是权威实现源，Obsidian supplemental knowledge 只能增强解释，不能覆盖 PRIDE 证据。

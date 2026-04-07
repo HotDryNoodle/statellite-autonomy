@@ -13,6 +13,7 @@
 - `benchmark`
 - `traceability`
 - `status`
+- `knowledge` for CLI-only expert-system Obsidian access
 - `pyproject.toml`：`uv` 运行环境
 - 支持 `--cross-file` / `--native-file` / `--build-dir` / `--dry-run`
 
@@ -29,7 +30,10 @@ python3 tools/nav-toolchain-cli/toolchain_cli.py status
 ./scripts/nav-toolchain test --no-rebuild
 ./scripts/nav-toolchain traceability --yes
 ./scripts/nav-toolchain benchmark --report-path eval/reports/time_benchmark_report.json --yes
+./scripts/nav-toolchain knowledge status --agent pppar_expert_agent
 ```
+
+`knowledge` 子命令只允许通过 Obsidian CLI 访问 `expert-system` vault；不得直接读取或写入 vault 文档。
 
 如果需要直接用 `uv` 调试：
 

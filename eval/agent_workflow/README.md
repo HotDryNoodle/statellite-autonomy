@@ -7,3 +7,4 @@
 - `happy_path_pm_to_eval.json`
 - `negative_illegal_phase_transition.json`
 - `negative_expert_contract_scope.json`
+- `negative_obsidian_gate_block.json`

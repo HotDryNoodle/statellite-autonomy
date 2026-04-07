@@ -11,6 +11,9 @@ import sys
 import time
 from pathlib import Path
 
+from knowledge_ops import KnowledgeError, build_status as build_knowledge_status
+from knowledge_ops import read_note as read_knowledge_note
+from knowledge_ops import search_notes as search_knowledge_notes
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BUILD_DIR = REPO_ROOT / "builddir"
@@ -407,9 +410,61 @@ def cmd_status(args: argparse.Namespace) -> int:
     return 0
 
 
+def knowledge_examples() -> list[str]:
+    return [
+        f"{CLI_PATH} knowledge status --agent pppar_expert_agent",
+        f"{CLI_PATH} knowledge search --agent pppar_expert_agent --query ambiguity",
+        f"{CLI_PATH} knowledge read --agent pppar_expert_agent --note pppar/pride-pppar-filtering.md",
+    ]
+
+
+def print_knowledge_error(agent: str, error: str) -> int:
+    print_json(
+        {
+            "status": "blocked",
+            "agent": agent,
+            "error": error,
+            "examples": knowledge_examples(),
+        }
+    )
+    return 1
+
+
+def cmd_knowledge_status(args: argparse.Namespace) -> int:
+    try:
+        payload = build_knowledge_status(args.agent)
+    except KnowledgeError as exc:
+        payload = {
+            "status": "blocked",
+            "agent": args.agent,
+            "error": str(exc),
+            "examples": knowledge_examples(),
+        }
+    print_json(payload)
+    return 0
+
+
+def cmd_knowledge_search(args: argparse.Namespace) -> int:
+    try:
+        _, payload = search_knowledge_notes(args.agent, args.query, args.limit)
+    except KnowledgeError as exc:
+        return print_knowledge_error(args.agent, str(exc))
+    print_json(payload)
+    return 0
+
+
+def cmd_knowledge_read(args: argparse.Namespace) -> int:
+    try:
+        _, payload = read_knowledge_note(args.agent, args.note)
+    except KnowledgeError as exc:
+        return print_knowledge_error(args.agent, str(exc))
+    print_json(payload)
+    return 0
+
+
 def make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="CLI-first Meson toolchain entrypoints for build, test, benchmark, and traceability tasks.",
+        description="CLI-first Meson toolchain entrypoints for build, test, benchmark, traceability, and expert knowledge tasks.",
         epilog=(
             "Examples:\n"
             f"  {CLI_PATH} build --reconfigure\n"
@@ -417,7 +472,8 @@ def make_parser() -> argparse.ArgumentParser:
             f"  {CLI_PATH} benchmark --report-path eval/reports/time_benchmark_report.json --yes\n"
             f"  {CLI_PATH} benchmark --dry-run\n"
             f"  {CLI_PATH} traceability --output-dir docs/_generated/traceability --yes\n"
-            f"  {CLI_PATH} status"
+            f"  {CLI_PATH} status\n"
+            f"  {CLI_PATH} knowledge status --agent pppar_expert_agent"
         ),
         formatter_class=HelpFormatter,
     )
@@ -525,6 +581,59 @@ def make_parser() -> argparse.ArgumentParser:
     status.add_argument("--cross-file", default="")
     status.add_argument("--native-file", default="")
     status.set_defaults(handler=cmd_status)
+
+    knowledge = subparsers.add_parser(
+        "knowledge",
+        description="Access expert-system Obsidian knowledge through CLI-only wrappers.",
+        epilog=(
+            "Examples:\n"
+            f"  {CLI_PATH} knowledge status --agent pppar_expert_agent\n"
+            f"  {CLI_PATH} knowledge search --agent pppar_expert_agent --query ambiguity\n"
+            f"  {CLI_PATH} knowledge read --agent pppar_expert_agent --note pppar/pride-pppar-filtering.md"
+        ),
+        formatter_class=HelpFormatter,
+    )
+    knowledge_subparsers = knowledge.add_subparsers(dest="knowledge_command", required=True)
+
+    knowledge_status = knowledge_subparsers.add_parser(
+        "status",
+        description="Print machine-readable CLI-only Obsidian access status for an expert agent.",
+        epilog=(
+            "Examples:\n"
+            f"  {CLI_PATH} knowledge status --agent pppar_expert_agent"
+        ),
+        formatter_class=HelpFormatter,
+    )
+    knowledge_status.add_argument("--agent", required=True)
+    knowledge_status.set_defaults(handler=cmd_knowledge_status)
+
+    knowledge_search = knowledge_subparsers.add_parser(
+        "search",
+        description="Search expert-system knowledge for an enabled expert agent.",
+        epilog=(
+            "Examples:\n"
+            f"  {CLI_PATH} knowledge search --agent pppar_expert_agent --query ambiguity\n"
+            f"  {CLI_PATH} knowledge search --agent pppar_expert_agent --query \"LEO orbit\" --limit 5"
+        ),
+        formatter_class=HelpFormatter,
+    )
+    knowledge_search.add_argument("--agent", required=True)
+    knowledge_search.add_argument("--query", required=True)
+    knowledge_search.add_argument("--limit", type=int, default=10)
+    knowledge_search.set_defaults(handler=cmd_knowledge_search)
+
+    knowledge_read = knowledge_subparsers.add_parser(
+        "read",
+        description="Read a note under an expert agent's allowed Obsidian roots.",
+        epilog=(
+            "Examples:\n"
+            f"  {CLI_PATH} knowledge read --agent pppar_expert_agent --note pppar/pride-pppar-filtering.md"
+        ),
+        formatter_class=HelpFormatter,
+    )
+    knowledge_read.add_argument("--agent", required=True)
+    knowledge_read.add_argument("--note", required=True)
+    knowledge_read.set_defaults(handler=cmd_knowledge_read)
 
     return parser
 

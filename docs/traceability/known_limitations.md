@@ -3,12 +3,14 @@
 ## Accepted Limitations
 
 - Navigation / Prediction / Mission Planning 暂无业务实现。
-- PPP / RD-POD 合同仍为占位版本。
+- `contracts/ppp_family.contract.md` 已升级到 family v1，但 RD-POD 合同仍为占位版本。
 - `nav-toolchain` 和 `traceability` 当前作为仓库内 plain CLI 工具维护，不走 Codex 项目级配置自动加载。
 - harness 当前只实现 Agents SDK v1 adapter 骨架、本地 session/backend 规则和 workflow 测试脚手架；尚未接入真实 OpenAI hosted tracing、background mode 或 hosted retrieval。
+- Obsidian expert bridge 当前只对 `pppar_expert_agent` 开放，且依赖本机已有运行中的 Obsidian app。
 
 ## Open Risks
 
 - `docs/traceability/` 向 `docs/memory/` 的 current-state 迁移刚完成，后续新增 task 若仍回写旧入口会导致状态漂移。
 - `product/` 路径迁移后，若后续 skill / script / doc 继续引用旧 `src/`、`tests/` 路径，会导致治理与实现重新漂移。
 - 项目级 skills 通过 `.agents/skills` 暴露，但内容仍维护在根 `skills/`；若后续两处引用约定漂移，会导致发现路径与维护路径不一致。
+- 若 Obsidian CLI 输出格式或搜索参数在上游版本中发生变化，repo-local knowledge wrapper 需要同步调整，否则 supplemental knowledge 路径可能漂移。

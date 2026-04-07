@@ -19,6 +19,11 @@ Use this skill for three task types:
 - Run or diagnose PRIDE-based PPP-AR or LEO orbit workflows.
 - Answer algorithm or implementation questions using PRIDE source code and local manuals.
 
+When the task needs supplemental expert-system knowledge:
+- Use repo-local `python3 tools/nav-toolchain-cli/toolchain_cli.py knowledge ...`.
+- Treat Obsidian access as CLI-only. Do not read or write vault notes directly through filesystem helpers.
+- If the Obsidian app is not already running, fail closed and ask the user to start it instead of bypassing the gate.
+
 ## Project Authority
 
 Treat `~/projects/PRIDE-PPPAR` as the authoritative standalone PRIDE project.
@@ -80,3 +85,6 @@ Use these reference files as needed:
 - `references/operations-and-errors.md`
 - `references/architecture-and-algorithms.md`
 - `references/manual-index.md`
+- `references/processing-flow.md`
+- `references/state-and-parameter-model.md`
+- `references/ambiguity-and-ar-flow.md`

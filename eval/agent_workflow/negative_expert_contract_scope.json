@@ -4,5 +4,6 @@
   "affected_contracts": [
     "contracts/rdpod_family.contract.md"
   ],
+  "session_ref": "expert/EVAL-NEG-002/pppar_expert_agent",
   "expected_result": "rejected"
 }
