@@ -134,13 +134,27 @@ def load_governance_policy(repo_root: Path) -> dict[str, object]:
         "version": "1.0",
         "runtime_required_from_task_id": "COLLAB-013",
         "legacy_task_ids": [],
+        "runtime_retention": {
+            "mode": "tracked_compact_proof",
+            "eligible_phase": "acceptance",
+            "require_archived": True,
+            "tracked_proof_files": ["task_state.json", "events.jsonl", "compact_manifest.json"],
+            "drop_tracked_artifacts": True,
+            "local_spill_dir": "harness/runtime/archive",
+            "local_spill_tracked": False,
+        },
     }
     if not path.exists():
         return default_policy
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload.get("legacy_task_ids", []), list):
         raise ValueError(f"{path} legacy_task_ids must be a list")
+    if not isinstance(payload.get("runtime_retention", {}), dict):
+        raise ValueError(f"{path} runtime_retention must be an object")
     default_policy.update(payload)
+    retention = dict(default_policy["runtime_retention"])
+    retention.update(payload.get("runtime_retention", {}))
+    default_policy["runtime_retention"] = retention
     return default_policy
 
 
@@ -175,6 +189,14 @@ def task_events_path(repo_root: Path, task_id: str) -> Path:
     return repo_root / "harness" / "runtime" / "tasks" / task_id / "events.jsonl"
 
 
+def task_compact_manifest_path(repo_root: Path, task_id: str) -> Path:
+    return repo_root / "harness" / "runtime" / "tasks" / task_id / "compact_manifest.json"
+
+
+def task_artifacts_dir(repo_root: Path, task_id: str) -> Path:
+    return repo_root / "harness" / "runtime" / "tasks" / task_id / "artifacts"
+
+
 def load_task_state(repo_root: Path, task_id: str) -> dict[str, object] | None:
     path = task_state_path(repo_root, task_id)
     if not path.exists():
@@ -191,3 +213,10 @@ def load_task_events(repo_root: Path, task_id: str) -> list[dict[str, object]]:
         if line.strip():
             events.append(json.loads(line))
     return events
+
+
+def load_task_compact_manifest(repo_root: Path, task_id: str) -> dict[str, object] | None:
+    path = task_compact_manifest_path(repo_root, task_id)
+    if not path.exists():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))

@@ -602,6 +602,80 @@ esac
             archive = (repo / "docs/traceability/task_archive.md").read_text(encoding="utf-8")
             self.assertIn("pm workflow archived accepted task", archive)
 
+    def test_compact_runtime_moves_artifacts_to_local_spill_and_keeps_tracked_proof(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            (repo / "harness" / "runtime").mkdir(parents=True)
+            runtime_cli = self.stage_runtime_repo(repo)
+            self.prepare_acceptance_task(repo, runtime_cli)
+            closed = self.run_cli(
+                runtime_cli,
+                "close-task",
+                "--task-id",
+                "COLLAB-TEST",
+                "--acceptance-summary",
+                "accepted and archived",
+                "--archive",
+                cwd=repo,
+            )
+            self.assertEqual(closed.returncode, 0, closed.stderr)
+
+            compacted = self.run_cli(runtime_cli, "compact-runtime", "--task-id", "COLLAB-TEST", cwd=repo)
+            self.assertEqual(compacted.returncode, 0, compacted.stderr)
+            payload = json.loads(compacted.stdout)
+            self.assertFalse(payload["already_compacted"])
+            self.assertTrue((repo / "harness/runtime/tasks/COLLAB-TEST/compact_manifest.json").exists())
+            self.assertFalse((repo / "harness/runtime/tasks/COLLAB-TEST/artifacts").exists())
+            spill = repo / "harness/runtime/archive/COLLAB-TEST/artifacts"
+            self.assertTrue((spill / "task_brief.contract_freeze.json").exists())
+            self.assertTrue((spill / "handoff.acceptance.json").exists())
+            state = json.loads((repo / "harness/runtime/tasks/COLLAB-TEST/task_state.json").read_text(encoding="utf-8"))
+            self.assertEqual(state["retention_mode"], "compacted")
+            replay = self.run_cli(runtime_cli, "replay", "--task-id", "COLLAB-TEST", cwd=repo)
+            self.assertEqual(replay.returncode, 0, replay.stderr)
+            history = json.loads(replay.stdout)
+            self.assertEqual(history[-1]["event"], "compact_runtime")
+
+            again = self.run_cli(runtime_cli, "compact-runtime", "--task-id", "COLLAB-TEST", cwd=repo)
+            self.assertEqual(again.returncode, 0, again.stderr)
+            second = json.loads(again.stdout)
+            self.assertTrue(second["already_compacted"])
+
+    def test_compact_runtime_rejects_non_archived_task(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            (repo / "harness" / "runtime").mkdir(parents=True)
+            runtime_cli = self.stage_runtime_repo(repo)
+            workflow = self.run_cli(
+                runtime_cli,
+                "pm-workflow",
+                "--task-id",
+                "COLLAB-TEST",
+                "--goal",
+                "run PM workflow",
+                "--contract",
+                "contracts/harness_workflow.contract.md",
+                "--skip-dispatch",
+                cwd=repo,
+            )
+            self.assertEqual(workflow.returncode, 0, workflow.stderr)
+            for phase in ("verification", "traceability", "acceptance"):
+                advanced = self.run_cli(
+                    runtime_cli,
+                    "advance",
+                    "--task-id",
+                    "COLLAB-TEST",
+                    "--phase",
+                    phase,
+                    "--owner",
+                    "project-manager" if phase in {"traceability", "acceptance"} else "testing_agent",
+                    cwd=repo,
+                )
+                self.assertEqual(advanced.returncode, 0, advanced.stderr)
+            compacted = self.run_cli(runtime_cli, "compact-runtime", "--task-id", "COLLAB-TEST", cwd=repo)
+            self.assertNotEqual(compacted.returncode, 0)
+            self.assertIn("requires archived=true state", compacted.stderr + compacted.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

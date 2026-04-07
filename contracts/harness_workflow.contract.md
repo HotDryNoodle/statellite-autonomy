@@ -42,8 +42,10 @@ Contract：
 Contract：
 
 - 正式任务必须先在 `harness/runtime/tasks/<task_id>/` 生成 `task_state` 与 runtime events，再同步 `docs/memory/*` 和相关治理记录。
+- archived task 允许通过 retention policy 压缩 tracked raw artifacts，但必须继续保留 machine-verifiable proof；对 compacted task，最小证明为 `task_state.json`、`events.jsonl` 和 `compact_manifest.json`。
 - 新任务启动默认走 `harness/orchestrator/harness_cli.py pm-workflow`；不需要 expert dispatch 的任务必须使用 `pm-workflow --skip-dispatch`，而不是绕开 harness。
 - phase 推进必须通过 `advance` 或 `pm-workflow`；acceptance 收尾必须通过 `close-task` / `archive-task`。
+- runtime compaction 必须通过 `compact-runtime` 执行；`harness/runtime/archive/` 只作为 gitignored 的本地冷存储，不是 official proof。
 - `current_focus.md`、`task_board.md`、`active_context.md`、`agent_activity_log.md`、`task_archive.md` 默认只允许作为 harness 同步结果更新；漂移修复通过 `sync-governance` 进行。
 
 ## 3. 测试要求（verify）

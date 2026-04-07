@@ -1,7 +1,7 @@
 # Current Focus
 
 ## Current Phase
-- `acceptance`
+- `implementation`
 
 ## In Progress
 - none

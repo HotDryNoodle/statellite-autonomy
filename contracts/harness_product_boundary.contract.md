@@ -42,6 +42,8 @@ Contract：
 Contract：
 
 - `harness/runtime/tasks/<task_id>/` 必须为正式任务保留最小控制面记录，例如 `task_state.json`、`events.jsonl` 与必要 artifacts。
+- compacted archived task 允许删除 tracked raw artifacts，但必须继续在 `harness/runtime/tasks/<task_id>/` 保留 `task_state.json`、`events.jsonl` 与 `compact_manifest.json` 作为正式证明。
+- `harness/runtime/archive/` 只保存 gitignored 的本地冷存储副本，不承载正式治理证明。
 - 这些 runtime records 用于 control-plane 可验证性与治理同步，但不替代 `docs/memory/` 和 `docs/traceability/` 的人类可读治理文档。
 - `docs/memory/*`、`docs/traceability/agent_activity_log.md`、`docs/traceability/task_archive.md` 默认作为 runtime state 的同步镜像维护；正常流程不得把它们当作独立主写入口。
 

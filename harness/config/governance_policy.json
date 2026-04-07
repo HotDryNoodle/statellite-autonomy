@@ -1,5 +1,18 @@
 {
   "version": "1.0",
   "runtime_required_from_task_id": "COLLAB-013",
-  "legacy_task_ids": []
+  "legacy_task_ids": [],
+  "runtime_retention": {
+    "mode": "tracked_compact_proof",
+    "eligible_phase": "acceptance",
+    "require_archived": true,
+    "tracked_proof_files": [
+      "task_state.json",
+      "events.jsonl",
+      "compact_manifest.json"
+    ],
+    "drop_tracked_artifacts": true,
+    "local_spill_dir": "harness/runtime/archive",
+    "local_spill_tracked": false
+  }
 }

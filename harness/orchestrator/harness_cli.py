@@ -86,10 +86,48 @@ def ensure_task_dir(task_id: str) -> Path:
     return path
 
 
-def artifacts_dir(task_id: str) -> Path:
+def artifacts_dir(task_id: str, *, create: bool = True) -> Path:
     path = task_dir(task_id) / "artifacts"
-    path.mkdir(parents=True, exist_ok=True)
+    if create:
+        path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def compact_manifest_path(task_id: str) -> Path:
+    return task_dir(task_id) / "compact_manifest.json"
+
+
+def archive_spill_dir(policy: dict[str, Any] | None = None) -> Path:
+    active_policy = policy or load_governance_policy()
+    retention = dict(active_policy.get("runtime_retention", {}))
+    relative = str(retention.get("local_spill_dir", "harness/runtime/archive"))
+    return REPO_ROOT / relative
+
+
+def load_governance_policy() -> dict[str, Any]:
+    path = REPO_ROOT / "harness" / "config" / "governance_policy.json"
+    default_policy: dict[str, Any] = {
+        "version": "1.0",
+        "runtime_required_from_task_id": "COLLAB-013",
+        "legacy_task_ids": [],
+        "runtime_retention": {
+            "mode": "tracked_compact_proof",
+            "eligible_phase": "acceptance",
+            "require_archived": True,
+            "tracked_proof_files": ["task_state.json", "events.jsonl", "compact_manifest.json"],
+            "drop_tracked_artifacts": True,
+            "local_spill_dir": "harness/runtime/archive",
+            "local_spill_tracked": False,
+        },
+    }
+    if not path.exists():
+        return default_policy
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    default_policy.update(payload)
+    retention = dict(default_policy["runtime_retention"])
+    retention.update(payload.get("runtime_retention", {}))
+    default_policy["runtime_retention"] = retention
+    return default_policy
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -276,6 +314,23 @@ def write_artifact(task_id: str, name: str, payload: dict[str, Any], suffix: str
     return artifact_ref_for_path(path)
 
 
+def compact_runtime_event(
+    task_id: str,
+    *,
+    owner: str,
+    manifest_ref: str,
+    removed_artifact_count: int,
+) -> dict[str, Any]:
+    return {
+        "timestamp": init_event(task_id, "acceptance", owner, "")["timestamp"],
+        "event": "compact_runtime",
+        "task_id": task_id,
+        "owner": owner,
+        "manifest_ref": manifest_ref,
+        "removed_artifact_count": removed_artifact_count,
+    }
+
+
 def build_task_brief_artifact(
     task_state: dict[str, Any],
     *,
@@ -446,7 +501,9 @@ def load_task_context(task_state: dict[str, Any]) -> dict[str, Any]:
         "handoff_ref": task_state.get("handoff_ref", ""),
         "acceptance_summary": task_state.get("acceptance_summary", ""),
     }
-    artifacts_root = artifacts_dir(task_state["task_id"])
+    artifacts_root = artifacts_dir(task_state["task_id"], create=False)
+    if not artifacts_root.exists():
+        return context
     if not context["task_brief_ref"]:
         for path in sorted(artifacts_root.glob("task_brief*.json")):
             context["task_brief_ref"] = artifact_ref_for_path(path)
@@ -462,6 +519,99 @@ def load_task_context(task_state: dict[str, Any]) -> dict[str, Any]:
             if not context["acceptance_summary"]:
                 context["acceptance_summary"] = payload.get("summary", "")
     return context
+
+
+def compact_runtime_internal(task_id: str) -> dict[str, Any]:
+    state = load_state(task_id)
+    policy = load_governance_policy()
+    retention = dict(policy.get("runtime_retention", {}))
+    eligible_phase = str(retention.get("eligible_phase", "acceptance"))
+    require_archived = bool(retention.get("require_archived", True))
+    if state["phase"] != eligible_phase:
+        raise ValueError(f"compact-runtime requires {eligible_phase} phase; got {state['phase']}")
+    if require_archived and not bool(state.get("archived", False)):
+        raise ValueError("compact-runtime requires archived=true state")
+
+    manifest_file = compact_manifest_path(task_id)
+    if manifest_file.exists():
+        manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+        state["retention_mode"] = "compacted"
+        state["compacted_at"] = str(manifest.get("compacted_at", state.get("compacted_at", "")))
+        state["compact_manifest_ref"] = artifact_ref_for_path(manifest_file)
+        state["current_artifact_ref"] = state["compact_manifest_ref"]
+        write_json(state_path(task_id), state)
+        if not has_event(task_id, "compact_runtime"):
+            append_event(
+                task_id,
+                compact_runtime_event(
+                    task_id,
+                    owner="project-manager",
+                    manifest_ref=state["compact_manifest_ref"],
+                    removed_artifact_count=len(list(manifest.get("removed_artifacts", []))),
+                ),
+            )
+        return {
+            "task_state": state,
+            "compact_manifest_ref": state["compact_manifest_ref"],
+            "compact_manifest": manifest,
+            "already_compacted": True,
+        }
+
+    artifacts_root = artifacts_dir(task_id, create=False)
+    tracked_artifacts = sorted(artifacts_root.glob("*.json")) if artifacts_root.exists() else []
+    spill_root = archive_spill_dir(policy) / task_id / "artifacts"
+    spill_created = False
+    removed_artifacts: list[str] = []
+    if tracked_artifacts:
+        spill_root.mkdir(parents=True, exist_ok=True)
+        spill_created = True
+        for path in tracked_artifacts:
+            target = spill_root / path.name
+            target.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
+            removed_artifacts.append(artifact_ref_for_path(path))
+            path.unlink()
+        if artifacts_root.exists() and not any(artifacts_root.iterdir()):
+            artifacts_root.rmdir()
+
+    compacted_at = init_event(task_id, state["phase"], state["owner"], state["goal"])["timestamp"]
+    manifest = {
+        "task_id": task_id,
+        "retention_policy_version": str(policy.get("version", "1.0")),
+        "retention_mode": "tracked_compact_proof",
+        "compacted_at": compacted_at,
+        "removed_artifacts": removed_artifacts,
+        "retained_files": [
+            artifact_ref_for_path(state_path(task_id)),
+            artifact_ref_for_path(events_path(task_id)),
+            artifact_ref_for_path(manifest_file),
+        ],
+        "spill_dir": str((archive_spill_dir(policy) / task_id).relative_to(REPO_ROOT)),
+        "spill_created": spill_created,
+    }
+    write_json(manifest_file, manifest)
+
+    state["retention_mode"] = "compacted"
+    state["compacted_at"] = compacted_at
+    state["compact_manifest_ref"] = artifact_ref_for_path(manifest_file)
+    state["current_artifact_ref"] = state["compact_manifest_ref"]
+    state["updated_at"] = compacted_at
+    write_json(state_path(task_id), state)
+    if not has_event(task_id, "compact_runtime"):
+        append_event(
+            task_id,
+            compact_runtime_event(
+                task_id,
+                owner="project-manager",
+                manifest_ref=state["compact_manifest_ref"],
+                removed_artifact_count=len(removed_artifacts),
+            ),
+        )
+    return {
+        "task_state": state,
+        "compact_manifest_ref": state["compact_manifest_ref"],
+        "compact_manifest": manifest,
+        "already_compacted": False,
+    }
 
 
 def close_task_event(
@@ -968,6 +1118,15 @@ def cmd_sync_governance(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_compact_runtime(args: argparse.Namespace) -> int:
+    try:
+        payload = compact_runtime_internal(args.task_id)
+    except ValueError as exc:
+        raise SystemExit(f"{exc} for {args.task_id}") from exc
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
 def cmd_pm_workflow(args: argparse.Namespace) -> int:
     steps: list[dict[str, Any]] = []
     artifacts: dict[str, str] = {}
@@ -1242,6 +1401,10 @@ def build_parser() -> argparse.ArgumentParser:
     archive_task.add_argument("--acceptance-summary", default="")
     archive_task.add_argument("--evidence", action="append", default=[])
     archive_task.set_defaults(handler=cmd_archive_task)
+
+    compact_runtime = subparsers.add_parser("compact-runtime")
+    compact_runtime.add_argument("--task-id", required=True)
+    compact_runtime.set_defaults(handler=cmd_compact_runtime)
 
     sync_governance = subparsers.add_parser("sync-governance")
     sync_governance.add_argument("--task-id", required=True)

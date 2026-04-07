@@ -1,9 +1,11 @@
 *
 !.gitignore
 !tasks/
+!tasks/**/compact_manifest.json
 tasks/*
 !tasks/**/
 !tasks/**/task_state.json
 !tasks/**/events.jsonl
 !tasks/**/artifacts/
 !tasks/**/artifacts/*.json
+archive/

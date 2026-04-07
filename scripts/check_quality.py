@@ -18,12 +18,15 @@ from dashboard_common import (
     TASK_BOARD_HEADER,
     WORKING_SECTIONS,
     load_governance_policy,
+    load_task_compact_manifest,
     load_task_events,
     load_task_state,
     parse_bullet_sections,
     parse_task_archive,
     parse_task_board,
     requires_runtime_record,
+    task_artifacts_dir,
+    task_compact_manifest_path,
     task_events_path,
     task_state_path,
     task_status_for_phase,
@@ -335,6 +338,7 @@ def check_runtime_current_focus_consistency() -> CheckResult:
 
 def check_runtime_archive_consistency() -> CheckResult:
     policy = load_governance_policy(REPO_ROOT)
+    retention = dict(policy.get("runtime_retention", {}))
     try:
         rows = parse_task_archive(TASK_ARCHIVE_PATH)
     except ValueError as exc:
@@ -357,6 +361,19 @@ def check_runtime_archive_consistency() -> CheckResult:
             failures.append(f"{task_id} missing close_task event")
         if "archive_task" not in event_names:
             failures.append(f"{task_id} missing archive_task event")
+        retention_mode = str(state.get("retention_mode", "") or "")
+        artifacts_dir = task_artifacts_dir(REPO_ROOT, task_id)
+        tracked_artifacts = sorted(artifacts_dir.glob("*.json")) if artifacts_dir.exists() else []
+        if retention_mode == "compacted":
+            manifest = load_task_compact_manifest(REPO_ROOT, task_id)
+            if manifest is None:
+                failures.append(
+                    f"{task_id} missing {task_compact_manifest_path(REPO_ROOT, task_id).relative_to(REPO_ROOT)}"
+                )
+            if "compact_runtime" not in event_names:
+                failures.append(f"{task_id} missing compact_runtime event")
+            if tracked_artifacts and bool(retention.get("drop_tracked_artifacts", True)):
+                failures.append(f"{task_id} still retains tracked raw artifacts after compaction")
         if not bool(state.get("archived", False)):
             failures.append(f"{task_id} runtime state is not marked archived")
         runtime_status = str(state.get("acceptance_status", ""))

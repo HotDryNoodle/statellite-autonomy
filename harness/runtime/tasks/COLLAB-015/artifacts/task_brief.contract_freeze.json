@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "artifact_version": "1.0",
+  "task_id": "COLLAB-015",
+  "goal": "Add runtime retention and compaction for archived harness tasks",
+  "phase": "contract_freeze",
+  "affected_contracts": [
+    "contracts/harness_workflow.contract.md",
+    "contracts/harness_product_boundary.contract.md"
+  ],
+  "clause_refs": [],
+  "success_criteria": [
+    "official task lifecycle is recorded through harness control-plane artifacts"
+  ],
+  "input_refs": [],
+  "output_expectation": [
+    "validated handoff artifact for downstream implementation"
+  ]
+}
