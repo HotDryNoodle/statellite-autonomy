@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "time_roundtrip_utc_tt_gpst",
+  "scenario_version": "1.0.0",
+  "title": "Time UTC/TT/GPST roundtrip",
+  "domain": "time",
+  "runner_adapter": "time_benchmark",
+  "kind": "roundtrip",
+  "iterations": 5000,
+  "leap_seconds": "data/eop/leap_seconds.csv",
+  "civil_time": {
+    "year": 2020,
+    "month": 5,
+    "day": 2,
+    "hour": 12,
+    "min": 0,
+    "sec": 0.0
+  },
+  "contract_refs": [
+    "@contract{TimeSys_4_1}",
+    "@contract{TimeSys_4_4_3}",
+    "@contract{TimeSys_4_4_5}"
+  ],
+  "verify_refs": [
+    "@verify{TimeSys_6_1}"
+  ],
+  "truth_source_refs": [
+    "data/eop/leap_seconds.csv"
+  ]
+}

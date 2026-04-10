@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "time_ut1_dependency",
+  "scenario_version": "1.0.0",
+  "title": "Time UT1 dependency gating",
+  "domain": "time",
+  "runner_adapter": "time_benchmark",
+  "kind": "ut1_dependency",
+  "iterations": 3000,
+  "leap_seconds": "data/eop/leap_seconds.csv",
+  "ut1_minus_utc_seconds": 0.334,
+  "civil_time": {
+    "year": 2019,
+    "month": 3,
+    "day": 1,
+    "hour": 0,
+    "min": 0,
+    "sec": 0.0
+  },
+  "contract_refs": [
+    "@contract{TimeSys_4_4_4}",
+    "@contract{TimeSys_4_7_1}"
+  ],
+  "verify_refs": [
+    "@verify{TimeSys_6_4}",
+    "@verify{TimeSys_6_8}"
+  ],
+  "truth_source_refs": [
+    "data/eop/leap_seconds.csv",
+    "scenario constant ut1_minus_utc_seconds=0.334"
+  ]
+}

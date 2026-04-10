@@ -1,6 +1,6 @@
 ---
 name: benchmark-evaluator
-description: 评测与回归验证 skill。用于运行场景、收集产物、比较结果并形成 benchmark 结论。
+description: Eval Owner skill。用于治理场景/基线资产、执行统一评测协议、形成裁决并输出验收级证据。
 version: 1.0.0
 depends_on:
   - project-manager
@@ -25,34 +25,36 @@ triggers:
 
 ## 核心职责
 
-- 通过仓库内 `nav-toolchain` CLI 执行 benchmark / regression 入口。
-- 采集日志、报告和工件。
-- 形成是否满足验收标准的结论。
+- 维护 `eval/` 下的 domain / scenario / baseline 分层与变更记录。
+- 通过仓库内 `nav-toolchain` CLI 执行统一 eval / regression 入口。
+- 管理 baseline 冻结、重标定提案与裁决口径。
+- 形成 verdict / risk / attribution，并输出可用于 acceptance 的签字证据。
 
 ## 典型输入
 
-- benchmark scenarios
-- baseline 定义
-- 构建与测试产物
+- domain manifests / scenarios / baselines
+- 构建、测试和运行产物
+- contract verify 条款与真值来源
 
 ## 典型输出
 
-- 评测结果摘要
-- 回归对比
-- 风险条目
+- 标准化 eval 报告
+- 回归归因与风险等级
+- baseline / scenario 版本绑定证据
 
 ## 明确边界
 
 ### 应该做
 
-- 跑统一评测入口
-- 对比 baseline
-- 输出可归档结论
+- 维护统一评测协议与场景资产
+- 对比 baseline 并管理重标定提案
+- 输出可归档 verdict 与 acceptance 摘要
 
 ### 不应该做
 
 - 代替 `architecture-expert` 做系统设计
-- 代替 coding-skill 修实现
+- 代替 coding-skill / testing-skill 改算法或测试实现
+- 代替 `project-manager` 做优先级或最终验收决策
 
 ## 协作关系
 
@@ -68,13 +70,13 @@ triggers:
 
 ## 工作流程
 
-1. 读取 scenario 与 baseline。
-2. 通过 toolchain 执行 benchmark。
-3. 采集并对比结果。
-4. 输出结论并更新 traceability 输入。
+1. 读取 domain manifest、scenario 与 baseline。
+2. 通过统一 eval 协议执行或裁决对应 domain。
+3. 采集报告、版本、产物和归因信息。
+4. 输出标准化结论并更新 traceability / acceptance 输入。
 
 ## 交付物
 
-- benchmark 报告
-- artifacts 路径
-- 风险结论
+- 标准化 eval 报告
+- baseline / scenario 版本与 artifacts 路径
+- 风险与归因结论

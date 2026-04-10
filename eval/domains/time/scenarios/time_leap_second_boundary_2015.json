@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "time_leap_second_boundary_2015",
+  "scenario_version": "1.0.0",
+  "title": "Time leap second boundary 2015",
+  "domain": "time",
+  "runner_adapter": "time_benchmark",
+  "kind": "leap_second_boundary",
+  "iterations": 2000,
+  "leap_seconds": "data/eop/leap_seconds.csv",
+  "contract_refs": [
+    "@contract{TimeSys_4_4_3}",
+    "@contract{TimeSys_4_6_2}"
+  ],
+  "verify_refs": [
+    "@verify{TimeSys_6_3}"
+  ],
+  "truth_source_refs": [
+    "data/eop/leap_seconds.csv"
+  ]
+}

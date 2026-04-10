@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "domain": "pppar",
+  "domain_version": "0.1.0",
+  "title": "PRIDE-PPPAR LEO evaluation assets",
+  "owner_role": "benchmark-evaluator",
+  "execution_mode": "governance_only",
+  "default_baseline": "eval/domains/pppar/baselines/leo_ppp_eval_baseline.json",
+  "scenario_paths": [
+    "eval/domains/pppar/scenarios/leo_gracefo_ppp_float.json",
+    "eval/domains/pppar/scenarios/leo_gracefo_ppp_ar.json"
+  ],
+  "change_log": [
+    {
+      "version": "0.1.0",
+      "date": "2026-04-10",
+      "summary": "Promoted PPPAR LEO checklists into governed eval assets while runtime execution remains blocked pending adapter support."
+    }
+  ]
+}

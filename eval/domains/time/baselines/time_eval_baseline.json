@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "baseline_id": "time_eval_baseline",
+  "baseline_version": "1.0.0",
+  "domain": "time",
+  "statistics_policy": {
+    "accuracy_rule": "actual <= expected",
+    "performance_rule": "actual <= expected",
+    "status_rule": "actual == expected"
+  },
+  "truth_source_refs": [
+    "data/eop/leap_seconds.csv"
+  ],
+  "recalibration_policy": {
+    "trigger": "algorithm, truth-source, or statistics-policy change",
+    "proposal_owner": "benchmark-evaluator",
+    "approvals_required": [
+      "project-manager",
+      "domain-expert"
+    ]
+  },
+  "approval": {
+    "status": "frozen",
+    "approved_by": [
+      "project-manager"
+    ],
+    "approved_at": "2026-04-02"
+  },
+  "thresholds": {
+    "time_roundtrip_utc_tt_gpst": {
+      "accuracy": {
+        "max_tt_roundtrip_error_sec": 1e-9,
+        "max_gpst_roundtrip_error_sec": 1e-9
+      },
+      "performance": {
+        "elapsed_ns_per_iteration": 50000.0
+      },
+      "status": {}
+    },
+    "time_leap_second_boundary_2015": {
+      "accuracy": {
+        "dt_1_sec_error": 1e-9,
+        "dt_2_sec_error": 1e-9,
+        "dt_3_sec_error": 1e-9
+      },
+      "performance": {
+        "elapsed_ns_per_iteration": 50000.0
+      },
+      "status": {}
+    },
+    "time_ut1_dependency": {
+      "accuracy": {
+        "ut1_offset_error_sec": 1e-9
+      },
+      "performance": {
+        "elapsed_ns_per_iteration": 50000.0
+      },
+      "status": {
+        "missing_ut1_detected": true,
+        "ut1_available_after_set": true
+      }
+    },
+    "time_invalid_inputs": {
+      "accuracy": {},
+      "performance": {
+        "elapsed_ns_per_iteration": 20000.0
+      },
+      "status": {
+        "invalid_civil_rejected": true,
+        "invalid_gpst_rejected": true
+      }
+    }
+  }
+}

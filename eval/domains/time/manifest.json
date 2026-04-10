@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "domain": "time",
+  "domain_version": "1.0.0",
+  "title": "Time system evaluation assets",
+  "owner_role": "benchmark-evaluator",
+  "execution_mode": "time_benchmark",
+  "default_baseline": "eval/domains/time/baselines/time_eval_baseline.json",
+  "scenario_paths": [
+    "eval/domains/time/scenarios/time_invalid_inputs.json",
+    "eval/domains/time/scenarios/time_leap_second_boundary_2015.json",
+    "eval/domains/time/scenarios/time_roundtrip_utc_tt_gpst.json",
+    "eval/domains/time/scenarios/time_ut1_dependency.json"
+  ],
+  "change_log": [
+    {
+      "version": "1.0.0",
+      "date": "2026-04-10",
+      "summary": "Migrated time benchmark assets into the unified domain/scenario/baseline eval layout."
+    }
+  ]
+}

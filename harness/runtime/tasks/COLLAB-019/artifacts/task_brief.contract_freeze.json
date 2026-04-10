@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "artifact_version": "1.0",
+  "task_id": "COLLAB-019",
+  "goal": "clarify eval-agent and traceability-manager responsibility boundary in contracts and skills",
+  "phase": "contract_freeze",
+  "affected_contracts": [
+    "contracts/eval_governance.contract.md",
+    "contracts/harness_workflow.contract.md"
+  ],
+  "clause_refs": [],
+  "success_criteria": [
+    "official task lifecycle is recorded through harness control-plane artifacts"
+  ],
+  "input_refs": [],
+  "output_expectation": [
+    "validated handoff artifact for downstream implementation"
+  ]
+}

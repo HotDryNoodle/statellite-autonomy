@@ -12,6 +12,7 @@
 - `project-manager` 是唯一 flow owner，负责任务编排和 phase 推进。
 - `architecture-expert` 是被调度的专家角色，只负责边界、trade-off、NFR 与接口冻结。
 - `coding-skill`、`testing-skill`、`traceability-manager` 继续分别承担实现、验证和追踪闭环。
+- `benchmark-evaluator` 作为 Eval Owner 维护场景/基线治理、统一评测协议和 acceptance-ready verdict。
 
 ## Responsibilities
 

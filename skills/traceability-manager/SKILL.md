@@ -1,6 +1,6 @@
 ---
 name: traceability-manager
-description: 项目治理型 skill。用于维护 需求 -> contract -> code -> tests -> benchmark -> 决策日志 的可追踪闭环。
+description: 项目治理型 skill。用于维护 需求 -> contract -> code -> tests -> eval report -> 决策日志 的可追踪闭环。
 version: 1.0.0
 depends_on:
   - project-manager
@@ -27,13 +27,14 @@ triggers:
 
 - 维护 `docs/traceability/*.md` 中的长期治理记忆、冻结约束与任务历史。
 - 通过仓库内 `traceability` CLI 提取 contract / code / tests 证据。
+- 把标准化 Eval report 绑定到 verify 条款、runtime evidence 和 acceptance 记录。
 - 记录关键决策与已知限制。
 
 ## 典型输入
 
 - contracts
 - 源码与测试入口
-- benchmark 报告
+- eval 报告
 - `project-manager` 的调度与 `architecture-expert` 的决策
 - `traceability` CLI 生成结果
 
@@ -52,12 +53,15 @@ triggers:
 - 做映射和治理检查
 - 提醒闭环缺口
 - 使用工具生成证据，不依赖会话上下文记忆
+- 接收 Eval Owner 的 report，并把它挂到 verify / acceptance 证据链
 
 ### 不应该做
 
 - 主导算法设计
 - 代替 coding-skill 写实现
 - 代替 testing-skill 设计测试
+- 定义 baseline、阈值口径或重标定策略
+- 直接裁决 eval pass/fail 或风险等级
 
 ## 协作关系
 
@@ -76,7 +80,8 @@ triggers:
 1. 调用 `python3 tools/traceability-cli/traceability_cli.py generate --yes` 生成 `contract_index.json`、`trace.json` 和 markdown 报告。
 2. 按 ClauseId 查询缺失的 code / tests 证据。
 3. 更新长期治理映射、task archive 和覆盖率报告。
-4. 标记缺失链路和已知限制，并同步给 `project-manager`；涉及架构限制时同步给 `architecture-expert`。
+4. 读取 Eval Owner 的标准化 report，把 verdict / verify_refs / artifact_paths 绑定进治理证据链。
+5. 标记缺失链路和已知限制，并同步给 `project-manager`；涉及架构限制时同步给 `architecture-expert`。
 
 ## 交付物
 
@@ -84,3 +89,4 @@ triggers:
 - 缺口清单
 - 决策日志条目
 - ClauseId 级证据与覆盖率表
+- Eval report 到 verify / acceptance 的绑定结果

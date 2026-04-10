@@ -1,0 +1,195 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "leo_gracefo_ppp_float",
+  "scenario_version": "0.1.0",
+  "title": "LEO GRACE-FO PPP float (AR off, minimal AR-centric products)",
+  "domain": "pppar",
+  "runner_adapter": "pride_pppar_leo",
+  "scenario_class": "ppp_float",
+  "contract_refs": [
+    "@contract{PppFamily_5_2}",
+    "@contract{PppFamily_5_3}",
+    "@contract{PppFamily_5_5}",
+    "@contract{PppFamily_5_6}"
+  ],
+  "verify_refs": [
+    "@verify{PppFamily_6_3}",
+    "@verify{PppFamily_6_4}"
+  ],
+  "truth_source_refs": [
+    "GRACE-FO GNV1B-derived pso_*"
+  ],
+  "wiki_refs": [
+    "wiki/pppar/pride-pppar-gracefo-leo-data-inputs.md",
+    "wiki/pppar/pride-pppar-ambiguity-chain.md"
+  ],
+  "pride_runtime": {
+    "driver": "scripts/pdp3.sh",
+    "cli_mode": "L",
+    "notes": "Float trial: still PPP-class LEO POD, not broadcast-only SPP. Precise SP3/CLK/ERP remain mandatory."
+  },
+  "control_hints": {
+    "ambiguity_resolution": "off",
+    "code_phase_bias_product": "NONE",
+    "gnss_quaternions": "NONE",
+    "leo_quaternions": "NONE",
+    "notes": "Exact keys follow PRIDE config.cfg templates; hints are semantic."
+  },
+  "comparison_baseline_scenario_id": "leo_gracefo_ppp_ar",
+  "data_manifest": {
+    "algorithm_inputs": [
+      {
+        "role": "leo_gnss_observation",
+        "path_glob": "grac*.??o, grad*.??o",
+        "required": true,
+        "pdp3_stage": "ProcessSingleSession"
+      },
+      {
+        "role": "broadcast_navigation",
+        "path_glob": "brdm*.??p",
+        "required": true,
+        "pdp3_stage": "PrepareRinexNav"
+      },
+      {
+        "role": "precise_gnss_orbit",
+        "path_glob": "*.SP3",
+        "required": true,
+        "pdp3_stage": "PrepareProducts"
+      },
+      {
+        "role": "precise_gnss_clock",
+        "path_glob": "*.CLK",
+        "required": true,
+        "pdp3_stage": "PrepareProducts"
+      },
+      {
+        "role": "earth_rotation_parameters",
+        "path_glob": "*.ERP",
+        "required": true,
+        "pdp3_stage": "PrepareProducts",
+        "notes": "Often need ERP for day before / of / after for day-boundary sessions."
+      },
+      {
+        "role": "antex_merged",
+        "path_glob": "abs_igs.atx",
+        "required": true,
+        "pdp3_stage": "PrepareTables",
+        "notes": "LEO PCO/PCV entries may be zero-correction in stripped float trial; file must exist."
+      },
+      {
+        "role": "leap_seconds",
+        "path_glob": "leap.sec",
+        "required": true,
+        "pdp3_stage": "PrepareTables"
+      },
+      {
+        "role": "satellite_parameters_table",
+        "path_glob": "sat_parameters",
+        "required": true,
+        "pdp3_stage": "PrepareTables"
+      },
+      {
+        "role": "session_control_file",
+        "path_glob": "config.cfg, config.*",
+        "required": true,
+        "pdp3_stage": "ProcessSingleSession"
+      },
+      {
+        "role": "gnss_satellite_attitude_quaternion",
+        "path_glob": "*.ATT.OBX",
+        "required": false,
+        "pdp3_stage": "PrepareProducts",
+        "notes": "Omitted when Quaternions = NONE for this scenario."
+      },
+      {
+        "role": "leo_platform_attitude",
+        "path_glob": "lat_*",
+        "required": false,
+        "pdp3_stage": "prepare_leodata.sh",
+        "notes": "Omitted when LEO quaternions = NONE."
+      },
+      {
+        "role": "osb_phase_code_bias",
+        "path_glob": "OSB.BIA",
+        "required": false,
+        "pdp3_stage": "PrepareProducts",
+        "notes": "Not required for float; required for ppp_ar counterpart."
+      }
+    ],
+    "execution_outputs": [
+      {
+        "role": "kinematic_trajectory",
+        "path_glob": "kin_*",
+        "required": true,
+        "maps_to_contract": "@contract{PppFamily_5_5}"
+      },
+      {
+        "role": "residuals",
+        "path_glob": "res_*",
+        "required": true,
+        "maps_to_contract": "@contract{PppFamily_5_5}"
+      },
+      {
+        "role": "ambiguity_series",
+        "path_glob": "amb_*",
+        "required": true,
+        "maps_to_contract": "@contract{PppFamily_5_5}",
+        "notes": "Float-state ambiguities; no integer constraint file from arsig in this scenario."
+      },
+      {
+        "role": "state_statistics",
+        "path_glob": "stt_*",
+        "required": false
+      },
+      {
+        "role": "receiver_clock",
+        "path_glob": "rck_*",
+        "required": false
+      }
+    ],
+    "ground_truth_reference": [
+      {
+        "role": "independent_reference_orbit",
+        "path_glob": "pso_*",
+        "used_in_solver": false,
+        "eval_use": "RTN orbit comparison vs kin_*",
+        "notes": "GRACE-FO GNV1B-derived reference; not fed to pdp3 -m L final solution for eval-only fairness."
+      }
+    ]
+  },
+  "evaluation": {
+    "baseline_path": "eval/domains/pppar/baselines/leo_ppp_eval_baseline.json",
+    "metrics": [
+      {
+        "name": "orbit_rtn_rms",
+        "unit": "m",
+        "primary_artifact": "kin_* vs pso_*"
+      },
+      {
+        "name": "orbit_rtn_p95",
+        "unit": "m",
+        "primary_artifact": "kin_* vs pso_*"
+      },
+      {
+        "name": "epoch_solution_availability",
+        "unit": "ratio",
+        "primary_artifact": "kin_* / res_*"
+      },
+      {
+        "name": "residual_rms_code_phase",
+        "unit": "m / cycle",
+        "primary_artifact": "res_*",
+        "notes": "Optional until post-processing extracts per-signal RMS."
+      },
+      {
+        "name": "lsq_redig_iteration_count",
+        "unit": "count",
+        "primary_artifact": "pdp3 / lsq logs"
+      }
+    ]
+  },
+  "acceptance_notes": [
+    "Pipeline completes CheckExecutables through ProcessSingleSession without missing-product silent fallback.",
+    "Compare against leo_gracefo_ppp_ar with identical SP3/CLK/ERP day and RINEX span."
+  ]
+}

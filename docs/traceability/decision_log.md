@@ -127,3 +127,14 @@
 - 项目不再维护 `docs/domain/` 作为 expert 辅助知识层；expert 的持久知识由外挂 Obsidian 仓库负责维护。
 - 各 expert 的知识检索必须先限定在其被分配的 Obsidian wiki 范围内；`pppar_expert_agent` 固定优先检索 `expert-system/wiki/pppar/`。
 - raw 源码归档只作为 wiki 缺失、过时或需要源码级实现细节时的回退层；`/home/hotdry/projects/PRIDE-PPPAR` 继续只作为 runtime 环境。
+
+## 2026-04-10 Eval Owner Governance And Unified Eval Protocol
+
+- `benchmark-evaluator` 升级为 Eval Owner：负责 `eval/` domain/scenario/baseline 分层治理、baseline 生命周期、统一裁决语义与 acceptance-ready verdict；不负责系统架构、算法实现或 PM 优先级决策。
+- `python3 tools/nav-toolchain-cli/toolchain_cli.py eval` 冻结为统一评测入口；`benchmark` 仅保留为 time domain 兼容别名。
+- PPPAR LEO 评测资产进入统一 `eval/domains/pppar/` 协议，但在缺少可执行 adapter 前必须输出 `blocked` verdict，而不是伪造 pass/fail。
+
+## 2026-04-10 Eval Owner Vs Traceability Boundary
+
+- Eval Owner 只拥有评测资产、baseline 生命周期和评测结论；它产出标准化 Eval report，但不直接主写长期治理文档。
+- `traceability-manager` 只拥有证据链绑定和治理一致性检查；它接收 Eval report 并绑定到 verify / acceptance，但不定义 baseline、不过问阈值口径，也不直接裁决 pass/fail。

@@ -53,6 +53,20 @@ class AgentsRuntimeTest(unittest.TestCase):
         self.assertIn("--report-path", command)
         self.assertEqual(artifacts, ["eval/reports/time_benchmark_report.json"])
 
+    def test_tool_allowlist_builds_eval_command(self) -> None:
+        command, artifacts = build_tool_command(
+            "eval",
+            {
+                "domain": "pppar",
+                "report_path": "eval/reports/pppar_eval_report.json",
+                "yes": True,
+            },
+        )
+        self.assertIn("eval", command)
+        self.assertIn("--domain", command)
+        self.assertIn("pppar", command)
+        self.assertEqual(artifacts, ["eval/reports/pppar_eval_report.json"])
+
     def test_tool_allowlist_builds_knowledge_search_command(self) -> None:
         command, artifacts = build_tool_command(
             "knowledge_search",

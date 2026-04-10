@@ -8,6 +8,7 @@
 - harness 当前只实现 Agents SDK v1 adapter 骨架、本地 session/backend 规则和 workflow 测试脚手架；尚未接入真实 OpenAI hosted tracing、background mode 或 hosted retrieval。
 - Obsidian expert bridge 当前只对 `pppar_expert_agent` 开放，且依赖本机已有运行中的 Obsidian app。
 - `COLLAB-013` 之前的历史任务仍然视为 legacy docs-only 记录，不回填 committed runtime task records。
+- PPPAR domain 已纳入 Eval Owner 治理，但当前仍停留在 governance-only 模式；统一 report 会给出 `blocked` verdict，尚未接入真实可执行 adapter。
 
 ## Open Risks
 

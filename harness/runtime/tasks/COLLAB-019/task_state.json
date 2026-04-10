@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.1",
+  "task_id": "COLLAB-019",
+  "goal": "clarify eval-agent and traceability-manager responsibility boundary in contracts and skills",
+  "phase": "acceptance",
+  "owner": "project-manager",
+  "allowed_next_states": [],
+  "evidence_refs": [
+    "python3 tools/traceability-cli/traceability_cli.py status --refresh",
+    "python3 scripts/check_quality.py --report-json"
+  ],
+  "blocking_issues": [],
+  "trace_id": "",
+  "run_attempt": 1,
+  "parent_trace_id": "",
+  "session_backend": "local-jsonl",
+  "session_refs": {},
+  "current_artifact_ref": "harness/runtime/tasks/COLLAB-019/artifacts/handoff.acceptance.json",
+  "pending_approvals": [],
+  "affected_contracts": [
+    "contracts/eval_governance.contract.md",
+    "contracts/harness_workflow.contract.md"
+  ],
+  "archived": true,
+  "updated_at": "2026-04-10T08:41:24.867866+00:00",
+  "task_brief_ref": "harness/runtime/tasks/COLLAB-019/artifacts/task_brief.contract_freeze.json",
+  "handoff_ref": "harness/runtime/tasks/COLLAB-019/artifacts/handoff.acceptance.json",
+  "acceptance_status": "done",
+  "acceptance_summary": "Clarified the Eval Owner vs traceability-manager boundary: Eval Owner owns eval assets, baselines, and verdicts through standardized reports, while traceability-manager only binds those reports into verify and acceptance evidence without defining thresholds or judging pass/fail.",
+  "archive_ref": "docs/traceability/task_archive.md"
+}

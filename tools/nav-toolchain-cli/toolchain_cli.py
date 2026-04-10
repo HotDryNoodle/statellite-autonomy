@@ -10,6 +10,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 from knowledge_ops import KnowledgeError, build_status as build_knowledge_status
 from knowledge_ops import read_note as read_knowledge_note
@@ -18,8 +19,7 @@ from knowledge_ops import search_notes as search_knowledge_notes
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BUILD_DIR = REPO_ROOT / "builddir"
 TRACE_OUTPUT_DIR = REPO_ROOT / "docs" / "_generated" / "traceability"
-SCENARIO_DIR = REPO_ROOT / "eval" / "scenarios"
-BASELINE_DIR = REPO_ROOT / "eval" / "baselines"
+EVAL_DOMAINS_DIR = REPO_ROOT / "eval" / "domains"
 CLI_PATH = "python3 tools/nav-toolchain-cli/toolchain_cli.py"
 
 
@@ -76,11 +76,11 @@ def benchmark_binary(build_dir: Path) -> Path:
     return build_dir / "product" / "tests" / "time_benchmark"
 
 
-def benchmark_report_path(args: argparse.Namespace) -> Path:
-    report = Path(args.report_path)
-    if not report.is_absolute():
-        report = REPO_ROOT / report
-    return report
+def repo_path(path_text: str) -> Path:
+    path = Path(path_text)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    return path
 
 
 def maybe_warn_overwrite(path: Path, yes: bool) -> None:
@@ -167,7 +167,63 @@ def traceability_commands(output_dir: Path) -> list[list[str]]:
     ]
 
 
-def run_benchmark_scenario(binary: Path, scenario: dict) -> dict:
+def load_domain_manifest(domain: str, manifest_path: str = "") -> dict[str, Any]:
+    path = repo_path(manifest_path) if manifest_path else EVAL_DOMAINS_DIR / domain / "manifest.json"
+    if not path.exists():
+        raise FileNotFoundError(f"missing eval domain manifest: {path}")
+    manifest = load_json(path)
+    if manifest.get("domain") != domain:
+        raise ValueError(
+            f"eval domain mismatch: expected {domain}, manifest declares {manifest.get('domain', '')}"
+        )
+    return manifest
+
+
+def load_eval_scenarios(manifest: dict[str, Any], scenario_paths: list[str]) -> list[dict[str, Any]]:
+    declared_paths = scenario_paths or manifest.get("scenario_paths", [])
+    loaded: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for path_text in declared_paths:
+        path = repo_path(path_text)
+        if not path.exists():
+            raise FileNotFoundError(f"missing eval scenario: {path}")
+        scenario = load_json(path)
+        scenario_id = str(scenario.get("scenario_id") or scenario.get("id") or "")
+        if not scenario_id:
+            raise ValueError(f"scenario missing scenario_id: {path}")
+        if scenario_id in seen_ids:
+            raise ValueError(f"duplicate eval scenario_id: {scenario_id}")
+        if scenario.get("domain") != manifest["domain"]:
+            raise ValueError(
+                f"scenario {scenario_id} domain mismatch: {scenario.get('domain', '')} != {manifest['domain']}"
+            )
+        required = ("scenario_version", "verify_refs", "contract_refs", "truth_source_refs", "runner_adapter")
+        missing = [field for field in required if field not in scenario]
+        if missing:
+            raise ValueError(f"scenario {scenario_id} missing required fields: {', '.join(missing)}")
+        seen_ids.add(scenario_id)
+        loaded.append(scenario)
+    if not loaded:
+        raise ValueError(f"domain {manifest['domain']} has no scenarios")
+    return loaded
+
+
+def load_eval_baseline(manifest: dict[str, Any], baseline_path: str = "") -> dict[str, Any]:
+    path_text = baseline_path or str(manifest.get("default_baseline", ""))
+    if not path_text:
+        raise ValueError(f"domain {manifest['domain']} missing default_baseline")
+    path = repo_path(path_text)
+    if not path.exists():
+        raise FileNotFoundError(f"missing eval baseline: {path}")
+    baseline = load_json(path)
+    required = ("baseline_id", "baseline_version", "recalibration_policy", "approval", "truth_source_refs")
+    missing = [field for field in required if field not in baseline]
+    if missing:
+        raise ValueError(f"baseline {path} missing required fields: {', '.join(missing)}")
+    return baseline
+
+
+def run_time_benchmark_scenario(binary: Path, scenario: dict[str, Any]) -> dict[str, Any]:
     kind = scenario["kind"]
     command = [str(binary), "--kind", kind]
 
@@ -210,18 +266,16 @@ def run_benchmark_scenario(binary: Path, scenario: dict) -> dict:
     return_code, output = run_capture(command)
     elapsed_ms = (time.perf_counter() - started) * 1000.0
     if return_code != 0:
-        raise RuntimeError(output or f"benchmark runner failed for {scenario['id']}")
+        raise RuntimeError(output or f"benchmark runner failed for {scenario.get('scenario_id', kind)}")
     payload = json.loads(output)
     payload["driver_elapsed_ms"] = elapsed_ms
     return payload
 
 
-def compare_benchmarks(results: list[dict],
-                       accuracy: dict,
-                       performance: dict,
-                       status: dict) -> tuple[list[dict], list[str]]:
+def compare_time_results(results: list[dict[str, Any]], baseline: dict[str, Any]) -> tuple[list[dict[str, Any]], list[str]]:
     regressions: list[str] = []
-    compared: list[dict] = []
+    compared: list[dict[str, Any]] = []
+    thresholds = baseline.get("thresholds", {})
 
     for result in results:
         scenario_id = result["scenario_id"]
@@ -229,38 +283,219 @@ def compare_benchmarks(results: list[dict],
             "scenario_id": scenario_id,
             "metrics": result,
             "checks": [],
+            "result_status": "pass",
         }
 
-        for metric, expected in accuracy.get(scenario_id, {}).items():
+        scenario_thresholds = thresholds.get(scenario_id, {})
+
+        for metric, expected in scenario_thresholds.get("accuracy", {}).items():
             actual = result.get(metric)
             passed = isinstance(actual, (int, float)) and actual <= expected
             scenario_entry["checks"].append(
-                {"metric": metric, "expected": expected, "actual": actual, "ok": passed}
+                {"metric": metric, "group": "accuracy", "expected": expected, "actual": actual, "ok": passed}
             )
             if not passed:
                 regressions.append(f"{scenario_id}:{metric}={actual} > {expected}")
 
-        for metric, expected in performance.get(scenario_id, {}).items():
+        for metric, expected in scenario_thresholds.get("performance", {}).items():
             actual = result.get(metric)
             passed = isinstance(actual, (int, float)) and actual <= expected
             scenario_entry["checks"].append(
-                {"metric": metric, "expected": expected, "actual": actual, "ok": passed}
+                {"metric": metric, "group": "performance", "expected": expected, "actual": actual, "ok": passed}
             )
             if not passed:
                 regressions.append(f"{scenario_id}:{metric}={actual} > {expected}")
 
-        for metric, expected in status.get(scenario_id, {}).items():
+        for metric, expected in scenario_thresholds.get("status", {}).items():
             actual = result.get(metric)
             passed = actual == expected
             scenario_entry["checks"].append(
-                {"metric": metric, "expected": expected, "actual": actual, "ok": passed}
+                {"metric": metric, "group": "status", "expected": expected, "actual": actual, "ok": passed}
             )
             if not passed:
                 regressions.append(f"{scenario_id}:{metric}={actual} != {expected}")
 
+        if any(not check["ok"] for check in scenario_entry["checks"]):
+            scenario_entry["result_status"] = "fail"
         compared.append(scenario_entry)
 
     return compared, regressions
+
+
+def dry_run_eval_command(args: argparse.Namespace, domain: str, command_name: str) -> int:
+    manifest = load_domain_manifest(domain, args.manifest)
+    report = repo_path(args.report_path)
+    execution_mode = manifest.get("execution_mode", "")
+    if execution_mode == "time_benchmark":
+        build_dir = Path(args.build_dir)
+        compile_cmd = ["meson", "compile", "-C", args.build_dir, "time_benchmark"]
+        commands = common_command_preview(args, compile_cmd)
+        commands.append([str(benchmark_binary(build_dir)), "--kind", "<scenario-kind>", "..."])
+        notes = [
+            f"Dry-run does not execute the {domain} adapter.",
+            "Use --yes to acknowledge overwriting an existing report file.",
+        ]
+    else:
+        commands = [["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "eval", "--domain", domain, "--report-path", str(report)]]
+        notes = [
+            f"Domain {domain} is governance-only; runtime execution currently resolves to a blocked verdict.",
+            "Use --yes to acknowledge overwriting an existing report file.",
+        ]
+    return emit_dry_run(command_name, commands, writes=[str(report)], notes=notes)
+
+
+def build_eval_payload(
+    *,
+    command_name: str,
+    domain: str,
+    manifest: dict[str, Any],
+    baseline: dict[str, Any],
+    report: Path,
+    scenario_results: list[dict[str, Any]],
+    regressions: list[str],
+    blocked_reasons: list[str],
+    build_dir: str,
+    cross_file: str,
+    native_file: str,
+    artifact_paths: list[str],
+) -> dict[str, Any]:
+    if blocked_reasons:
+        verdict = "blocked"
+        risk_level = "high"
+        attribution = "toolchain_failure"
+    elif regressions:
+        verdict = "fail"
+        risk_level = "high"
+        attribution = "algorithm_regression"
+    else:
+        verdict = "pass"
+        risk_level = "low"
+        attribution = "none"
+    scenario_versions = {
+        entry["scenario_id"]: entry.get("scenario_version", "")
+        for entry in scenario_results
+    }
+    verify_refs = sorted({ref for entry in scenario_results for ref in entry.get("verify_refs", [])})
+    contract_refs = sorted({ref for entry in scenario_results for ref in entry.get("contract_refs", [])})
+    summary = (
+        f"{domain} eval {verdict}: {len(scenario_results)} scenario(s), "
+        f"{len(regressions)} regression(s), {len(blocked_reasons)} blocked reason(s)."
+    )
+    return {
+        "schema_version": "1.0",
+        "command": command_name,
+        "domain": domain,
+        "domain_version": manifest.get("domain_version", ""),
+        "execution_mode": manifest.get("execution_mode", ""),
+        "verdict": verdict,
+        "risk_level": risk_level,
+        "attribution": attribution,
+        "summary_for_acceptance": summary,
+        "target_build_dir": build_dir,
+        "cross_file": cross_file,
+        "native_file": native_file,
+        "report_path": str(report),
+        "baseline": {
+            "baseline_id": baseline.get("baseline_id", ""),
+            "baseline_version": baseline.get("baseline_version", ""),
+            "approval_status": baseline.get("approval", {}).get("status", ""),
+        },
+        "scenario_count": len(scenario_results),
+        "scenario_versions": scenario_versions,
+        "verify_refs": verify_refs,
+        "contract_refs": contract_refs,
+        "artifact_paths": artifact_paths,
+        "results": scenario_results,
+        "regressions": regressions,
+        "blocked_reasons": blocked_reasons,
+    }
+
+
+def cmd_eval(args: argparse.Namespace, *, default_domain: str | None = None, command_name: str = "eval") -> int:
+    domain = default_domain or args.domain
+    if not domain:
+        raise ValueError("eval domain is required")
+    manifest = load_domain_manifest(domain, args.manifest)
+    scenarios = load_eval_scenarios(manifest, args.scenario)
+    baseline = load_eval_baseline(manifest, args.baseline)
+    report = repo_path(args.report_path)
+
+    if args.dry_run:
+        return dry_run_eval_command(args, domain, command_name)
+
+    maybe_warn_overwrite(report, args.yes)
+    report.parent.mkdir(parents=True, exist_ok=True)
+
+    scenario_results: list[dict[str, Any]] = []
+    regressions: list[str] = []
+    blocked_reasons: list[str] = []
+
+    execution_mode = manifest.get("execution_mode", "")
+    if execution_mode == "time_benchmark":
+        if ensure_builddir(args) != 0:
+            return 1
+        compile_cmd = ["meson", "compile", "-C", args.build_dir, "time_benchmark"]
+        if run(compile_cmd) != 0:
+            return 1
+        binary = benchmark_binary(Path(args.build_dir))
+        if not binary.exists():
+            print(
+                (
+                    f"error: benchmark runner not found: {binary}\n"
+                    f"example: {CLI_PATH} benchmark --report-path eval/reports/time_benchmark_report.json\n"
+                    f"hint: make sure the build completed successfully and the `time_benchmark` target exists."
+                ),
+                file=sys.stderr,
+            )
+            return 1
+        raw_results = [run_time_benchmark_scenario(binary, scenario) for scenario in scenarios]
+        compared, regressions = compare_time_results(raw_results, baseline)
+        scenario_meta = {scenario["scenario_id"]: scenario for scenario in scenarios}
+        for entry in compared:
+            meta = scenario_meta[entry["scenario_id"]]
+            entry["scenario_version"] = meta["scenario_version"]
+            entry["verify_refs"] = meta["verify_refs"]
+            entry["contract_refs"] = meta["contract_refs"]
+            entry["truth_source_refs"] = meta["truth_source_refs"]
+        scenario_results = compared
+    elif execution_mode == "governance_only":
+        blocked_reasons.append(
+            f"domain {domain} has no executable adapter yet; governance assets are tracked but runtime execution is blocked"
+        )
+        for scenario in scenarios:
+            scenario_results.append(
+                {
+                    "scenario_id": scenario["scenario_id"],
+                    "scenario_version": scenario["scenario_version"],
+                    "result_status": "blocked",
+                    "verify_refs": scenario["verify_refs"],
+                    "contract_refs": scenario["contract_refs"],
+                    "truth_source_refs": scenario["truth_source_refs"],
+                    "checks": [],
+                    "metrics": {},
+                    "blocked_reason": "missing executable domain adapter",
+                }
+            )
+    else:
+        raise ValueError(f"unsupported execution_mode for domain {domain}: {execution_mode}")
+
+    payload = build_eval_payload(
+        command_name=command_name,
+        domain=domain,
+        manifest=manifest,
+        baseline=baseline,
+        report=report,
+        scenario_results=scenario_results,
+        regressions=regressions,
+        blocked_reasons=blocked_reasons,
+        build_dir=args.build_dir,
+        cross_file=args.cross_file or "",
+        native_file=args.native_file or "",
+        artifact_paths=[str(report)],
+    )
+    report.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print_json(payload)
+    return 0 if payload["verdict"] == "pass" else 1
 
 
 def cmd_build(args: argparse.Namespace) -> int:
@@ -298,61 +533,7 @@ def cmd_test(args: argparse.Namespace) -> int:
 
 
 def cmd_benchmark(args: argparse.Namespace) -> int:
-    build_dir = Path(args.build_dir)
-    report = benchmark_report_path(args)
-    compile_cmd = ["meson", "compile", "-C", args.build_dir, "time_benchmark"]
-    if args.dry_run:
-        commands = common_command_preview(args, compile_cmd)
-        commands.append([str(benchmark_binary(build_dir)), "--kind", "<scenario-kind>", "..."])
-        return emit_dry_run(
-            "benchmark",
-            commands,
-            writes=[str(report)],
-            notes=[
-                "Dry-run does not build the benchmark runner or execute scenarios.",
-                "Use --yes to acknowledge overwriting an existing report file.",
-            ],
-        )
-    if ensure_builddir(args) != 0:
-        return 1
-    if run(compile_cmd) != 0:
-        return 1
-
-    binary = benchmark_binary(build_dir)
-    if not binary.exists():
-        print(
-            (
-                f"error: benchmark runner not found: {binary}\n"
-                f"example: {CLI_PATH} benchmark --report-path eval/reports/time_benchmark_report.json\n"
-                f"hint: make sure the build completed successfully and the `time_benchmark` target exists."
-            ),
-            file=sys.stderr,
-        )
-        return 1
-
-    scenario_paths = sorted(SCENARIO_DIR.glob("*.json"))
-    accuracy = load_json(BASELINE_DIR / "time_accuracy_baseline.json")
-    performance = load_json(BASELINE_DIR / "time_performance_baseline.json")
-    status = load_json(BASELINE_DIR / "time_status_baseline.json")
-
-    results = [run_benchmark_scenario(binary, load_json(path)) for path in scenario_paths]
-    compared, regressions = compare_benchmarks(results, accuracy, performance, status)
-
-    maybe_warn_overwrite(report, args.yes)
-    report.parent.mkdir(parents=True, exist_ok=True)
-    payload = {
-        "status": "pass" if not regressions else "fail",
-        "target_build_dir": args.build_dir,
-        "cross_file": args.cross_file or "",
-        "native_file": args.native_file or "",
-        "scenario_count": len(results),
-        "report_path": str(report),
-        "results": compared,
-        "regressions": regressions,
-    }
-    report.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    print_json(payload)
-    return 0 if not regressions else 1
+    return cmd_eval(args, default_domain="time", command_name="benchmark")
 
 
 def cmd_traceability(args: argparse.Namespace) -> int:
@@ -464,11 +645,12 @@ def cmd_knowledge_read(args: argparse.Namespace) -> int:
 
 def make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="CLI-first Meson toolchain entrypoints for build, test, benchmark, traceability, and expert knowledge tasks.",
+        description="CLI-first Meson toolchain entrypoints for build, test, eval, traceability, and expert knowledge tasks.",
         epilog=(
             "Examples:\n"
             f"  {CLI_PATH} build --reconfigure\n"
             f"  {CLI_PATH} test --no-rebuild --test-name time\n"
+            f"  {CLI_PATH} eval --domain time --report-path eval/reports/time_benchmark_report.json --yes\n"
             f"  {CLI_PATH} benchmark --report-path eval/reports/time_benchmark_report.json --yes\n"
             f"  {CLI_PATH} benchmark --dry-run\n"
             f"  {CLI_PATH} traceability --output-dir docs/_generated/traceability --yes\n"
@@ -522,9 +704,33 @@ def make_parser() -> argparse.ArgumentParser:
     test.add_argument("--no-rebuild", action="store_true")
     test.set_defaults(handler=cmd_test)
 
+    eval_cmd = subparsers.add_parser(
+        "eval",
+        description="Execute a governed eval domain and write a standardized verdict report.",
+        epilog=(
+            "Examples:\n"
+            f"  {CLI_PATH} eval --domain time --report-path eval/reports/time_benchmark_report.json --yes\n"
+            f"  {CLI_PATH} eval --domain pppar --report-path eval/reports/pppar_eval_report.json --yes\n"
+            f"  {CLI_PATH} eval --domain time --dry-run"
+        ),
+        formatter_class=HelpFormatter,
+    )
+    add_common(eval_cmd)
+    eval_cmd.add_argument("--domain", required=True)
+    eval_cmd.add_argument("--manifest", default="")
+    eval_cmd.add_argument("--baseline", default="")
+    eval_cmd.add_argument("--scenario", action="append", default=[])
+    eval_cmd.add_argument("--report-path", default="eval/reports/eval_report.json")
+    eval_cmd.add_argument(
+        "--yes",
+        action="store_true",
+        help="acknowledge overwriting an existing eval report",
+    )
+    eval_cmd.set_defaults(handler=cmd_eval)
+
     benchmark = subparsers.add_parser(
         "benchmark",
-        description="Build the benchmark runner, execute scenarios, and write a JSON report.",
+        description="Compatibility alias for time-domain eval using the legacy benchmark entrypoint.",
         epilog=(
             "Examples:\n"
             f"  {CLI_PATH} benchmark --report-path eval/reports/time_benchmark_report.json --yes\n"
@@ -533,6 +739,9 @@ def make_parser() -> argparse.ArgumentParser:
         formatter_class=HelpFormatter,
     )
     add_common(benchmark)
+    benchmark.add_argument("--manifest", default="")
+    benchmark.add_argument("--baseline", default="")
+    benchmark.add_argument("--scenario", action="append", default=[])
     benchmark.add_argument(
         "--report-path",
         default="eval/reports/time_benchmark_report.json",

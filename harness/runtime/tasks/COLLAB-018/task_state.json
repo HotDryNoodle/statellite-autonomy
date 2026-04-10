@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "task_id": "COLLAB-018",
+  "goal": "upgrade benchmark-evaluator into eval owner with unified eval governance, protocol, and evidence closure",
+  "phase": "acceptance",
+  "owner": "project-manager",
+  "allowed_next_states": [],
+  "evidence_refs": [
+    "python3 -m unittest harness.tests.test_agents_runtime tools.tests.test_cli_tools",
+    "python3 tools/nav-toolchain-cli/toolchain_cli.py eval --domain pppar --report-path /tmp/pppar_eval_report.json --yes",
+    "python3 tools/traceability-cli/traceability_cli.py status --refresh",
+    "python3 tools/nav-toolchain-cli/toolchain_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes",
+    "python3 scripts/check_quality.py --report-json"
+  ],
+  "blocking_issues": [],
+  "trace_id": "",
+  "run_attempt": 1,
+  "parent_trace_id": "",
+  "session_backend": "local-jsonl",
+  "session_refs": {},
+  "current_artifact_ref": "harness/runtime/tasks/COLLAB-018/artifacts/handoff.acceptance.json",
+  "pending_approvals": [],
+  "affected_contracts": [
+    "contracts/harness_workflow.contract.md",
+    "contracts/harness_product_boundary.contract.md",
+    "contracts/time_system.contract.md",
+    "contracts/ppp_family.contract.md"
+  ],
+  "archived": true,
+  "updated_at": "2026-04-10T07:57:40.994278+00:00",
+  "task_brief_ref": "harness/runtime/tasks/COLLAB-018/artifacts/task_brief.contract_freeze.json",
+  "handoff_ref": "harness/runtime/tasks/COLLAB-018/artifacts/handoff.acceptance.json",
+  "acceptance_status": "done",
+  "acceptance_summary": "Upgraded benchmark-evaluator into an Eval Owner with a new eval governance contract, unified eval CLI/report schema, governed domain manifests for time and PPPAR, and acceptance-ready verdict evidence including blocked PPPAR governance-only outcomes.",
+  "archive_ref": "docs/traceability/task_archive.md"
+}

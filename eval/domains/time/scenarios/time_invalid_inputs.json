@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "time_invalid_inputs",
+  "scenario_version": "1.0.0",
+  "title": "Time invalid inputs rejection",
+  "domain": "time",
+  "runner_adapter": "time_benchmark",
+  "kind": "invalid_inputs",
+  "iterations": 2000,
+  "contract_refs": [
+    "@contract{TimeSys_4_7_1}"
+  ],
+  "verify_refs": [
+    "@verify{TimeSys_6_8}"
+  ],
+  "truth_source_refs": [
+    "contract failure semantics"
+  ]
+}

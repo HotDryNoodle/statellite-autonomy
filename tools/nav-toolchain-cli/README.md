@@ -10,7 +10,8 @@
 
 - `build`
 - `test`
-- `benchmark`
+- `eval`
+- `benchmark` (time-domain compatibility alias)
 - `traceability`
 - `status`
 - `knowledge` for CLI-only expert-system Obsidian access
@@ -29,6 +30,7 @@ python3 tools/nav-toolchain-cli/toolchain_cli.py status
 ./scripts/nav-toolchain build --reconfigure
 ./scripts/nav-toolchain test --no-rebuild
 ./scripts/nav-toolchain traceability --yes
+./scripts/nav-toolchain eval --domain time --report-path eval/reports/time_benchmark_report.json --yes
 ./scripts/nav-toolchain benchmark --report-path eval/reports/time_benchmark_report.json --yes
 ./scripts/nav-toolchain knowledge status --agent pppar_expert_agent
 ```

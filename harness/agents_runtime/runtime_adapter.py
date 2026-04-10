@@ -52,7 +52,7 @@ class HarnessRuntimeAdapter:
                 "rdpod_analyst_agent": {"role": "expert"},
                 "coding_agent": {"role": "implementation"},
                 "testing_agent": {"role": "verification"},
-                "eval_agent": {"role": "tool_router"},
+                "eval_agent": {"role": "evaluation_owner"},
             },
             "workflow_config": workflow_config,
         }

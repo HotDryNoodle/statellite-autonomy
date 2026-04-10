@@ -65,10 +65,14 @@
     },
     "eval_agent": {
       "status": "active",
-      "kind": "tool_router",
+      "kind": "evaluation",
       "allowed_contracts": [
+        "contracts/eval_governance.contract.md",
         "contracts/harness_product_boundary.contract.md",
-        "contracts/harness_workflow.contract.md"
+        "contracts/harness_workflow.contract.md",
+        "contracts/time_system.contract.md",
+        "contracts/ppp_family.contract.md",
+        "contracts/rdpod_family.contract.md"
       ],
       "eval_dataset": "eval/agent_workflow/eval"
     }

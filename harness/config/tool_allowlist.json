@@ -18,7 +18,12 @@
     },
     "benchmark": {
       "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "benchmark"],
-      "allowed_params": ["build_dir", "cross_file", "native_file", "report_path", "dry_run", "yes"],
+      "allowed_params": ["build_dir", "cross_file", "native_file", "manifest", "baseline", "scenario", "report_path", "dry_run", "yes"],
+      "artifact_params": ["report_path"]
+    },
+    "eval": {
+      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "eval"],
+      "allowed_params": ["build_dir", "cross_file", "native_file", "domain", "manifest", "baseline", "scenario", "report_path", "dry_run", "yes"],
       "artifact_params": ["report_path"]
     },
     "status": {

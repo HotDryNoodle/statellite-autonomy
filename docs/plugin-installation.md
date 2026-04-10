@@ -59,6 +59,7 @@ python3 tools/nav-toolchain-cli/toolchain_cli.py status
 python3 tools/nav-toolchain-cli/toolchain_cli.py build --reconfigure
 python3 tools/nav-toolchain-cli/toolchain_cli.py test --no-rebuild
 python3 tools/nav-toolchain-cli/toolchain_cli.py traceability --yes
+python3 tools/nav-toolchain-cli/toolchain_cli.py eval --domain time --report-path eval/reports/time_benchmark_report.json --yes
 python3 tools/nav-toolchain-cli/toolchain_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes
 ./scripts/nav-toolchain build --reconfigure
 UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/nav-toolchain-cli python tools/nav-toolchain-cli/toolchain_cli.py status

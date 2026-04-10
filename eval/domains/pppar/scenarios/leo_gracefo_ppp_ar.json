@@ -1,0 +1,205 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "leo_gracefo_ppp_ar",
+  "scenario_version": "0.1.0",
+  "title": "LEO GRACE-FO PPP-AR (full bias + arsig closure)",
+  "domain": "pppar",
+  "runner_adapter": "pride_pppar_leo",
+  "scenario_class": "ppp_ar",
+  "contract_refs": [
+    "@contract{PppFamily_5_2}",
+    "@contract{PppFamily_5_3}",
+    "@contract{PppFamily_5_5}",
+    "@contract{PppFamily_5_6}"
+  ],
+  "verify_refs": [
+    "@verify{PppFamily_6_3}",
+    "@verify{PppFamily_6_4}"
+  ],
+  "truth_source_refs": [
+    "GRACE-FO GNV1B-derived pso_*"
+  ],
+  "wiki_refs": [
+    "wiki/pppar/pride-pppar-gracefo-leo-data-inputs.md",
+    "wiki/pppar/pride-pppar-ambiguity-chain.md",
+    "wiki/pppar/pride-pppar-arsig-search-and-validation.md"
+  ],
+  "pride_runtime": {
+    "driver": "scripts/pdp3.sh",
+    "cli_mode": "L",
+    "notes": "AR enabled: lsq float -> redig loop -> arsig integer constraints -> final lsq."
+  },
+  "control_hints": {
+    "ambiguity_resolution": "on",
+    "code_phase_bias_product": "OSB.BIA",
+    "gnss_quaternions": "typical_precise",
+    "leo_quaternions": "typical_precise",
+    "notes": "Exact keys follow PRIDE config.cfg; OSB is strong dependency for current AR trials per wiki."
+  },
+  "comparison_baseline_scenario_id": "leo_gracefo_ppp_float",
+  "data_manifest": {
+    "algorithm_inputs": [
+      {
+        "role": "leo_gnss_observation",
+        "path_glob": "grac*.??o, grad*.??o",
+        "required": true,
+        "pdp3_stage": "ProcessSingleSession"
+      },
+      {
+        "role": "broadcast_navigation",
+        "path_glob": "brdm*.??p",
+        "required": true,
+        "pdp3_stage": "PrepareRinexNav"
+      },
+      {
+        "role": "precise_gnss_orbit",
+        "path_glob": "*.SP3",
+        "required": true,
+        "pdp3_stage": "PrepareProducts"
+      },
+      {
+        "role": "precise_gnss_clock",
+        "path_glob": "*.CLK",
+        "required": true,
+        "pdp3_stage": "PrepareProducts"
+      },
+      {
+        "role": "earth_rotation_parameters",
+        "path_glob": "*.ERP",
+        "required": true,
+        "pdp3_stage": "PrepareProducts"
+      },
+      {
+        "role": "gnss_satellite_attitude_quaternion",
+        "path_glob": "*.ATT.OBX",
+        "required": true,
+        "pdp3_stage": "PrepareProducts",
+        "notes": "Required for nominal precise AR trial alignment with GRACE-FO baseline wiki."
+      },
+      {
+        "role": "leo_platform_attitude",
+        "path_glob": "lat_*",
+        "required": true,
+        "pdp3_stage": "prepare_leodata.sh",
+        "notes": "LEO APC mapping for nominal AR trial."
+      },
+      {
+        "role": "osb_phase_code_bias",
+        "path_glob": "OSB.BIA",
+        "required": true,
+        "pdp3_stage": "PrepareProducts",
+        "notes": "Substantive dependency for AR trial; missing must fail per PppFamily_5_3."
+      },
+      {
+        "role": "antex_merged",
+        "path_glob": "abs_igs.atx",
+        "required": true,
+        "pdp3_stage": "PrepareTables"
+      },
+      {
+        "role": "leap_seconds",
+        "path_glob": "leap.sec",
+        "required": true,
+        "pdp3_stage": "PrepareTables"
+      },
+      {
+        "role": "satellite_parameters_table",
+        "path_glob": "sat_parameters",
+        "required": true,
+        "pdp3_stage": "PrepareTables"
+      },
+      {
+        "role": "session_control_file",
+        "path_glob": "config.cfg, config.*",
+        "required": true,
+        "pdp3_stage": "ProcessSingleSession"
+      }
+    ],
+    "execution_outputs": [
+      {
+        "role": "kinematic_trajectory",
+        "path_glob": "kin_*",
+        "required": true,
+        "maps_to_contract": "@contract{PppFamily_5_5}"
+      },
+      {
+        "role": "residuals",
+        "path_glob": "res_*",
+        "required": true,
+        "maps_to_contract": "@contract{PppFamily_5_5}"
+      },
+      {
+        "role": "ambiguity_series",
+        "path_glob": "amb_*",
+        "required": true,
+        "maps_to_contract": "@contract{PppFamily_5_5}"
+      },
+      {
+        "role": "arsig_logs_or_constraints",
+        "path_glob": "arsig* , *ambcon*",
+        "required": true,
+        "notes": "Concrete filenames follow PRIDE session layout; capture stage for fix-rate metrics."
+      },
+      {
+        "role": "state_statistics",
+        "path_glob": "stt_*",
+        "required": false
+      },
+      {
+        "role": "receiver_clock",
+        "path_glob": "rck_*",
+        "required": false
+      }
+    ],
+    "ground_truth_reference": [
+      {
+        "role": "independent_reference_orbit",
+        "path_glob": "pso_*",
+        "used_in_solver": false,
+        "eval_use": "RTN orbit comparison vs kin_*",
+        "notes": "Same eval protocol as ppp_float scenario."
+      }
+    ]
+  },
+  "evaluation": {
+    "baseline_path": "eval/domains/pppar/baselines/leo_ppp_eval_baseline.json",
+    "metrics": [
+      {
+        "name": "orbit_rtn_rms",
+        "unit": "m",
+        "primary_artifact": "kin_* vs pso_*"
+      },
+      {
+        "name": "orbit_rtn_p95",
+        "unit": "m",
+        "primary_artifact": "kin_* vs pso_*"
+      },
+      {
+        "name": "arsig_fix_rate",
+        "unit": "ratio",
+        "primary_artifact": "arsig / amb logs",
+        "notes": "Define numerator/denominator in eval harness once log parser exists."
+      },
+      {
+        "name": "ratio_test_or_chi_square_stats",
+        "unit": "dimensionless",
+        "primary_artifact": "arsig output",
+        "notes": "Optional distribution check vs pride-pppar-arsig-search-and-validation.md."
+      },
+      {
+        "name": "epoch_solution_availability",
+        "unit": "ratio",
+        "primary_artifact": "kin_* / res_*"
+      },
+      {
+        "name": "lsq_redig_iteration_count",
+        "unit": "count",
+        "primary_artifact": "pdp3 / lsq logs"
+      }
+    ]
+  },
+  "acceptance_notes": [
+    "Missing OSB or AR prerequisites must surface explicit failure (no silent float-as-fixed).",
+    "Use same RINEX span and SP3/CLK/ERP product set as leo_gracefo_ppp_float for A/B comparison."
+  ]
+}

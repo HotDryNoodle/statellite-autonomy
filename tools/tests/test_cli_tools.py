@@ -49,6 +49,38 @@ class CliToolsTest(unittest.TestCase):
         self.assertEqual(payload["command"], "build")
         self.assertTrue(any("meson compile" in command for command in payload["commands"]))
 
+    def test_toolchain_eval_help_includes_examples(self) -> None:
+        completed = self.run_cli(TOOLCHAIN, "eval", "--help")
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn("Examples:", completed.stdout)
+        self.assertIn("eval --domain time", completed.stdout)
+
+    def test_toolchain_eval_dry_run_is_machine_readable(self) -> None:
+        completed = self.run_cli(TOOLCHAIN, "eval", "--domain", "time", "--dry-run")
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertTrue(payload["dry_run"])
+        self.assertEqual(payload["command"], "eval")
+        self.assertTrue(any("time_benchmark" in command for command in payload["commands"]))
+
+    def test_toolchain_eval_pppar_returns_blocked_verdict(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            report_path = Path(tmp) / "pppar_eval_report.json"
+            completed = self.run_cli(
+                TOOLCHAIN,
+                "eval",
+                "--domain",
+                "pppar",
+                "--report-path",
+                str(report_path),
+                "--yes",
+            )
+        self.assertNotEqual(completed.returncode, 0)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["verdict"], "blocked")
+        self.assertEqual(payload["domain"], "pppar")
+        self.assertTrue(payload["blocked_reasons"])
+
     def test_traceability_help_includes_examples(self) -> None:
         completed = self.run_cli(TRACEABILITY, "query-clause", "--help")
         self.assertEqual(completed.returncode, 0, completed.stderr)

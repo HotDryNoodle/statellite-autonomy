@@ -20,7 +20,7 @@ Contract-driven satellite autonomy engineering workspace with a harness control 
 python3 tools/nav-toolchain-cli/toolchain_cli.py build --reconfigure
 python3 tools/nav-toolchain-cli/toolchain_cli.py test --no-rebuild
 python3 tools/nav-toolchain-cli/toolchain_cli.py traceability --yes
-python3 tools/nav-toolchain-cli/toolchain_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes
+python3 tools/nav-toolchain-cli/toolchain_cli.py eval --domain time --report-path eval/reports/time_benchmark_report.json --yes
 python3 tools/traceability-cli/traceability_cli.py status
 python3 scripts/check_quality.py --report-json
 ```
