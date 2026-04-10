@@ -1,0 +1,16 @@
+{
+  "task_id": "COLLAB-017",
+  "phase": "acceptance",
+  "from_agent": "project-manager",
+  "to_agent": "none",
+  "summary": "Removed repo-local docs/domain PPP references, switched pppar_expert_agent to Obsidian-first wiki routing, and froze PPP family knowledge sourcing to external expert-system wiki scopes with raw PRIDE fallback only.",
+  "relevant_contracts": [
+    "contracts/ppp_family.contract.md",
+    "contracts/harness_product_boundary.contract.md"
+  ],
+  "evidence_refs": [],
+  "blocking_issues": [],
+  "recommended_actions": [
+    "Archive task when short-term memory can be cleared."
+  ]
+}

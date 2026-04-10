@@ -8,10 +8,9 @@
         "pppar/"
       ],
       "repo_reference_roots": [
-        "skills/pppar-expert/references/",
-        "/home/hotdry/projects/PRIDE-PPPAR/"
+        "/home/hotdry/Documents/expert-system/"
       ],
-      "authority_mode": "repo_first"
+      "authority_mode": "obsidian_first"
     }
   }
 }

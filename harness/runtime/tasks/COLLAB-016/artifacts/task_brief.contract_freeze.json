@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "artifact_version": "1.0",
+  "task_id": "COLLAB-016",
+  "goal": "Retire repo-local pppar-expert skill discovery and standardize on the global pride-pppar-expert skill while preserving PPP knowledge references.",
+  "phase": "contract_freeze",
+  "affected_contracts": [
+    "contracts/ppp_family.contract.md",
+    "contracts/harness_product_boundary.contract.md"
+  ],
+  "clause_refs": [],
+  "success_criteria": [
+    "official task lifecycle is recorded through harness control-plane artifacts"
+  ],
+  "input_refs": [],
+  "output_expectation": [
+    "validated handoff artifact for downstream implementation"
+  ]
+}

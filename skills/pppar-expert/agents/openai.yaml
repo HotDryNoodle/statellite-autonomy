@@ -1,3 +1,0 @@
-display_name: PRIDE-PPPAR Expert
-short_description: Repo-local expert for PRIDE install, diagnostics, LEO runs, and PPP-AR algorithm explanations.
-default_prompt: Use the standalone PRIDE project at ~/projects/PRIDE-PPPAR as the authority. Cite the root source tree under src/, scripts/, doc/, and table/ for implementation and manuals; use tools/PRIDE only as the installed runtime prefix for diagnostics and execution.

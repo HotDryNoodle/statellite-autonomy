@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "artifact_version": "1.0",
+  "task_id": "COLLAB-017",
+  "goal": "Remove repo-local docs/domain PPP references and standardize expert knowledge sourcing on external Obsidian wiki scopes with global pride-pppar-expert precedence.",
+  "phase": "contract_freeze",
+  "affected_contracts": [
+    "contracts/ppp_family.contract.md",
+    "contracts/harness_product_boundary.contract.md"
+  ],
+  "clause_refs": [],
+  "success_criteria": [
+    "official task lifecycle is recorded through harness control-plane artifacts"
+  ],
+  "input_refs": [],
+  "output_expectation": [
+    "validated handoff artifact for downstream implementation"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.1",
+  "task_id": "COLLAB-017",
+  "goal": "Remove repo-local docs/domain PPP references and standardize expert knowledge sourcing on external Obsidian wiki scopes with global pride-pppar-expert precedence.",
+  "phase": "acceptance",
+  "owner": "project-manager",
+  "allowed_next_states": [],
+  "evidence_refs": [],
+  "blocking_issues": [],
+  "trace_id": "",
+  "run_attempt": 1,
+  "parent_trace_id": "",
+  "session_backend": "local-jsonl",
+  "session_refs": {},
+  "current_artifact_ref": "harness/runtime/tasks/COLLAB-017/artifacts/handoff.acceptance.json",
+  "pending_approvals": [],
+  "affected_contracts": [
+    "contracts/ppp_family.contract.md",
+    "contracts/harness_product_boundary.contract.md"
+  ],
+  "archived": true,
+  "updated_at": "2026-04-10T06:37:31.660173+00:00",
+  "task_brief_ref": "harness/runtime/tasks/COLLAB-017/artifacts/task_brief.contract_freeze.json",
+  "handoff_ref": "harness/runtime/tasks/COLLAB-017/artifacts/handoff.acceptance.json",
+  "acceptance_status": "done",
+  "acceptance_summary": "Removed repo-local docs/domain PPP references, switched pppar_expert_agent to Obsidian-first wiki routing, and froze PPP family knowledge sourcing to external expert-system wiki scopes with raw PRIDE fallback only.",
+  "archive_ref": "docs/traceability/task_archive.md"
+}

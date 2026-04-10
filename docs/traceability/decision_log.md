@@ -7,7 +7,7 @@
 - 公共时间模块归属 `product/src/unit/time`，命名空间固定为 `unit::time`。
 - 第一阶段只对 `unit::time` 做代码与测试闭环，Navigation / Prediction / Mission Planning 先冻结边界。
 - 方法型 skills 直接拷贝进本仓库，避免外部引用漂移。
-- `pppar-expert` 以 `/home/hotdry/projects/PRIDE-PPPAR` 为唯一权威知识源。
+- `pppar-expert` 以 `/home/hotdry/Documents/expert-system/wiki/pppar` 和 `/home/hotdry/Documents/expert-system/raw/pppar/sources/PRIDE` 为权威知识源；`/home/hotdry/projects/PRIDE-PPPAR` 仅为 runtime 环境。
 - Meson 三方依赖管理按参考项目预铺完整骨架，但当前实现尽量仅依赖标准库。
 
 ## 2026-04-01 Traceability Split
@@ -116,3 +116,14 @@
 - detailed command cookbook 与 role-specific load routing 下沉到 `skills/project-manager/references/`，入口层不再重复维护完整 SOP。
 - 默认读链按角色分流：全局入口只保留最小共识，`decision_log.md`、`agent_activity_log.md`、`agent-collaboration.md` 等长文档改为 conditional load。
 - `scripts/check_quality.py` 负责阻断 prompt docs 回退到超长首屏或重复 SOP 的状态。
+
+## 2026-04-10 Global PPP Expert Skill Cutover
+
+- 项目内 `skills/pppar-expert/` 不再作为可发现 skill 维护，Codex 启动时统一采用全局 `pride-pppar-expert`。
+- PPP family 的权威知识源与运行时边界保持不变：`/home/hotdry/Documents/expert-system/` 仍是知识 authority，`/home/hotdry/projects/PRIDE-PPPAR` 仍仅作为 runtime 环境。
+
+## 2026-04-10 Obsidian Wiki First Expert Knowledge Routing
+
+- 项目不再维护 `docs/domain/` 作为 expert 辅助知识层；expert 的持久知识由外挂 Obsidian 仓库负责维护。
+- 各 expert 的知识检索必须先限定在其被分配的 Obsidian wiki 范围内；`pppar_expert_agent` 固定优先检索 `expert-system/wiki/pppar/`。
+- raw 源码归档只作为 wiki 缺失、过时或需要源码级实现细节时的回退层；`/home/hotdry/projects/PRIDE-PPPAR` 继续只作为 runtime 环境。

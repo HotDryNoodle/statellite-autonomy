@@ -1,0 +1,16 @@
+{
+  "task_id": "COLLAB-017",
+  "phase": "implementation",
+  "from_agent": "project-manager",
+  "to_agent": "coding_agent",
+  "summary": "project-manager prepared downstream handoff without expert dispatch",
+  "relevant_contracts": [
+    "contracts/ppp_family.contract.md",
+    "contracts/harness_product_boundary.contract.md"
+  ],
+  "evidence_refs": [],
+  "blocking_issues": [],
+  "recommended_actions": [
+    "Proceed with implementation against the frozen contracts and current task brief."
+  ]
+}

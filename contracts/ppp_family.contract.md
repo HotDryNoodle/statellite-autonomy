@@ -11,7 +11,7 @@
 
 ## 2. 模块定位（Module Scope）
 
-- PPP family 归属于 Navigation 层，由 `pppar-expert` 提供算法与实现证据支撑。
+- PPP family 归属于 Navigation 层，由全局 `pride-pppar-expert` 提供算法与实现证据支撑。
 - 本项目当前 PPP family 以 PRIDE-PPPAR 为权威实现样本，用于解释、合同冻结、expert handoff 与后续产品化设计。
 - PPP family 负责 GNSS PPP / PPP-AR 的运行链路、观测建模入口、模糊度处理入口与结果诊断边界。
 
@@ -23,34 +23,38 @@
 
 ## 3. 术语与假设（Terms & Assumptions）
 
-- PRIDE-PPPAR 权威源码树固定为 `/home/hotdry/projects/PRIDE-PPPAR/`。
-- Obsidian `expert-system` vault 中的 `pppar/` 笔记仅作为补充解释层，不得覆盖 PRIDE 源码与手册证据。
-- 本项目对 PPP family 的运行证据优先级为：PRIDE 源码 / 脚本 / table -> PRIDE 手册 -> 仓库内 `skills/pppar-expert/references/` -> expert supplemental knowledge。
+- `pppar_expert_agent` 的默认知识入口固定为 Obsidian `expert-system` vault 中 `wiki/pppar/` 允许范围。
+- PRIDE-PPPAR 权威源码树固定为 `/home/hotdry/Documents/expert-system/raw/pppar/sources/PRIDE/`，仅在 wiki 缺失、过时或需要源码级实现细节时回退。
+- 本项目对 PPP family 的证据优先级为：指定 Obsidian wiki 范围 -> raw/pppar/sources/PRIDE -> 本地 runtime (`toolchain/` + `data/`)。
 - PPP family 仍受 `contracts/navigation.contract.md` 的 Navigation 层边界约束。
 
 ## 4. 数据输入（Inputs）
 
-| 名称 | 来源 | 说明 | 备注 |
-| --- | --- | --- | --- |
-| RINEX Observation | 外部会话输入 | GNSS 观测数据 | `pdp3.sh` 最终消费对象 |
-| RINEX Navigation / BRDM | 外部会话输入 | 广播星历或导航文件 | 由预处理阶段准备 |
-| Control File | PRIDE config | PPP/PPP-AR 模式、频点、模型与输出选项 | `pdp3.sh` 与 `get_ctrl` 消费 |
-| Precise Products | 上游产品中心 | Orbit / Clock / ERP / Bias / Quaternion / optional GIM | 缺失时必须显式失败 |
-| Table Assets | `table/` | ANTEX、leap second、潮汐与站星参数等 | `PrepareTables` 阶段装载 |
-| Prior Trajectory / Attitude | LEO coupling entry | `kin_*`、`pso_*` 或 quaternion inputs | 仅冻结入口，不冻结 LEO 动力学细节 |
+
+| 名称                          | 来源                 | 说明                                                     | 备注                        |
+| --------------------------- | ------------------ | ------------------------------------------------------ | ------------------------- |
+| RINEX Observation           | 外部会话输入             | GNSS 观测数据                                              | `pdp3.sh` 最终消费对象          |
+| RINEX Navigation / BRDM     | 外部会话输入             | 广播星历或导航文件                                              | 由预处理阶段准备                  |
+| Control File                | PRIDE config       | PPP/PPP-AR 模式、频点、模型与输出选项                               | `pdp3.sh` 与 `get_ctrl` 消费 |
+| Precise Products            | 上游产品中心             | Orbit / Clock / ERP / Bias / Quaternion / optional GIM | 缺失时必须显式失败                 |
+| Table Assets                | `table/`           | ANTEX、leap second、潮汐与站星参数等                             | `PrepareTables` 阶段装载      |
+| Prior Trajectory / Attitude | LEO coupling entry | `kin_*`、`pso_*` 或 quaternion inputs                    | 仅冻结入口，不冻结 LEO 动力学细节       |
+
 
 ## 5. 数据处理与设计约束（Contracts）
 
 ### 5.1 权威知识源与证据顺序
+
 @contract{PppFamily_5_1}
 
 Contract：
 
-- PPP family 的权威知识源为 `skills/pppar-expert/` 指向的 `/home/hotdry/projects/PRIDE-PPPAR`。
-- 任何 PPP family 解释、handoff、contract 更新或后续产品化设计，都必须先引用 PRIDE 源码模块与运行脚本，再引用补充说明。
-- Obsidian supplemental knowledge 只能作为解释增强，不得与 PRIDE 实现证据冲突；冲突时必须以 PRIDE 源码 / 手册为准。
+- PPP family 的默认知识源为 `/home/hotdry/Documents/expert-system/wiki/pppar` 指定范围；源码与手册证据回退到 `/home/hotdry/Documents/expert-system/raw/pppar/sources/PRIDE`。
+- 任何 PPP family 解释、handoff、contract 更新或后续产品化设计，都必须先在允许的 Obsidian wiki 范围内检索；仅在 wiki 缺失、过时或不足以支撑实现细节时，才回退到 PRIDE 源码模块与运行脚本。
+- 本地 runtime 仓库 `/home/hotdry/projects/PRIDE-PPPAR` 只作为执行环境，不再作为源码权威。
 
 ### 5.2 PPP-AR 运行拓扑
+
 @contract{PppFamily_5_2}
 
 Contract：
@@ -60,6 +64,7 @@ Contract：
 - `arsig` 负责在 float ambiguity 之后生成整数约束，并把约束重新喂回 `lsq`；`arsig` 不是独立于 `lsq` 的最终求解器。
 
 ### 5.3 输入依赖与失败语义
+
 @contract{PppFamily_5_3}
 
 Contract：
@@ -69,6 +74,7 @@ Contract：
 - 缺失表文件、精密产品、姿态产品或 prior trajectory 时，失败语义必须能够映射回 `CheckExecutables`、`PrepareTables`、`PrepareProducts` 或 `ProcessSingleSession` 阶段之一。
 
 ### 5.4 状态参数与观测方程家族
+
 @contract{PppFamily_5_4}
 
 Contract：
@@ -78,6 +84,7 @@ Contract：
 - ambiguity 参数必须由编辑结果驱动创建与移除，不能被建模为与弧段无关的静态常量，也不能退化为仅 epoch-local 标记。
 
 ### 5.5 输出与诊断产物
+
 @contract{PppFamily_5_5}
 
 Contract：
@@ -87,6 +94,7 @@ Contract：
 - expert 对 PPP family 的诊断说明必须能把缺失产物回溯到对应运行阶段和上游依赖类别。
 
 ### 5.6 LEO coupling entry
+
 @contract{PppFamily_5_6}
 
 Contract：
@@ -96,6 +104,7 @@ Contract：
 - 本条款只冻结 LEO 输入接口、模式入口和依赖边界；不冻结 RD-POD 动力学模型、力模型、传播器实现或完整验证标准。
 
 ### 5.7 当前边界与非目标
+
 @contract{PppFamily_5_7}
 
 Contract：
@@ -128,21 +137,24 @@ Contract：
 
 ## 附录A：设计约束表
 
-| ClauseId | 说明 |
-| --- | --- |
-| `@contract{PppFamily_5_1}` | 权威知识源与证据顺序 |
-| `@contract{PppFamily_5_2}` | PPP-AR 运行拓扑 |
-| `@contract{PppFamily_5_3}` | 输入依赖与失败语义 |
-| `@contract{PppFamily_5_4}` | 状态参数与观测方程家族 |
-| `@contract{PppFamily_5_5}` | 输出与诊断产物 |
+
+| ClauseId                   | 说明                 |
+| -------------------------- | ------------------ |
+| `@contract{PppFamily_5_1}` | 权威知识源与证据顺序         |
+| `@contract{PppFamily_5_2}` | PPP-AR 运行拓扑        |
+| `@contract{PppFamily_5_3}` | 输入依赖与失败语义          |
+| `@contract{PppFamily_5_4}` | 状态参数与观测方程家族        |
+| `@contract{PppFamily_5_5}` | 输出与诊断产物            |
 | `@contract{PppFamily_5_6}` | LEO coupling entry |
-| `@contract{PppFamily_5_7}` | 当前边界与非目标 |
+| `@contract{PppFamily_5_7}` | 当前边界与非目标           |
+
 
 ## 附录B：测试验证表
 
-| verify-ID | 说明 |
-| --- | --- |
-| `@verify{PppFamily_6_1}` | 权威知识源顺序 |
-| `@verify{PppFamily_6_2}` | expert 调度与会话隔离 |
-| `@verify{PppFamily_6_3}` | 运行拓扑与失败语义 |
+
+| verify-ID                | 说明                    |
+| ------------------------ | --------------------- |
+| `@verify{PppFamily_6_1}` | 权威知识源顺序               |
+| `@verify{PppFamily_6_2}` | expert 调度与会话隔离        |
+| `@verify{PppFamily_6_3}` | 运行拓扑与失败语义             |
 | `@verify{PppFamily_6_4}` | LEO coupling entry 边界 |

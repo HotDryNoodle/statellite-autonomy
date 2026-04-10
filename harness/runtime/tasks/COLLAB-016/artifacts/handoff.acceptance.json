@@ -1,0 +1,16 @@
+{
+  "task_id": "COLLAB-016",
+  "phase": "acceptance",
+  "from_agent": "project-manager",
+  "to_agent": "none",
+  "summary": "Retired the repo-local pppar-expert skill definition, moved PPP reference notes to docs/domain/pppar, and updated active contracts/configs to use the global pride-pppar-expert skill.",
+  "relevant_contracts": [
+    "contracts/ppp_family.contract.md",
+    "contracts/harness_product_boundary.contract.md"
+  ],
+  "evidence_refs": [],
+  "blocking_issues": [],
+  "recommended_actions": [
+    "Archive task when short-term memory can be cleared."
+  ]
+}

@@ -120,7 +120,7 @@ class AgentsRuntimeTest(unittest.TestCase):
         proposal = build_knowledge_patch_proposal(
             "COLLAB-011",
             ["trace:1"],
-            ["skills/pppar-expert/references/CHANGELOG.md"],
+            ["/home/hotdry/Documents/expert-system/wiki/pppar/README.md"],
             ["PppFamily_5_1"],
             "capture a corrected expert rule",
         )

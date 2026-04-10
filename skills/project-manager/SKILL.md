@@ -55,7 +55,7 @@ Load only when needed:
 ## When To Invoke Others
 
 - `architecture-expert`: technical route, module boundary, trade-off, NFR, dependency topology
-- `pppar-expert` / `rdpod-analyst`: domain-specific PPP or RD-POD scope
+- `pride-pppar-expert` / `rdpod-analyst`: domain-specific PPP or RD-POD scope
 - `coding-skill`: implementation
 - `testing-skill`: verification
 - `traceability-manager`: evidence closure and governance checks

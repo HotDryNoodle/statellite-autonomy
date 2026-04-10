@@ -1,5 +1,6 @@
 ---
-name: architecture-expert
+
+## name: architecture-expert
 description: 架构专家 skill。作为被调度的专家角色，负责核心代码架构设计，包括技术路线、模块边界、关键 trade-off、NFR 约束，以及跨模块数据/依赖拓扑设计。
 version: 1.0.0
 depends_on:
@@ -66,7 +67,7 @@ triggers:
 ## 协作关系
 
 - 上游：`project-manager`
-- 协同：`pppar-expert`、`rdpod-analyst`、`coding-skill`、`testing-skill`、`traceability-manager`
+- 协同：全局 `pride-pppar-expert`、`rdpod-analyst`、`coding-skill`、`testing-skill`、`traceability-manager`
 - 工具：`tools/nav-toolchain-cli`
 
 ## 触发场景
