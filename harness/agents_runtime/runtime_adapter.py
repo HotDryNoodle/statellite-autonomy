@@ -35,18 +35,18 @@ class HarnessRuntimeAdapter:
     session_backend: LocalSessionBackend
 
     def create_agent_graph(
-        self, task_id: str, active_contracts: list[str], workflow_config: dict[str, Any]
+        self, task_id: str, active_specs: list[str], workflow_config: dict[str, Any]
     ) -> dict[str, Any]:
         graph = {
             "task_id": task_id,
             "sdk_available": Agent is not None,
             "session_backend": self.session_backend.backend_id,
-            "active_contracts": active_contracts,
+            "active_specs": active_specs,
             "agents": {
                 "project_manager_agent": {"role": "orchestrator"},
                 "architecture_expert_agent": {
                     "role": "architecture",
-                    "trigger_contracts": ["contracts/layer_boundary.contract.md"],
+                    "trigger_specs": ["contracts/layer_boundary.contract.md"],
                 },
                 "pppar_expert_agent": {"role": "expert"},
                 "rdpod_analyst_agent": {"role": "expert"},
@@ -91,10 +91,10 @@ class HarnessRuntimeAdapter:
             "pending_approvals": task_state.get("pending_approvals", []),
         }
 
-    def validate_expert_contracts(
-        self, agent_name: str, affected_contracts: list[str]
+    def validate_expert_specs(
+        self, agent_name: str, affected_specs: list[str]
     ) -> None:
-        self.registry.validate_contract_access(agent_name, affected_contracts)
+        self.registry.validate_spec_access(agent_name, affected_specs)
 
     def execute_allowed_tool(self, tool_name: str, params: dict[str, Any]) -> dict[str, Any]:
         result = execute_tool(tool_name, params)
@@ -113,7 +113,7 @@ class HarnessRuntimeAdapter:
         self,
         task_state: dict[str, Any],
         agent_name: str,
-        affected_contracts: list[str],
+        affected_specs: list[str],
         *,
         knowledge_query: str = "",
         note_path: str = "",
@@ -121,7 +121,7 @@ class HarnessRuntimeAdapter:
     ) -> dict[str, Any]:
         if knowledge_query and note_path:
             raise ValueError("knowledge_query and note_path are mutually exclusive")
-        self.validate_expert_contracts(agent_name, affected_contracts)
+        self.validate_expert_specs(agent_name, affected_specs)
         session_ref = session_ref_for_agent(task_state["task_id"], agent_name)
         updated_state = dict(task_state)
         updated_state["owner"] = agent_name
@@ -208,7 +208,7 @@ class HarnessRuntimeAdapter:
 
 
 def create_agent_graph(
-    task_id: str, active_contracts: list[str], workflow_config: dict[str, Any]
+    task_id: str, active_specs: list[str], workflow_config: dict[str, Any]
 ) -> dict[str, Any]:
     adapter = HarnessRuntimeAdapter(load_expert_registry(), LocalSessionBackend.default())
-    return adapter.create_agent_graph(task_id, active_contracts, workflow_config)
+    return adapter.create_agent_graph(task_id, active_specs, workflow_config)

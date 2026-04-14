@@ -4,9 +4,9 @@
   "task_id": "COLLAB-019",
   "goal": "clarify eval-agent and traceability-manager responsibility boundary in contracts and skills",
   "phase": "contract_freeze",
-  "affected_contracts": [
-    "contracts/eval_governance.contract.md",
-    "contracts/harness_workflow.contract.md"
+  "affected_specs": [
+    "governance/eval_governance.policy.md",
+    "governance/harness_workflow.policy.md"
   ],
   "clause_refs": [],
   "success_criteria": [

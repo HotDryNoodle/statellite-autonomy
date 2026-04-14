@@ -1,4 +1,4 @@
-"""Expert registry and contract-family authorization checks."""
+"""Expert registry and spec-family authorization checks."""
 
 from __future__ import annotations
 
@@ -27,15 +27,15 @@ class ExpertRegistry:
             raise ValueError(f"agent is not active: {agent_name}")
         return agent
 
-    def validate_contract_access(
-        self, agent_name: str, affected_contracts: list[str]
+    def validate_spec_access(
+        self, agent_name: str, affected_specs: list[str]
     ) -> None:
         agent = self.require_active(agent_name)
-        allowed = set(agent.get("allowed_contracts", []))
-        for contract in affected_contracts:
-            if contract not in allowed:
+        allowed = set(agent.get("allowed_specs", []))
+        for spec in affected_specs:
+            if spec not in allowed:
                 raise ValueError(
-                    f"{agent_name} is not allowed to touch contract: {contract}"
+                    f"{agent_name} is not allowed to touch spec: {spec}"
                 )
 
 

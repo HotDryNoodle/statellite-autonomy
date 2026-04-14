@@ -11,8 +11,8 @@ Load context in this order:
 3. `docs/memory/short_term/task_board.md`
 4. `docs/memory/short_term/active_context.md`
 5. `docs/traceability/known_limitations.md`
-6. `docs/traceability/scope_to_contract.md`
-7. Relevant `contracts/*.contract.md`
+6. `docs/traceability/scope_to_spec.md`
+7. Relevant product `contracts/*.contract.md` and, when needed, relevant `governance/*.policy.md`
 
 Load only when needed:
 
@@ -39,7 +39,7 @@ Task-specific rules belong in skills or references, not in `AGENTS.md`.
 
 ## Control Plane
 
-- Contracts are the source of truth for behavior and boundaries.
+- Product contracts are the source of truth for behavior; governance policies are the source of truth for process constraints and orchestration rules.
 - `harness/` manages orchestration artifacts and runtime state only; `product/` manages buildable source and tests.
 - From `COLLAB-013` onward, official tasks require `harness/runtime/tasks/<task_id>/task_state.json` and `events.jsonl`.
 - Start tasks through `python3 harness/orchestrator/harness_cli.py pm-workflow ...`.
@@ -64,5 +64,5 @@ Detailed PM command templates live in `skills/project-manager/references/control
 
 - Every task must leave current focus, task board, active context, activity log, and relevant evidence updated through the harness path.
 - Update `docs/traceability/decision_log.md` only when a new constraint is frozen.
-- Do not implement behavior outside frozen contract scope; update scope docs and contracts first when the boundary changes.
+- Do not implement behavior outside frozen product contract or governance policy scope; update scope docs and specs first when the boundary changes.
 - If the task includes commit or publish work, load `commit-message-policy` before preparing the commit message.

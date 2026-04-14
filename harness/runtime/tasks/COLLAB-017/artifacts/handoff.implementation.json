@@ -4,9 +4,9 @@
   "from_agent": "project-manager",
   "to_agent": "coding_agent",
   "summary": "project-manager prepared downstream handoff without expert dispatch",
-  "relevant_contracts": [
+  "relevant_specs": [
     "contracts/ppp_family.contract.md",
-    "contracts/harness_product_boundary.contract.md"
+    "governance/harness_product_boundary.policy.md"
   ],
   "evidence_refs": [],
   "blocking_issues": [],

@@ -8,7 +8,7 @@ tools:
   - docs/memory/short_term/task_board.md
   - docs/memory/short_term/active_context.md
   - docs/traceability/known_limitations.md
-  - docs/traceability/scope_to_contract.md
+  - docs/traceability/scope_to_spec.md
 triggers:
   - planning
   - coordination
@@ -34,7 +34,7 @@ triggers:
 2. `docs/memory/short_term/task_board.md`
 3. `docs/memory/short_term/active_context.md`
 4. `docs/traceability/known_limitations.md`
-5. `docs/traceability/scope_to_contract.md`
+5. `docs/traceability/scope_to_spec.md`
 6. relevant `contracts/*.contract.md`
 
 Load only when needed:

@@ -4,9 +4,9 @@
   "from_agent": "project-manager",
   "to_agent": "none",
   "summary": "compressed main-path prompt docs, moved PM SOP to references, and added prompt-doc quality gates",
-  "relevant_contracts": [
-    "contracts/harness_workflow.contract.md",
-    "contracts/harness_product_boundary.contract.md"
+  "relevant_specs": [
+    "governance/harness_workflow.policy.md",
+    "governance/harness_product_boundary.policy.md"
   ],
   "evidence_refs": [
     "python3 -m unittest discover -s scripts/tests -p 'test_*.py'",

@@ -72,14 +72,14 @@ class GovernanceQualityTest(unittest.TestCase):
             "## Current Phase\n- `acceptance`\n\n"
             "## In Progress\n- none\n\n"
             "## Current Blockers\n- none\n\n"
-            "## Active Contracts\n- none\n\n"
+            "## Active Specs\n- none\n\n"
             "## Next Acceptance Target\n- none\n\n"
             "## Next Agent\n- none\n",
             encoding="utf-8",
         )
         (repo / "docs" / "memory" / "short_term" / "task_board.md").write_text(
             "# Task Board\n\n"
-            "| task_id | title | owner_agent | affected_contracts | status | acceptance | blockers |\n"
+            "| task_id | title | owner_agent | affected_specs | status | acceptance | blockers |\n"
             "| --- | --- | --- | --- | --- | --- | --- |\n",
             encoding="utf-8",
         )
@@ -94,7 +94,7 @@ class GovernanceQualityTest(unittest.TestCase):
         (repo / "docs" / "traceability" / "task_archive.md").write_text(
             "# Task Archive\n\n"
             "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
-            "| task_id | title | owner_agent | affected_contracts | status | acceptance | evidence |\n"
+            "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
             "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n",
             encoding="utf-8",
         )
@@ -122,7 +122,7 @@ class GovernanceQualityTest(unittest.TestCase):
             "allowed_next_states": [],
             "evidence_refs": [],
             "blocking_issues": [],
-            "affected_contracts": ["contracts/harness_workflow.contract.md"],
+            "affected_specs": ["governance/harness_workflow.policy.md"],
             "archived": archived,
             "acceptance_status": acceptance_status,
             "updated_at": "2026-04-07T00:00:00+00:00",
@@ -148,9 +148,9 @@ class GovernanceQualityTest(unittest.TestCase):
             self.patch_repo(repo)
             (repo / "docs" / "memory" / "short_term" / "task_board.md").write_text(
                 "# Task Board\n\n"
-                "| task_id | title | owner_agent | affected_contracts | status | acceptance | blockers |\n"
+                "| task_id | title | owner_agent | affected_specs | status | acceptance | blockers |\n"
                 "| --- | --- | --- | --- | --- | --- | --- |\n"
-                "| COLLAB-013 | hard cutover | coding_agent | contracts/harness_workflow.contract.md | ready_for_impl | none | none |\n",
+                "| COLLAB-013 | hard cutover | coding_agent | governance/harness_workflow.policy.md | ready_for_impl | none | none |\n",
                 encoding="utf-8",
             )
 
@@ -169,7 +169,7 @@ class GovernanceQualityTest(unittest.TestCase):
                 "## Current Phase\n- `verification`\n\n"
                 "## In Progress\n- `COLLAB-013`: governance drift\n\n"
                 "## Current Blockers\n- none\n\n"
-                "## Active Contracts\n- `contracts/harness_workflow.contract.md`\n\n"
+                "## Active Specs\n- `governance/harness_workflow.policy.md`\n\n"
                 "## Next Acceptance Target\n- `COLLAB-013`: governance drift\n\n"
                 "## Next Agent\n- `testing_agent`\n",
                 encoding="utf-8",
@@ -197,9 +197,9 @@ class GovernanceQualityTest(unittest.TestCase):
             (repo / "docs" / "traceability" / "task_archive.md").write_text(
                 "# Task Archive\n\n"
                 "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
-                "| task_id | title | owner_agent | affected_contracts | status | acceptance | evidence |\n"
+                "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
                 "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n"
-                "| COLLAB-013 | hard cutover | project-manager | `contracts/harness_workflow.contract.md` | done | archived | `python3 scripts/check_quality.py --report-json` |\n",
+                "| COLLAB-013 | hard cutover | project-manager | `governance/harness_workflow.policy.md` | done | archived | `python3 scripts/check_quality.py --report-json` |\n",
                 encoding="utf-8",
             )
 
@@ -215,9 +215,9 @@ class GovernanceQualityTest(unittest.TestCase):
             (repo / "docs" / "traceability" / "task_archive.md").write_text(
                 "# Task Archive\n\n"
                 "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
-                "| task_id | title | owner_agent | affected_contracts | status | acceptance | evidence |\n"
+                "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
                 "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n"
-                "| COLLAB-012 | legacy task | project-manager | `contracts/harness_workflow.contract.md` | done | archived | `python3 scripts/check_quality.py --report-json` |\n",
+                "| COLLAB-012 | legacy task | project-manager | `governance/harness_workflow.policy.md` | done | archived | `python3 scripts/check_quality.py --report-json` |\n",
                 encoding="utf-8",
             )
 
@@ -247,9 +247,9 @@ class GovernanceQualityTest(unittest.TestCase):
             (repo / "docs" / "traceability" / "task_archive.md").write_text(
                 "# Task Archive\n\n"
                 "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
-                "| task_id | title | owner_agent | affected_contracts | status | acceptance | evidence |\n"
+                "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
                 "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n"
-                "| COLLAB-013 | hard cutover | project-manager | `contracts/harness_workflow.contract.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
+                "| COLLAB-013 | hard cutover | project-manager | `governance/harness_workflow.policy.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
                 encoding="utf-8",
             )
             result = check_quality.check_runtime_archive_consistency()
@@ -273,9 +273,9 @@ class GovernanceQualityTest(unittest.TestCase):
             (repo / "docs" / "traceability" / "task_archive.md").write_text(
                 "# Task Archive\n\n"
                 "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
-                "| task_id | title | owner_agent | affected_contracts | status | acceptance | evidence |\n"
+                "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
                 "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n"
-                "| COLLAB-013 | hard cutover | project-manager | `contracts/harness_workflow.contract.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
+                "| COLLAB-013 | hard cutover | project-manager | `governance/harness_workflow.policy.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
                 encoding="utf-8",
             )
             result = check_quality.check_runtime_archive_consistency()
@@ -307,9 +307,9 @@ class GovernanceQualityTest(unittest.TestCase):
             (repo / "docs" / "traceability" / "task_archive.md").write_text(
                 "# Task Archive\n\n"
                 "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
-                "| task_id | title | owner_agent | affected_contracts | status | acceptance | evidence |\n"
+                "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
                 "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n"
-                "| COLLAB-013 | hard cutover | project-manager | `contracts/harness_workflow.contract.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
+                "| COLLAB-013 | hard cutover | project-manager | `governance/harness_workflow.policy.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
                 encoding="utf-8",
             )
             result = check_quality.check_runtime_archive_consistency()

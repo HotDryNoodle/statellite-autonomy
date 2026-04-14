@@ -4,9 +4,9 @@
   "from_agent": "project-manager",
   "to_agent": "none",
   "summary": "Clarified the Eval Owner vs traceability-manager boundary: Eval Owner owns eval assets, baselines, and verdicts through standardized reports, while traceability-manager only binds those reports into verify and acceptance evidence without defining thresholds or judging pass/fail.",
-  "relevant_contracts": [
-    "contracts/eval_governance.contract.md",
-    "contracts/harness_workflow.contract.md"
+  "relevant_specs": [
+    "governance/eval_governance.policy.md",
+    "governance/harness_workflow.policy.md"
   ],
   "evidence_refs": [
     "python3 tools/traceability-cli/traceability_cli.py status --refresh",

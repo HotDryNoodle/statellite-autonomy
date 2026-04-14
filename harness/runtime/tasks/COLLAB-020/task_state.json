@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "task_id": "COLLAB-020",
+  "goal": "split product Clause trace from governance compliance by migrating governance contracts to policies, tightening traceability-cli to product contracts only, and adding a compliance entrypoint",
+  "phase": "acceptance",
+  "owner": "project-manager",
+  "allowed_next_states": [],
+  "evidence_refs": [
+    "python3 -m unittest harness.tests.test_agents_runtime tools.tests.test_cli_tools scripts.tests.test_governance_quality",
+    "python3 -m unittest harness.tests.test_harness_cli",
+    "python3 tools/traceability-cli/traceability_cli.py status --refresh",
+    "python3 tools/traceability-cli/traceability_cli.py compliance --refresh",
+    "python3 scripts/render_project_dashboard.py",
+    "python3 scripts/check_quality.py --report-json"
+  ],
+  "blocking_issues": [],
+  "trace_id": "",
+  "run_attempt": 1,
+  "parent_trace_id": "",
+  "session_backend": "local-jsonl",
+  "session_refs": {},
+  "current_artifact_ref": "harness/runtime/tasks/COLLAB-020/artifacts/handoff.acceptance.json",
+  "pending_approvals": [],
+  "affected_specs": [
+    "governance/harness_workflow.policy.md",
+    "governance/harness_product_boundary.policy.md",
+    "governance/eval_governance.policy.md"
+  ],
+  "archived": true,
+  "updated_at": "2026-04-10T09:24:25.766055+00:00",
+  "task_brief_ref": "harness/runtime/tasks/COLLAB-020/artifacts/task_brief.contract_freeze.json",
+  "handoff_ref": "harness/runtime/tasks/COLLAB-020/artifacts/handoff.acceptance.json",
+  "acceptance_status": "done",
+  "acceptance_summary": "Split product Clause trace from governance compliance by moving governance rules into governance/*.policy.md, tightening traceability-cli to product contracts only, adding a standalone compliance check, and renaming harness/runtime spec fields to affected_specs/allowed_specs/relevant_specs.",
+  "archive_ref": "docs/traceability/task_archive.md"
+}

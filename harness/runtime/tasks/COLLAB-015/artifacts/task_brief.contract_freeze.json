@@ -4,9 +4,9 @@
   "task_id": "COLLAB-015",
   "goal": "Add runtime retention and compaction for archived harness tasks",
   "phase": "contract_freeze",
-  "affected_contracts": [
-    "contracts/harness_workflow.contract.md",
-    "contracts/harness_product_boundary.contract.md"
+  "affected_specs": [
+    "governance/harness_workflow.policy.md",
+    "governance/harness_product_boundary.policy.md"
   ],
   "clause_refs": [],
   "success_criteria": [

@@ -29,7 +29,7 @@ Each phase handoff must carry:
 ```text
 task_id:
 goal:
-affected_contracts:
+affected_specs:
 affected_files:
 status:
 next_agent:
@@ -38,7 +38,7 @@ blocking_issues:
 notes:
 ```
 
-`affected_contracts` cannot be empty before implementation.
+`affected_specs` cannot be empty before implementation.
 
 ## Control Plane Rules
 

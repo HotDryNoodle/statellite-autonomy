@@ -28,7 +28,7 @@
 - 仓库已初始化为 git repository，默认分支策略固定为 `main` / `develop` / `feature/<task-id>-<topic>`。
 - 仓库级 CI 只调用 repo-local CLI，不在 CI 中实现与本地不同的业务逻辑。
 - `unit::time` benchmark 第一阶段只覆盖 roundtrip、leap second boundary、UT1 dependency、invalid inputs 四类场景。
-- `docs/traceability/scope_to_contract.md` 中的 phase 路线由 `project-manager` 起草，但仅在 `contract_freeze` 后落盘；涉及架构方向时吸收 `architecture-expert` 结论。
+- `docs/traceability/scope_to_spec.md` 中的 phase 路线由 `project-manager` 起草，但仅在 `contract_freeze` 后落盘；涉及架构方向时吸收 `architecture-expert` 结论。
 - skill frontmatter 统一至少包含 `name`、`description`、`version`、`depends_on`、`tools`、`triggers`。
 
 ## 2026-04-02 Governance Role Split
@@ -65,7 +65,7 @@
 - `docs/memory/short_term/` 固定为当前迭代状态入口，默认文件为 `task_board.md` 与 `active_context.md`。
 - `docs/traceability/` 固定为长期治理记忆、冻结约束与任务历史，不再承载当前 task blocker、当前任务状态或当前焦点。
 - `docs/_generated/` 固定为 CI runtime 产物目录，不进入默认 agent 读取顺序，也不作为长期 RAG 输入。
-- agents 的默认读取顺序固定为 `AGENTS.md -> working memory -> short-term memory -> known_limitations -> scope_to_contract -> decision_log / agent_activity_log (按需) -> relevant contracts -> relevant skills`。
+- agents 的默认读取顺序固定为 `AGENTS.md -> working memory -> short-term memory -> known_limitations -> scope_to_spec -> decision_log / agent_activity_log (按需) -> relevant contracts -> relevant skills`。
 
 ## 2026-04-03 Harness Product Split
 
@@ -138,3 +138,10 @@
 
 - Eval Owner 只拥有评测资产、baseline 生命周期和评测结论；它产出标准化 Eval report，但不直接主写长期治理文档。
 - `traceability-manager` 只拥有证据链绑定和治理一致性检查；它接收 Eval report 并绑定到 verify / acceptance，但不定义 baseline、不过问阈值口径，也不直接裁决 pass/fail。
+
+## 2026-04-10 Product Contracts Vs Governance Policies
+
+- `contracts/*.contract.md` 从本轮起只保留 product behavior contracts，`ClauseId` 只服务源码、测试和评测证据的严格追溯。
+- `governance/*.policy.md` 成为治理规则的唯一命名空间；harness workflow、harness/product 边界和 eval governance 不再进入 Clause trace。
+- `traceability-cli` 继续负责 product Clause trace，同时新增 `compliance` 入口单独检查 governance policy 合规性。
+- harness/runtime 与治理镜像中的 spec 引用统一改为 `affected_specs` / `allowed_specs` / `relevant_specs`，允许同时绑定 product contracts 与 governance policies。

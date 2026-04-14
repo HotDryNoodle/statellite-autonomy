@@ -38,8 +38,8 @@ TOOLCHAIN = REPO_ROOT / "tools" / "nav-toolchain-cli" / "toolchain_cli.py"
 TRACEABILITY = REPO_ROOT / "tools" / "traceability-cli" / "traceability_cli.py"
 RENDER_DASHBOARD = REPO_ROOT / "scripts" / "render_project_dashboard.py"
 BASELINE_STATUS = {
-    "contract_count": 8,
-    "verify_count": 8,
+    "contract_count": 15,
+    "verify_count": 12,
     "contracts_with_code": 8,
     "contracts_with_tests": 6,
     "verifies_with_tests": 8,
@@ -187,6 +187,20 @@ def check_traceability_baseline() -> CheckResult:
             "baseline regression: " + ", ".join(regressions),
         )
     return CheckResult("traceability_status", True, json.dumps(payload, ensure_ascii=False))
+
+
+def check_compliance_status() -> CheckResult:
+    ok, stdout, stderr = run_command([sys.executable, str(TRACEABILITY), "compliance", "--refresh"])
+    output = format_command_output(stdout, stderr)
+    if not ok:
+        return CheckResult("compliance_status", False, output or "compliance command failed")
+    try:
+        payload = json.loads(stdout)
+    except json.JSONDecodeError as exc:
+        return CheckResult("compliance_status", False, f"invalid JSON: {exc}")
+    if not payload.get("ok", False):
+        return CheckResult("compliance_status", False, json.dumps(payload, ensure_ascii=False))
+    return CheckResult("compliance_status", True, json.dumps(payload, ensure_ascii=False))
 
 
 def check_line_limit(path: Path, limit: int) -> CheckResult:
@@ -397,7 +411,7 @@ def check_dashboard_status_schema() -> CheckResult:
         "current_phase",
         "in_progress",
         "current_blockers",
-        "active_contracts",
+        "active_specs",
         "next_acceptance_target",
         "next_agent",
         "active_tasks",
@@ -407,6 +421,7 @@ def check_dashboard_status_schema() -> CheckResult:
         "accepted_limitations",
         "open_risks",
         "traceability_status",
+        "compliance_status",
     }
     missing = sorted(required - payload.keys())
     if missing:
@@ -416,7 +431,7 @@ def check_dashboard_status_schema() -> CheckResult:
     for field in (
         "in_progress",
         "current_blockers",
-        "active_contracts",
+        "active_specs",
         "next_acceptance_target",
         "next_agent",
         "active_tasks",
@@ -434,6 +449,12 @@ def check_dashboard_status_schema() -> CheckResult:
     for field in BASELINE_STATUS:
         if not isinstance(traceability.get(field), int):
             return CheckResult("project_status_schema", False, f"traceability_status.{field} must be an int")
+    compliance = payload["compliance_status"]
+    if not isinstance(compliance, dict):
+        return CheckResult("project_status_schema", False, "compliance_status must be an object")
+    for field in ("ok", "policy_count", "failures"):
+        if field not in compliance:
+            return CheckResult("project_status_schema", False, f"compliance_status missing {field}")
     return CheckResult("project_status_schema", True, "required dashboard status keys present")
 
 
@@ -565,6 +586,7 @@ def main() -> int:
             return 1
 
     checks.append(check_traceability_baseline())
+    checks.append(check_compliance_status())
     checks.append(check_line_limit(WORKING_PATH, 50))
     checks.append(check_line_limit(TASK_BOARD_PATH, 120))
     checks.append(check_line_limit(ACTIVE_CONTEXT_PATH, 120))

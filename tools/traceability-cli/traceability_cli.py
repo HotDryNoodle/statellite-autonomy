@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Traceability generation and query helpers."""
+"""Product traceability and governance compliance helpers."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import shlex
 import subprocess
 import sys
@@ -12,8 +13,22 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "_generated" / "traceability"
+DEFAULT_TRACE_OUTPUT_DIR = REPO_ROOT / "docs" / "_generated" / "traceability"
+DEFAULT_COMPLIANCE_OUTPUT_DIR = REPO_ROOT / "docs" / "_generated" / "compliance"
 CLI_PATH = "python3 tools/traceability-cli/traceability_cli.py"
+GOVERNANCE_CONTRACT_FILES = (
+    "contracts/harness_workflow.contract.md",
+    "contracts/harness_product_boundary.contract.md",
+    "contracts/eval_governance.contract.md",
+)
+COMPLIANCE_SELF_EXEMPT = {
+    "tools/traceability-cli/traceability_cli.py",
+}
+GOVERNANCE_CLAUSE_PREFIXES = ("HarnessWorkflow_", "HarnessBoundary_", "EvalGovernance_")
+LEGACY_FIELD_NAMES = ("affected_contracts", "allowed_contracts", "relevant_contracts")
+SPEC_PATH_RE = re.compile(r"(contracts/[A-Za-z0-9_./-]+\.contract\.md|governance/[A-Za-z0-9_./-]+\.policy\.md)")
+ANCHOR_RE = re.compile(r'<a id="([A-Za-z0-9_-]+)"></a>')
+POLICY_REF_RE = re.compile(r"^governance/[A-Za-z0-9_./-]+\.policy\.md#[A-Za-z0-9_-]+$")
 
 
 class HelpFormatter(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
@@ -43,11 +58,19 @@ def run(cmd: list[str]) -> int:
     return completed.returncode
 
 
-def normalize_output_dir(path_text: str) -> Path:
-    output_dir = Path(path_text)
+def normalize_output_dir(path_text: str, default_dir: Path) -> Path:
+    output_dir = Path(path_text) if path_text else default_dir
     if not output_dir.is_absolute():
         output_dir = REPO_ROOT / output_dir
     return output_dir
+
+
+def write_if_changed(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    rendered = text.rstrip() + "\n"
+    if path.exists() and path.read_text(encoding="utf-8") == rendered:
+        return
+    path.write_text(rendered, encoding="utf-8")
 
 
 def generation_commands(output_dir: Path) -> list[list[str]]:
@@ -67,10 +90,9 @@ def generation_commands(output_dir: Path) -> list[list[str]]:
     ]
 
 
-def emit_dry_run(command_name: str,
-                 commands: list[list[str]],
-                 writes: list[str],
-                 notes: list[str]) -> int:
+def emit_dry_run(
+    command_name: str, commands: list[list[str]], writes: list[str], notes: list[str]
+) -> int:
     print_json(
         {
             "command": command_name,
@@ -122,8 +144,188 @@ def load_trace_or_error(output_dir: Path) -> dict[str, object] | None:
     return None
 
 
+def tracked_files() -> list[Path]:
+    completed = subprocess.run(
+        ["git", "ls-files"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(completed.stderr.strip() or "git ls-files failed")
+    ignored_prefixes = ("docs/_generated/", "builddir/")
+    files: list[Path] = []
+    for line in completed.stdout.splitlines():
+        if not line or line.endswith("/"):
+            continue
+        if line.startswith(ignored_prefixes):
+            continue
+        path = REPO_ROOT / line
+        if path.exists():
+            files.append(path)
+    return files
+
+
+def text_file(path: Path) -> bool:
+    return path.suffix in {".md", ".json", ".py", ".txt", ".yaml", ".yml", ".cpp", ".hpp", ".h", ".cc"}
+
+
+def parse_policy_anchors(path: Path) -> list[str]:
+    anchors: list[str] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        match = ANCHOR_RE.search(line)
+        if match:
+            anchors.append(match.group(1))
+    return anchors
+
+
+def build_policy_index() -> dict[str, object]:
+    policies: dict[str, dict[str, object]] = {}
+    policy_root = REPO_ROOT / "governance"
+    for path in sorted(policy_root.glob("*.policy.md")):
+        rel = str(path.relative_to(REPO_ROOT))
+        policies[rel] = {
+            "anchors": parse_policy_anchors(path),
+            "title": path.read_text(encoding="utf-8").splitlines()[0].lstrip("# ").strip(),
+        }
+    return {
+        "generated_from": "governance/*.policy.md",
+        "policies": policies,
+    }
+
+
+def json_strings(value: object) -> list[str]:
+    strings: list[str] = []
+    if isinstance(value, str):
+        strings.append(value)
+    elif isinstance(value, list):
+        for item in value:
+            strings.extend(json_strings(item))
+    elif isinstance(value, dict):
+        for item in value.values():
+            strings.extend(json_strings(item))
+    return strings
+
+
+def run_compliance_checks(trace_output_dir: Path) -> tuple[dict[str, object], dict[str, object]]:
+    policy_index = build_policy_index()
+    trace = load_trace_or_error(trace_output_dir)
+    if trace is None:
+        raise RuntimeError("missing trace.json for compliance refresh")
+
+    tracked = tracked_files()
+    failures: list[dict[str, object]] = []
+
+    missing_policy_files = [
+        path
+        for path in (
+            "governance/harness_workflow.policy.md",
+            "governance/harness_product_boundary.policy.md",
+            "governance/eval_governance.policy.md",
+        )
+        if not (REPO_ROOT / path).exists()
+    ]
+    if missing_policy_files:
+        failures.append(
+            {
+                "check": "required_policies",
+                "details": missing_policy_files,
+            }
+        )
+
+    residual_contracts = [path for path in GOVERNANCE_CONTRACT_FILES if (REPO_ROOT / path).exists()]
+    if residual_contracts:
+        failures.append({"check": "contracts_namespace_product_only", "details": residual_contracts})
+
+    legacy_field_hits: list[str] = []
+    for path in tracked:
+        rel = str(path.relative_to(REPO_ROOT))
+        if rel in COMPLIANCE_SELF_EXEMPT:
+            continue
+        if not text_file(path):
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if any(name in text for name in LEGACY_FIELD_NAMES):
+            legacy_field_hits.append(rel)
+    if legacy_field_hits:
+        failures.append({"check": "legacy_field_names", "details": legacy_field_hits})
+
+    invalid_spec_hits: list[str] = []
+    for path in tracked:
+        rel = str(path.relative_to(REPO_ROOT))
+        if rel in COMPLIANCE_SELF_EXEMPT:
+            continue
+        if not text_file(path):
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for match in SPEC_PATH_RE.findall(text):
+            if match.startswith("contracts/") and not (REPO_ROOT / match).exists():
+                invalid_spec_hits.append(f"{rel}::{match}")
+            if match.startswith("governance/") and not (REPO_ROOT / match).exists():
+                invalid_spec_hits.append(f"{rel}::{match}")
+    if invalid_spec_hits:
+        failures.append({"check": "dangling_spec_paths", "details": invalid_spec_hits})
+
+    governance_clause_hits: list[str] = []
+    for domain_path in sorted((REPO_ROOT / "eval" / "domains").rglob("*.json")):
+        payload = json.loads(domain_path.read_text(encoding="utf-8"))
+        for item in json_strings(payload):
+            if any(prefix in item for prefix in GOVERNANCE_CLAUSE_PREFIXES):
+                governance_clause_hits.append(str(domain_path.relative_to(REPO_ROOT)))
+                break
+    if governance_clause_hits:
+        failures.append({"check": "eval_metadata_uses_policy_refs", "details": governance_clause_hits})
+
+    invalid_policy_refs: list[str] = []
+    for domain_path in sorted((REPO_ROOT / "eval" / "domains").rglob("*.json")):
+        payload = json.loads(domain_path.read_text(encoding="utf-8"))
+        for item in json_strings(payload):
+            if item.startswith("governance/"):
+                if not POLICY_REF_RE.match(item):
+                    invalid_policy_refs.append(f"{domain_path.relative_to(REPO_ROOT)}::{item}")
+                    continue
+                policy_path, anchor = item.split("#", 1)
+                known_anchors = policy_index["policies"].get(policy_path, {}).get("anchors", [])
+                if anchor not in known_anchors:
+                    invalid_policy_refs.append(f"{domain_path.relative_to(REPO_ROOT)}::{item}")
+    if invalid_policy_refs:
+        failures.append({"check": "policy_anchor_refs", "details": invalid_policy_refs})
+
+    governance_modules = sorted(
+        module
+        for module in trace.get("modules", {}).keys()
+        if module in {"harness_workflow", "harness_product_boundary", "eval_governance"}
+    )
+    if governance_modules:
+        failures.append({"check": "traceability_product_only", "details": governance_modules})
+
+    status = {
+        "output_dir": str(trace_output_dir),
+        "policy_count": len(policy_index["policies"]),
+        "trace_contract_count": len(trace.get("contracts", {})),
+        "trace_verify_count": len(trace.get("verifies", {})),
+        "ok": not failures,
+        "failures": failures,
+    }
+    return policy_index, status
+
+
+def load_json_or_error(path: Path, command_name: str, refresh_example: str) -> dict[str, object] | None:
+    if path.exists():
+        return json.loads(path.read_text(encoding="utf-8"))
+    print_json(
+        {
+            "error": f"missing generated {command_name} output: {path}",
+            "hint": f"Run {command_name} with --refresh first.",
+            "examples": [refresh_example],
+        }
+    )
+    return None
+
+
 def cmd_generate(args: argparse.Namespace) -> int:
-    output_dir = normalize_output_dir(args.output_dir)
+    output_dir = normalize_output_dir(args.output_dir, DEFAULT_TRACE_OUTPUT_DIR)
     commands = generation_commands(output_dir)
     if args.dry_run:
         return emit_dry_run(
@@ -147,14 +349,14 @@ def cmd_generate(args: argparse.Namespace) -> int:
 
 
 def cmd_query_clause(args: argparse.Namespace) -> int:
-    output_dir = normalize_output_dir(args.output_dir)
+    output_dir = normalize_output_dir(args.output_dir, DEFAULT_TRACE_OUTPUT_DIR)
     if args.refresh:
         if args.dry_run:
             return emit_dry_run(
                 "query-clause",
                 generation_commands(output_dir),
                 writes=[str(output_dir)],
-                notes=["Dry-run only previews the refresh step before querying the clause."],
+                notes=["Dry-run only previews the refresh step before querying the ClauseId."],
             )
         if ensure_generated(output_dir) != 0:
             return 1
@@ -171,7 +373,7 @@ def cmd_query_clause(args: argparse.Namespace) -> int:
         print_json(
             {
                 "error": f"unknown clause id: {clause_id}",
-                "hint": "Use a known ClauseId from the generated trace output or refresh the artifacts first.",
+                "hint": "Use a product ClauseId from the generated trace output or refresh the artifacts first.",
                 "examples": [
                     f"{CLI_PATH} query-clause TimeSys_4_4_4",
                     f"{CLI_PATH} query-clause LayerBoundary_4_1",
@@ -186,14 +388,14 @@ def cmd_query_clause(args: argparse.Namespace) -> int:
 
 
 def cmd_status(args: argparse.Namespace) -> int:
-    output_dir = normalize_output_dir(args.output_dir)
+    output_dir = normalize_output_dir(args.output_dir, DEFAULT_TRACE_OUTPUT_DIR)
     if args.refresh:
         if args.dry_run:
             return emit_dry_run(
                 "status",
                 generation_commands(output_dir),
                 writes=[str(output_dir)],
-                notes=["Dry-run only previews the refresh step before reading status."],
+                notes=["Dry-run only previews the refresh step before reading product traceability status."],
             )
         if ensure_generated(output_dir) != 0:
             return 1
@@ -214,17 +416,47 @@ def cmd_status(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_compliance(args: argparse.Namespace) -> int:
+    trace_output_dir = DEFAULT_TRACE_OUTPUT_DIR
+    output_dir = normalize_output_dir(args.output_dir, DEFAULT_COMPLIANCE_OUTPUT_DIR)
+    commands = [[sys.executable, str(REPO_ROOT / "tools" / "traceability-cli" / "traceability_cli.py"), "status", "--refresh"]]
+    if args.dry_run:
+        return emit_dry_run(
+            "compliance",
+            commands,
+            writes=[str(output_dir)],
+            notes=["Dry-run only previews the product trace refresh and compliance artifact writes."],
+        )
+    if args.refresh:
+        if ensure_generated(trace_output_dir) != 0:
+            return 1
+        policy_index, status = run_compliance_checks(trace_output_dir)
+        status["output_dir"] = str(output_dir)
+        write_if_changed(output_dir / "policy_index.json", json.dumps(policy_index, ensure_ascii=False, indent=2))
+        write_if_changed(output_dir / "compliance_status.json", json.dumps(status, ensure_ascii=False, indent=2))
+        print_json(status)
+        return 0 if status["ok"] else 1
+
+    status = load_json_or_error(
+        output_dir / "compliance_status.json",
+        "compliance",
+        f"{CLI_PATH} compliance --refresh --output-dir {output_dir}",
+    )
+    if status is None:
+        return 1
+    print_json(status)
+    return 0 if status.get("ok", False) else 1
+
+
 def make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="CLI-first traceability generation and query helpers.",
+        description="Product Clause traceability and governance compliance helpers.",
         epilog=(
             "Examples:\n"
             f"  {CLI_PATH} generate --output-dir docs/_generated/traceability --yes\n"
-            f"  {CLI_PATH} generate --dry-run\n"
-            f"  {CLI_PATH} status --output-dir docs/_generated/traceability\n"
             f"  {CLI_PATH} status --refresh\n"
             f"  {CLI_PATH} query-clause TimeSys_4_4_4\n"
-            f"  {CLI_PATH} query-clause LayerBoundary_4_1 --refresh"
+            f"  {CLI_PATH} compliance --refresh\n"
         ),
         formatter_class=HelpFormatter,
     )
@@ -232,7 +464,7 @@ def make_parser() -> argparse.ArgumentParser:
 
     generate = subparsers.add_parser(
         "generate",
-        description="Generate ClauseId traceability artifacts under docs/_generated/traceability.",
+        description="Generate product ClauseId traceability artifacts under docs/_generated/traceability.",
         epilog=(
             "Examples:\n"
             f"  {CLI_PATH} generate --output-dir docs/_generated/traceability --yes\n"
@@ -240,47 +472,31 @@ def make_parser() -> argparse.ArgumentParser:
         ),
         formatter_class=HelpFormatter,
     )
-    generate.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR))
-    generate.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="print the generation commands without writing artifacts",
-    )
-    generate.add_argument(
-        "--yes",
-        action="store_true",
-        help="acknowledge overwriting existing generated artifacts",
-    )
+    generate.add_argument("--output-dir", default=str(DEFAULT_TRACE_OUTPUT_DIR))
+    generate.add_argument("--dry-run", action="store_true", help="print the generation commands without writing artifacts")
+    generate.add_argument("--yes", action="store_true", help="acknowledge overwriting existing generated artifacts")
     generate.set_defaults(handler=cmd_generate)
 
     query = subparsers.add_parser(
         "query-clause",
-        description="Query one ClauseId from previously generated traceability artifacts.",
+        description="Query one product ClauseId from previously generated traceability artifacts.",
         epilog=(
             "Examples:\n"
             f"  {CLI_PATH} query-clause TimeSys_4_4_4\n"
             f"  {CLI_PATH} query-clause LayerBoundary_4_1 --refresh\n"
-            f"  {CLI_PATH} query-clause HarnessBoundary_2_3 --output-dir docs/_generated/traceability"
+            f"  {CLI_PATH} query-clause PppFamily_5_5 --output-dir docs/_generated/traceability"
         ),
         formatter_class=HelpFormatter,
     )
     query.add_argument("clause_id")
-    query.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR))
-    query.add_argument(
-        "--refresh",
-        action="store_true",
-        help="regenerate artifacts before querying",
-    )
-    query.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="with --refresh, preview the regeneration step without writing artifacts",
-    )
+    query.add_argument("--output-dir", default=str(DEFAULT_TRACE_OUTPUT_DIR))
+    query.add_argument("--refresh", action="store_true", help="regenerate artifacts before querying")
+    query.add_argument("--dry-run", action="store_true", help="with --refresh, preview the regeneration step without writing artifacts")
     query.set_defaults(handler=cmd_query_clause)
 
     status = subparsers.add_parser(
         "status",
-        description="Summarize the currently generated traceability artifacts.",
+        description="Summarize the currently generated product traceability artifacts.",
         epilog=(
             "Examples:\n"
             f"  {CLI_PATH} status\n"
@@ -289,18 +505,26 @@ def make_parser() -> argparse.ArgumentParser:
         ),
         formatter_class=HelpFormatter,
     )
-    status.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR))
-    status.add_argument(
-        "--refresh",
-        action="store_true",
-        help="regenerate artifacts before reading status",
-    )
-    status.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="with --refresh, preview the regeneration step without writing artifacts",
-    )
+    status.add_argument("--output-dir", default=str(DEFAULT_TRACE_OUTPUT_DIR))
+    status.add_argument("--refresh", action="store_true", help="regenerate artifacts before reading status")
+    status.add_argument("--dry-run", action="store_true", help="with --refresh, preview the regeneration step without writing artifacts")
     status.set_defaults(handler=cmd_status)
+
+    compliance = subparsers.add_parser(
+        "compliance",
+        description="Check governance policy compliance without using Clause trace semantics.",
+        epilog=(
+            "Examples:\n"
+            f"  {CLI_PATH} compliance --refresh\n"
+            f"  {CLI_PATH} compliance --output-dir docs/_generated/compliance\n"
+            f"  {CLI_PATH} compliance --dry-run"
+        ),
+        formatter_class=HelpFormatter,
+    )
+    compliance.add_argument("--output-dir", default=str(DEFAULT_COMPLIANCE_OUTPUT_DIR))
+    compliance.add_argument("--refresh", action="store_true", help="regenerate compliance artifacts before reading status")
+    compliance.add_argument("--dry-run", action="store_true", help="preview the compliance refresh step without writing artifacts")
+    compliance.set_defaults(handler=cmd_compliance)
 
     return parser
 

@@ -1,6 +1,6 @@
 ---
 name: traceability-manager
-description: 项目治理型 skill。用于维护 需求 -> contract -> code -> tests -> eval report -> 决策日志 的可追踪闭环。
+description: 项目治理型 skill。用于维护 product contract -> code -> tests -> eval report -> 决策日志 的追溯闭环，并执行 governance policy 合规检查。
 version: 1.0.0
 depends_on:
   - project-manager
@@ -26,13 +26,14 @@ triggers:
 ## 核心职责
 
 - 维护 `docs/traceability/*.md` 中的长期治理记忆、冻结约束与任务历史。
-- 通过仓库内 `traceability` CLI 提取 contract / code / tests 证据。
+- 通过仓库内 `traceability` CLI 提取 product contract / code / tests 证据，并执行 governance compliance 检查。
 - 把标准化 Eval report 绑定到 verify 条款、runtime evidence 和 acceptance 记录。
 - 记录关键决策与已知限制。
 
 ## 典型输入
 
-- contracts
+- product contracts
+- governance policies
 - 源码与测试入口
 - eval 报告
 - `project-manager` 的调度与 `architecture-expert` 的决策
@@ -40,7 +41,7 @@ triggers:
 
 ## 典型输出
 
-- scope_to_contract 映射
+- scope_to_spec 映射
 - decision_log / known_limitations 更新
 - task archive 更新
 - 自动证据产物索引
@@ -71,22 +72,24 @@ triggers:
 
 ## 触发场景
 
-- 新增 contract 或模块
+- 新增 product contract、governance policy 或模块
 - 一轮开发结束后
 - 里程碑验收前
 
 ## 工作流程
 
-1. 调用 `python3 tools/traceability-cli/traceability_cli.py generate --yes` 生成 `contract_index.json`、`trace.json` 和 markdown 报告。
+1. 调用 `python3 tools/traceability-cli/traceability_cli.py generate --yes` 生成 product `contract_index.json`、`trace.json` 和 markdown 报告。
 2. 按 ClauseId 查询缺失的 code / tests 证据。
-3. 更新长期治理映射、task archive 和覆盖率报告。
-4. 读取 Eval Owner 的标准化 report，把 verdict / verify_refs / artifact_paths 绑定进治理证据链。
-5. 标记缺失链路和已知限制，并同步给 `project-manager`；涉及架构限制时同步给 `architecture-expert`。
+3. 调用 `python3 tools/traceability-cli/traceability_cli.py compliance --refresh` 生成 governance compliance 状态。
+4. 更新长期治理映射、task archive 和覆盖率报告。
+5. 读取 Eval Owner 的标准化 report，把 verdict / verify_refs / artifact_paths 绑定进治理证据链。
+6. 标记缺失链路和已知限制，并同步给 `project-manager`；涉及架构限制时同步给 `architecture-expert`。
 
 ## 交付物
 
 - traceability 文档更新
 - 缺口清单
 - 决策日志条目
-- ClauseId 级证据与覆盖率表
+- product ClauseId 级证据与覆盖率表
+- governance compliance 结果
 - Eval report 到 verify / acceptance 的绑定结果

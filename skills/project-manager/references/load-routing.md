@@ -10,7 +10,7 @@ Use the smallest context that can decide the next step.
 4. `docs/memory/short_term/task_board.md`
 5. `docs/memory/short_term/active_context.md`
 6. `docs/traceability/known_limitations.md`
-7. `docs/traceability/scope_to_contract.md`
+7. `docs/traceability/scope_to_spec.md`
 8. Relevant `contracts/*.contract.md`
 
 ## Conditional Loads

@@ -4,9 +4,9 @@
   "from_agent": "project-manager",
   "to_agent": "none",
   "summary": "Removed repo-local docs/domain PPP references, switched pppar_expert_agent to Obsidian-first wiki routing, and froze PPP family knowledge sourcing to external expert-system wiki scopes with raw PRIDE fallback only.",
-  "relevant_contracts": [
+  "relevant_specs": [
     "contracts/ppp_family.contract.md",
-    "contracts/harness_product_boundary.contract.md"
+    "governance/harness_product_boundary.policy.md"
   ],
   "evidence_refs": [],
   "blocking_issues": [],

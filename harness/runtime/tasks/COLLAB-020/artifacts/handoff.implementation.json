@@ -1,12 +1,13 @@
 {
-  "task_id": "COLLAB-016",
+  "task_id": "COLLAB-020",
   "phase": "implementation",
   "from_agent": "project-manager",
   "to_agent": "coding_agent",
   "summary": "project-manager prepared downstream handoff without expert dispatch",
   "relevant_specs": [
-    "contracts/ppp_family.contract.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/harness_workflow.policy.md",
+    "governance/harness_product_boundary.policy.md",
+    "governance/eval_governance.policy.md"
   ],
   "evidence_refs": [],
   "blocking_issues": [],

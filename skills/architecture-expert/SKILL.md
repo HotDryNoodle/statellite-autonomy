@@ -10,7 +10,7 @@ tools:
   - docs/memory/working/current_focus.md
   - docs/memory/short_term/active_context.md
   - docs/traceability/decision_log.md
-  - docs/traceability/scope_to_contract.md
+  - docs/traceability/scope_to_spec.md
 triggers:
   - architecture
   - trade-off

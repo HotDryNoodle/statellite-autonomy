@@ -435,7 +435,7 @@ esac
                 "--goal",
                 "run PM workflow without expert",
                 "--contract",
-                "contracts/harness_workflow.contract.md",
+                "governance/harness_workflow.policy.md",
                 "--skip-dispatch",
                 cwd=repo,
             )
@@ -470,18 +470,18 @@ esac
                 "--goal",
                 "repair governance docs",
                 "--contract",
-                "contracts/harness_workflow.contract.md",
+                "governance/harness_workflow.policy.md",
                 "--skip-dispatch",
                 cwd=repo,
             )
             self.assertEqual(workflow.returncode, 0, workflow.stderr)
 
             (repo / "docs/memory/working/current_focus.md").write_text(
-                "# Current Focus\n\n## Current Phase\n- `verification`\n\n## In Progress\n- `COLLAB-TEST`: drift\n\n## Current Blockers\n- none\n\n## Active Contracts\n- none\n\n## Next Acceptance Target\n- none\n\n## Next Agent\n- `testing_agent`\n",
+                "# Current Focus\n\n## Current Phase\n- `verification`\n\n## In Progress\n- `COLLAB-TEST`: drift\n\n## Current Blockers\n- none\n\n## Active Specs\n- none\n\n## Next Acceptance Target\n- none\n\n## Next Agent\n- `testing_agent`\n",
                 encoding="utf-8",
             )
             (repo / "docs/memory/short_term/task_board.md").write_text(
-                "# Task Board\n\n| task_id | title | owner_agent | affected_contracts | status | acceptance | blockers |\n| --- | --- | --- | --- | --- | --- | --- |\n| COLLAB-TEST | drift | testing_agent | none | ready_for_verify | none | none |\n",
+                "# Task Board\n\n| task_id | title | owner_agent | affected_specs | status | acceptance | blockers |\n| --- | --- | --- | --- | --- | --- | --- |\n| COLLAB-TEST | drift | testing_agent | none | ready_for_verify | none | none |\n",
                 encoding="utf-8",
             )
 
@@ -654,7 +654,7 @@ esac
                 "--goal",
                 "run PM workflow",
                 "--contract",
-                "contracts/harness_workflow.contract.md",
+                "governance/harness_workflow.policy.md",
                 "--skip-dispatch",
                 cwd=repo,
             )

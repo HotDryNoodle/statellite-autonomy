@@ -4,7 +4,7 @@
   "from_agent": "",
   "to_agent": "",
   "summary": "",
-  "relevant_contracts": [],
+  "relevant_specs": [],
   "evidence_refs": [],
   "blocking_issues": [],
   "recommended_actions": []

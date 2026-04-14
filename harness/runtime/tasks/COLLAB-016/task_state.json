@@ -14,9 +14,9 @@
   "session_refs": {},
   "current_artifact_ref": "harness/runtime/tasks/COLLAB-016/artifacts/handoff.acceptance.json",
   "pending_approvals": [],
-  "affected_contracts": [
+  "affected_specs": [
     "contracts/ppp_family.contract.md",
-    "contracts/harness_product_boundary.contract.md"
+    "governance/harness_product_boundary.policy.md"
   ],
   "archived": true,
   "updated_at": "2026-04-10T06:18:31.038978+00:00",

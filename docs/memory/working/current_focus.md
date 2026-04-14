@@ -9,7 +9,7 @@
 ## Current Blockers
 - none
 
-## Active Contracts
+## Active Specs
 - none
 
 ## Next Acceptance Target

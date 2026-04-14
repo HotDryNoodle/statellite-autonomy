@@ -8,7 +8,7 @@
     "from_agent",
     "to_agent",
     "summary",
-    "relevant_contracts",
+    "relevant_specs",
     "evidence_refs",
     "blocking_issues",
     "recommended_actions"
@@ -19,7 +19,7 @@
     "from_agent": {"type": "string", "minLength": 1},
     "to_agent": {"type": "string", "minLength": 1},
     "summary": {"type": "string"},
-    "relevant_contracts": {"type": "array", "items": {"type": "string"}},
+    "relevant_specs": {"type": "array", "items": {"type": "string"}},
     "evidence_refs": {"type": "array", "items": {"type": "string"}},
     "blocking_issues": {"type": "array", "items": {"type": "string"}},
     "recommended_actions": {"type": "array", "items": {"type": "string"}}

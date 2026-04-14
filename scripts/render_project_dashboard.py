@@ -54,6 +54,24 @@ def run_traceability_status() -> dict[str, object]:
         raise RuntimeError(f"traceability status returned invalid JSON: {exc}") from exc
 
 
+def run_compliance_status() -> dict[str, object]:
+    completed = subprocess.run(
+        [sys.executable, str(TRACEABILITY), "compliance"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    stdout = completed.stdout.strip()
+    stderr = completed.stderr.strip()
+    if completed.returncode != 0:
+        details = "\n".join(part for part in (stdout, stderr) if part).strip()
+        raise RuntimeError(details or "compliance status failed")
+    try:
+        return json.loads(stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"compliance status returned invalid JSON: {exc}") from exc
+
+
 def parse_limitations(path: Path) -> dict[str, list[str]]:
     return parse_bullet_sections(path, LIMITATION_SECTIONS)
 
@@ -110,6 +128,7 @@ def build_status_payload(
     decisions: list[dict[str, object]],
     activities: list[dict[str, str]],
     traceability_status: dict[str, object],
+    compliance_status: dict[str, object],
 ) -> dict[str, object]:
     active_tasks = [row for row in tasks if row["status"] == "active"]
     blocked_tasks = [row for row in tasks if row["status"] == "blocked"]
@@ -143,7 +162,7 @@ def build_status_payload(
         "current_phase": strip_code_ticks(working["Current Phase"][0]),
         "in_progress": [strip_code_ticks(item) for item in working["In Progress"]],
         "current_blockers": [strip_code_ticks(item) for item in working["Current Blockers"]],
-        "active_contracts": [strip_code_ticks(item) for item in working["Active Contracts"]],
+        "active_specs": [strip_code_ticks(item) for item in working["Active Specs"]],
         "next_acceptance_target": [strip_code_ticks(item) for item in working["Next Acceptance Target"]],
         "next_agent": [strip_code_ticks(item) for item in working["Next Agent"]],
         "active_tasks": active_tasks,
@@ -157,6 +176,7 @@ def build_status_payload(
         "accepted_limitations": [strip_code_ticks(item) for item in limitations["Accepted Limitations"]],
         "open_risks": [strip_code_ticks(item) for item in limitations["Open Risks"]],
         "traceability_status": traceability_status,
+        "compliance_status": compliance_status,
     }
 
 
@@ -239,15 +259,22 @@ def render_dashboard(status: dict[str, object]) -> str:
         lines.append(f"- Open risk: {item}")
 
     trace = status["traceability_status"]
+    compliance = status["compliance_status"]
     lines += [
         "",
-        "## Traceability Core Statistics",
+        "## Product Traceability Statistics",
         "",
         f"- contract_count: `{trace['contract_count']}`",
         f"- verify_count: `{trace['verify_count']}`",
         f"- contracts_with_code: `{trace['contracts_with_code']}`",
         f"- contracts_with_tests: `{trace['contracts_with_tests']}`",
         f"- verifies_with_tests: `{trace['verifies_with_tests']}`",
+        "",
+        "## Governance Compliance",
+        "",
+        f"- ok: `{compliance['ok']}`",
+        f"- policy_count: `{compliance['policy_count']}`",
+        f"- failures: `{len(compliance['failures'])}`",
     ]
     return "\n".join(lines) + "\n"
 
@@ -276,6 +303,7 @@ def main() -> int:
         decisions = parse_decisions(DECISION_LOG_PATH)
         activities = parse_recent_activity(ACTIVITY_LOG_PATH)
         traceability_status = run_traceability_status()
+        compliance_status = run_compliance_status()
         status = build_status_payload(
             working,
             tasks,
@@ -284,6 +312,7 @@ def main() -> int:
             decisions,
             activities,
             traceability_status,
+            compliance_status,
         )
         dashboard_text = render_dashboard(status)
     except (OSError, ValueError, RuntimeError) as exc:

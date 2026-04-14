@@ -6,8 +6,8 @@
 - parent_task:
 - goal:
 - scope:
-- relevant_contracts:
-- affected_contracts:
+- relevant_specs:
+- affected_specs:
 - clause_refs:
 - success_criteria:
 - allowed_tools:

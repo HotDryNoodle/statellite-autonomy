@@ -4,9 +4,9 @@
   "task_id": "COLLAB-017",
   "goal": "Remove repo-local docs/domain PPP references and standardize expert knowledge sourcing on external Obsidian wiki scopes with global pride-pppar-expert precedence.",
   "phase": "contract_freeze",
-  "affected_contracts": [
+  "affected_specs": [
     "contracts/ppp_family.contract.md",
-    "contracts/harness_product_boundary.contract.md"
+    "governance/harness_product_boundary.policy.md"
   ],
   "clause_refs": [],
   "success_criteria": [

@@ -1,12 +1,13 @@
 {
   "schema_version": "1.0",
   "artifact_version": "1.0",
-  "task_id": "COLLAB-014",
-  "goal": "Refactor main-path prompt docs for concise role-specific loading",
+  "task_id": "COLLAB-020",
+  "goal": "split product Clause trace from governance compliance by migrating governance contracts to policies, tightening traceability-cli to product contracts only, and adding a compliance entrypoint",
   "phase": "contract_freeze",
   "affected_specs": [
     "governance/harness_workflow.policy.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/harness_product_boundary.policy.md",
+    "governance/eval_governance.policy.md"
   ],
   "clause_refs": [],
   "success_criteria": [

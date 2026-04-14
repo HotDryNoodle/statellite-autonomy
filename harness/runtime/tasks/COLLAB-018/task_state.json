@@ -20,9 +20,9 @@
   "session_refs": {},
   "current_artifact_ref": "harness/runtime/tasks/COLLAB-018/artifacts/handoff.acceptance.json",
   "pending_approvals": [],
-  "affected_contracts": [
-    "contracts/harness_workflow.contract.md",
-    "contracts/harness_product_boundary.contract.md",
+  "affected_specs": [
+    "governance/harness_workflow.policy.md",
+    "governance/harness_product_boundary.policy.md",
     "contracts/time_system.contract.md",
     "contracts/ppp_family.contract.md"
   ],

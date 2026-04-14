@@ -1,7 +1,7 @@
 {
   "task_id": "EVAL-NEG-002",
   "agent": "pppar_expert_agent",
-  "affected_contracts": [
+  "affected_specs": [
     "contracts/rdpod_family.contract.md"
   ],
   "session_ref": "expert/EVAL-NEG-002/pppar_expert_agent",

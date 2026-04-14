@@ -43,7 +43,9 @@
   },
   "contract_refs": [
     "@contract{PppFamily_5_5}",
-    "@contract{PppFamily_5_6}",
-    "@contract{EvalGovernance_4_3}"
+    "@contract{PppFamily_5_6}"
+  ],
+  "policy_refs": [
+    "governance/eval_governance.policy.md#baseline-recalibration"
   ]
 }

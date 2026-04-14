@@ -31,7 +31,7 @@ class AgentsRuntimeTest(unittest.TestCase):
                 "task_id": "COLLAB-011",
                 "goal": "wire PM task brief",
                 "phase": "intake",
-                "affected_contracts": ["contracts/harness_workflow.contract.md"],
+                "affected_specs": ["governance/harness_workflow.policy.md"],
                 "clause_refs": ["HarnessWorkflow_2_2"],
             },
         )
@@ -83,12 +83,12 @@ class AgentsRuntimeTest(unittest.TestCase):
 
     def test_registry_enforces_contract_access(self) -> None:
         registry = load_expert_registry()
-        registry.validate_contract_access(
+        registry.validate_spec_access(
             "pppar_expert_agent",
             ["contracts/ppp_family.contract.md"],
         )
         with self.assertRaisesRegex(ValueError, "not allowed"):
-            registry.validate_contract_access(
+            registry.validate_spec_access(
                 "pppar_expert_agent",
                 ["contracts/rdpod_family.contract.md"],
             )
@@ -125,7 +125,7 @@ class AgentsRuntimeTest(unittest.TestCase):
     def test_create_agent_graph_includes_architecture_agent(self) -> None:
         graph = create_agent_graph(
             "COLLAB-011",
-            ["contracts/harness_workflow.contract.md"],
+            ["governance/harness_workflow.policy.md"],
             {"mode": "sync"},
         )
         self.assertIn("architecture_expert_agent", graph["agents"])

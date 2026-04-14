@@ -7,7 +7,7 @@
     "artifact_version",
     "task_id",
     "expert",
-    "affected_contracts",
+    "affected_specs",
     "clause_refs"
   ],
   "properties": {
@@ -15,7 +15,7 @@
     "artifact_version": {"type": "string", "minLength": 1},
     "task_id": {"type": "string", "minLength": 1},
     "expert": {"type": "string", "minLength": 1},
-    "affected_contracts": {"type": "array", "items": {"type": "string"}},
+    "affected_specs": {"type": "array", "items": {"type": "string"}},
     "clause_refs": {"type": "array", "items": {"type": "string"}},
     "summary": {"type": "string"},
     "proposal": {"type": "array", "items": {"type": "string"}}

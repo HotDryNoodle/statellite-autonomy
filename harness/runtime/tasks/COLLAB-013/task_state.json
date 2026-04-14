@@ -19,9 +19,9 @@
   "session_refs": {},
   "current_artifact_ref": "",
   "pending_approvals": [],
-  "affected_contracts": [
-    "contracts/harness_workflow.contract.md",
-    "contracts/harness_product_boundary.contract.md"
+  "affected_specs": [
+    "governance/harness_workflow.policy.md",
+    "governance/harness_product_boundary.policy.md"
   ],
   "archived": true,
   "acceptance_status": "done",
