@@ -1,16 +1,21 @@
 {
   "schema_version": "1.0",
   "domain": "pppar",
-  "domain_version": "0.1.0",
-  "title": "PRIDE-PPPAR LEO evaluation assets",
+  "domain_version": "0.2.0",
+  "title": "PPP family PRIDE baseline assets",
   "owner_role": "benchmark-evaluator",
-  "execution_mode": "governance_only",
-  "default_baseline": "eval/domains/pppar/baselines/leo_ppp_eval_baseline.json",
+  "execution_mode": "pppar_eval_results",
+  "default_baseline": "eval/domains/pppar/baselines/pppfamily_pride_baseline.json",
   "scenario_paths": [
-    "eval/domains/pppar/scenarios/leo_gracefo_ppp_float.json",
-    "eval/domains/pppar/scenarios/leo_gracefo_ppp_ar.json"
+    "eval/domains/pppar/scenarios/leo_gracefo_ppp_ar_grac.json",
+    "eval/domains/pppar/scenarios/leo_gracefo_ppp_float_grad.json"
   ],
   "change_log": [
+    {
+      "version": "0.2.0",
+      "date": "2026-04-14",
+      "summary": "Promoted PPPAR eval into an executable PRIDE-backed baseline workflow with canonical GRAC/GRAD scenario packages and runtime timing."
+    },
     {
       "version": "0.1.0",
       "date": "2026-04-10",

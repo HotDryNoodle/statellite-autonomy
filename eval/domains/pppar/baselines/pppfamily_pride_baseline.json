@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "baseline_id": "pppfamily_pride_baseline",
+  "baseline_version": "0.2.0-proposed",
+  "domain": "pppar",
+  "statistics_policy": {
+    "accuracy_rule": "actual <= expected",
+    "reliability_rule": "actual >= expected",
+    "performance_rule": "actual <= expected",
+    "status_rule": "actual == expected",
+    "degradation_tolerance_ratio": 0.2
+  },
+  "truth_source_refs": [
+    "data/scenario_leo_gracefo_ppp_ar_grac/ground_truth/pso_2025001_grac",
+    "data/scenario_leo_gracefo_ppp_float_grad/ground_truth/pso_2025001_grad"
+  ],
+  "recalibration_policy": {
+    "trigger": "runtime package, truth-source, metric-profile, or PRIDE execution protocol change",
+    "proposal_owner": "benchmark-evaluator",
+    "approvals_required": [
+      "project-manager",
+      "pride-pppar-expert"
+    ]
+  },
+  "approval": {
+    "status": "proposed",
+    "approved_by": [],
+    "approved_at": ""
+  },
+  "thresholds": {
+    "leo_gracefo_ppp_ar_grac": {
+      "accuracy": {
+        "orbit_3d_rms_m": 0.048443411412631754,
+        "carrier_phase_rms_m": 0.00806736969642147,
+        "pseudorange_rms_m": 0.6990938416707813
+      },
+      "reliability": {
+        "narrowlane_fix_rate_pct": 83.79052369077307
+      },
+      "performance": {
+        "runtime_s": 91.91739793200031
+      },
+      "status": {
+        "ar_success": true
+      }
+    },
+    "leo_gracefo_ppp_float_grad": {
+      "accuracy": {
+        "orbit_3d_rms_m": 0.5713063310955526,
+        "carrier_phase_rms_m": 0.0098168834463642,
+        "pseudorange_rms_m": 0.6695815382585351
+      },
+      "reliability": {},
+      "performance": {
+        "runtime_s": 112.93160794300093
+      },
+      "status": {}
+    }
+  },
+  "contract_refs": [
+    "@contract{PppFamily_5_5}",
+    "@contract{PppFamily_5_6}"
+  ],
+  "policy_refs": [
+    "governance/eval_governance.policy.md#baseline-recalibration",
+    "governance/eval_governance.policy.md#verdict-semantics"
+  ]
+}

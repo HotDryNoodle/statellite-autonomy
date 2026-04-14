@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "leo_gracefo_ppp_ar_grac",
+  "scenario_version": "0.4.0",
+  "title": "LEO GRACE-FO PPP-AR baseline for GRAC",
+  "domain": "pppar",
+  "runner_adapter": "pride_pppar_leo",
+  "scenario_class": "ppp_ar",
+  "leo_satellite": "grac",
+  "contract_refs": [
+    "@contract{PppFamily_5_2}",
+    "@contract{PppFamily_5_3}",
+    "@contract{PppFamily_5_5}",
+    "@contract{PppFamily_5_6}"
+  ],
+  "verify_refs": [
+    "@verify{PppFamily_6_3}",
+    "@verify{PppFamily_6_4}"
+  ],
+  "truth_source_refs": [
+    "data/scenario_leo_gracefo_ppp_ar_grac/ground_truth/pso_2025001_grac"
+  ],
+  "data_package_root": "data/scenario_leo_gracefo_ppp_ar_grac",
+  "metric_profile": "ppp_ar_leo_core_v1",
+  "required_files": [
+    "eval_results.json",
+    "inputs/config.cfg",
+    "outputs/kin_*",
+    "outputs/res_*",
+    "outputs/log_*",
+    "outputs/cst_*",
+    "ground_truth/pso_*"
+  ],
+  "pride_runtime": {
+    "runtime_root": "/home/hotdry/projects/PRIDE-PPPAR",
+    "driver_relpath": "toolchain/bin/pdp3",
+    "env_relpath": "toolchain/env.sh",
+    "runtime_data_package_root": "/home/hotdry/projects/PRIDE-PPPAR/data/scenario_leo_gracefo_ppp_ar_grac",
+    "cli_mode": "L"
+  }
+}

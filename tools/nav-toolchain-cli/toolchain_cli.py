@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shlex
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -25,6 +27,14 @@ CLI_PATH = "python3 tools/nav-toolchain-cli/toolchain_cli.py"
 
 class HelpFormatter(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
     """Formatter that keeps example blocks readable and shows defaults."""
+
+
+class EvalBlockedError(RuntimeError):
+    """Structured blocked verdict with attribution."""
+
+    def __init__(self, message: str, attribution: str) -> None:
+        super().__init__(message)
+        self.attribution = attribution
 
 
 def print_json(payload: dict[str, object]) -> None:
@@ -70,6 +80,11 @@ def run_quiet(cmd: list[str]) -> int:
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def first_match(base: Path, pattern: str) -> Path | None:
+    matches = sorted(base.glob(pattern))
+    return matches[0] if matches else None
 
 
 def benchmark_binary(build_dir: Path) -> Path:
@@ -322,6 +337,250 @@ def compare_time_results(results: list[dict[str, Any]], baseline: dict[str, Any]
     return compared, regressions
 
 
+def normalize_required_patterns(scenario: dict[str, Any]) -> list[str]:
+    patterns: list[str] = []
+    for entry in scenario.get("required_files", []):
+        if isinstance(entry, str):
+            patterns.append(entry)
+        elif isinstance(entry, dict) and isinstance(entry.get("pattern"), str):
+            patterns.append(entry["pattern"])
+    return patterns
+
+
+def validate_required_patterns(base: Path, patterns: list[str]) -> list[str]:
+    missing: list[str] = []
+    for pattern in patterns:
+        if not list(base.glob(pattern)):
+            missing.append(pattern)
+    return missing
+
+
+def require_result_metric(result_lookup: dict[str, dict[str, Any]], metric_id: str, key: str) -> float | bool:
+    entry = result_lookup.get(metric_id)
+    if entry is None:
+        raise ValueError(f"missing result metric: {metric_id}")
+    if entry.get("status") != "ok":
+        raise ValueError(f"metric {metric_id} is not available: {entry.get('status', 'unknown')}")
+    values = entry.get("values", {})
+    if key not in values:
+        raise ValueError(f"metric {metric_id} missing key: {key}")
+    return values[key]
+
+
+def normalize_pppar_metrics(package_root: Path, scenario: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    eval_path = package_root / "eval_results.json"
+    payload = load_json(eval_path)
+    results = payload.get("results", [])
+    if not isinstance(results, list):
+        raise ValueError(f"invalid eval_results payload: {eval_path}")
+    result_lookup = {
+        str(entry.get("id")): entry
+        for entry in results
+        if isinstance(entry, dict) and entry.get("id")
+    }
+    profile = str(scenario.get("metric_profile") or "")
+    metrics: dict[str, Any] = {
+        "orbit_3d_rms_m": float(require_result_metric(result_lookup, "rtn_orbit_error", "d3_rms_m")),
+        "carrier_phase_rms_m": float(require_result_metric(result_lookup, "phase_residual_rms", "carrier_phase_rms_m")),
+        "pseudorange_rms_m": float(require_result_metric(result_lookup, "phase_residual_rms", "pseudorange_rms_m")),
+    }
+    if profile == "ppp_ar_leo_core_v1":
+        metrics["narrowlane_fix_rate_pct"] = float(
+            require_result_metric(result_lookup, "arsig_fixing", "narrowlane_fix_rate_pct")
+        )
+        metrics["ar_success"] = bool(require_result_metric(result_lookup, "arsig_fixing", "ar_success"))
+    return metrics, [str(eval_path)]
+
+
+def compare_threshold_groups(
+    metrics: dict[str, Any],
+    scenario_id: str,
+    thresholds: dict[str, Any],
+    statistics_policy: dict[str, Any],
+) -> tuple[list[dict[str, Any]], list[str]]:
+    checks: list[dict[str, Any]] = []
+    regressions: list[str] = []
+    tolerance = float(statistics_policy.get("degradation_tolerance_ratio", 0.0))
+
+    for metric, expected in thresholds.get("accuracy", {}).items():
+        actual = metrics.get(metric)
+        limit = expected * (1.0 + tolerance)
+        passed = isinstance(actual, (int, float)) and actual <= limit
+        checks.append(
+            {
+                "metric": metric,
+                "group": "accuracy",
+                "expected": expected,
+                "gate_threshold": limit,
+                "actual": actual,
+                "ok": passed,
+            }
+        )
+        if not passed:
+            regressions.append(f"{scenario_id}:{metric}={actual} > {limit}")
+
+    for metric, expected in thresholds.get("reliability", {}).items():
+        actual = metrics.get(metric)
+        limit = expected * (1.0 - tolerance)
+        passed = isinstance(actual, (int, float)) and actual >= limit
+        checks.append(
+            {
+                "metric": metric,
+                "group": "reliability",
+                "expected": expected,
+                "gate_threshold": limit,
+                "actual": actual,
+                "ok": passed,
+            }
+        )
+        if not passed:
+            regressions.append(f"{scenario_id}:{metric}={actual} < {limit}")
+
+    for metric, expected in thresholds.get("performance", {}).items():
+        actual = metrics.get(metric)
+        limit = expected * (1.0 + tolerance)
+        passed = isinstance(actual, (int, float)) and actual <= limit
+        checks.append(
+            {
+                "metric": metric,
+                "group": "performance",
+                "expected": expected,
+                "gate_threshold": limit,
+                "actual": actual,
+                "ok": passed,
+            }
+        )
+        if not passed:
+            regressions.append(f"{scenario_id}:{metric}={actual} > {limit}")
+
+    for metric, expected in thresholds.get("status", {}).items():
+        actual = metrics.get(metric)
+        passed = actual == expected
+        checks.append(
+            {
+                "metric": metric,
+                "group": "status",
+                "expected": expected,
+                "gate_threshold": expected,
+                "actual": actual,
+                "ok": passed,
+            }
+        )
+        if not passed:
+            regressions.append(f"{scenario_id}:{metric}={actual} != {expected}")
+
+    return checks, regressions
+
+
+def resolve_pride_runtime_paths(scenario: dict[str, Any]) -> dict[str, Path | str]:
+    runtime = scenario.get("pride_runtime", {})
+    runtime_root_text = os.environ.get(
+        "PRIDE_PPPAR_RUNTIME_ROOT",
+        str(runtime.get("runtime_root") or "/home/hotdry/projects/PRIDE-PPPAR"),
+    )
+    runtime_root = Path(runtime_root_text).expanduser().resolve()
+    driver_relpath = str(runtime.get("driver_relpath") or "toolchain/bin/pdp3")
+    env_relpath = str(runtime.get("env_relpath") or "toolchain/env.sh")
+    scenario_root_text = os.environ.get(
+        f"PRIDE_PPPAR_SCENARIO_ROOT_{str(scenario['scenario_id']).upper()}",
+        str(runtime.get("runtime_data_package_root") or (runtime_root / "data" / Path(scenario["data_package_root"]).name)),
+    )
+    scenario_root = Path(scenario_root_text).expanduser().resolve()
+    return {
+        "runtime_root": runtime_root,
+        "driver": runtime_root / driver_relpath,
+        "env_file": runtime_root / env_relpath,
+        "scenario_root": scenario_root,
+        "cli_mode": str(runtime.get("cli_mode") or "L"),
+    }
+
+
+def measure_pppar_runtime_s(scenario: dict[str, Any]) -> tuple[float, list[str]]:
+    runtime_paths = resolve_pride_runtime_paths(scenario)
+    driver = runtime_paths["driver"]
+    env_file = runtime_paths["env_file"]
+    scenario_root = runtime_paths["scenario_root"]
+    cli_mode = str(runtime_paths["cli_mode"])
+
+    if not driver.exists():
+        raise EvalBlockedError(f"missing PRIDE runtime executable: {driver}", "toolchain_failure")
+    if not env_file.exists():
+        raise EvalBlockedError(f"missing PRIDE runtime env file: {env_file}", "toolchain_failure")
+    if not scenario_root.exists():
+        raise EvalBlockedError(f"missing PRIDE runtime scenario root: {scenario_root}", "toolchain_failure")
+
+    config_path = scenario_root / "inputs" / "config.cfg"
+    obs_path = first_match(scenario_root / "inputs", "*.??o")
+    if not config_path.exists():
+        raise EvalBlockedError(f"missing PRIDE scenario config: {config_path}", "toolchain_failure")
+    if obs_path is None:
+        raise EvalBlockedError(
+            f"missing PRIDE observation file under: {scenario_root / 'inputs'}",
+            "toolchain_failure",
+        )
+
+    command = [
+        "bash",
+        "-lc",
+        (
+            f"source {shlex.quote(str(env_file))} && "
+            f"{shlex.quote(str(driver))} -m {shlex.quote(cli_mode)} "
+            f"-cfg {shlex.quote(str(config_path))} {shlex.quote(str(obs_path))}"
+        ),
+    ]
+    with tempfile.TemporaryDirectory(prefix=f"{scenario['scenario_id']}_", dir="/tmp") as tmp:
+        started = time.perf_counter()
+        completed = subprocess.run(
+            command,
+            cwd=tmp,
+            capture_output=True,
+            text=True,
+        )
+        elapsed_s = time.perf_counter() - started
+    if completed.returncode != 0:
+        output = (completed.stdout.strip() + "\n" + completed.stderr.strip()).strip()
+        raise EvalBlockedError(output or f"PRIDE runtime failed for {scenario['scenario_id']}", "toolchain_failure")
+    return elapsed_s, []
+
+
+def run_pppar_eval_scenario(scenario: dict[str, Any], baseline: dict[str, Any]) -> tuple[dict[str, Any], list[str], list[str]]:
+    scenario_id = str(scenario["scenario_id"])
+    package_root = repo_path(str(scenario.get("data_package_root", "")))
+    if not package_root.exists():
+        raise EvalBlockedError(f"missing PPPAR data package: {package_root}", "data_issue")
+
+    missing = validate_required_patterns(package_root, normalize_required_patterns(scenario))
+    if missing:
+        raise EvalBlockedError(
+            f"scenario {scenario_id} missing required files: {', '.join(missing)}",
+            "data_issue",
+        )
+
+    metrics, artifact_paths = normalize_pppar_metrics(package_root, scenario)
+    metrics["runtime_s"], runtime_artifacts = measure_pppar_runtime_s(scenario)
+    artifact_paths.extend(runtime_artifacts)
+
+    scenario_thresholds = baseline.get("thresholds", {}).get(scenario_id, {})
+    checks, regressions = compare_threshold_groups(
+        metrics,
+        scenario_id,
+        scenario_thresholds,
+        baseline.get("statistics_policy", {}),
+    )
+    entry = {
+        "scenario_id": scenario_id,
+        "scenario_version": scenario["scenario_version"],
+        "verify_refs": scenario["verify_refs"],
+        "contract_refs": scenario["contract_refs"],
+        "truth_source_refs": scenario["truth_source_refs"],
+        "checks": checks,
+        "metrics": metrics,
+        "artifact_paths": sorted(set(artifact_paths)),
+        "result_status": "fail" if regressions else "pass",
+    }
+    return entry, regressions, artifact_paths
+
+
 def dry_run_eval_command(args: argparse.Namespace, domain: str, command_name: str) -> int:
     manifest = load_domain_manifest(domain, args.manifest)
     report = repo_path(args.report_path)
@@ -333,6 +592,16 @@ def dry_run_eval_command(args: argparse.Namespace, domain: str, command_name: st
         commands.append([str(benchmark_binary(build_dir)), "--kind", "<scenario-kind>", "..."])
         notes = [
             f"Dry-run does not execute the {domain} adapter.",
+            "Use --yes to acknowledge overwriting an existing report file.",
+        ]
+    elif execution_mode == "pppar_eval_results":
+        commands = [
+            ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "eval", "--domain", domain, "--report-path", str(report)],
+            ["bash", "-lc", "source /home/hotdry/projects/PRIDE-PPPAR/toolchain/env.sh && /home/hotdry/projects/PRIDE-PPPAR/toolchain/bin/pdp3 -m L -cfg <scenario-config> <observation-file>"],
+        ]
+        notes = [
+            f"Dry-run does not execute the {domain} adapter.",
+            "PPPAR eval reads saved eval_results.json and measures PRIDE runtime wall-clock seconds via the external runtime.",
             "Use --yes to acknowledge overwriting an existing report file.",
         ]
     else:
@@ -354,6 +623,7 @@ def build_eval_payload(
     scenario_results: list[dict[str, Any]],
     regressions: list[str],
     blocked_reasons: list[str],
+    blocked_attribution: str,
     build_dir: str,
     cross_file: str,
     native_file: str,
@@ -362,7 +632,7 @@ def build_eval_payload(
     if blocked_reasons:
         verdict = "blocked"
         risk_level = "high"
-        attribution = "toolchain_failure"
+        attribution = blocked_attribution
     elif regressions:
         verdict = "fail"
         risk_level = "high"
@@ -429,6 +699,7 @@ def cmd_eval(args: argparse.Namespace, *, default_domain: str | None = None, com
     scenario_results: list[dict[str, Any]] = []
     regressions: list[str] = []
     blocked_reasons: list[str] = []
+    blocked_attribution = "toolchain_failure"
 
     execution_mode = manifest.get("execution_mode", "")
     if execution_mode == "time_benchmark":
@@ -476,6 +747,48 @@ def cmd_eval(args: argparse.Namespace, *, default_domain: str | None = None, com
                     "blocked_reason": "missing executable domain adapter",
                 }
             )
+    elif execution_mode == "pppar_eval_results":
+        artifact_paths: set[str] = {str(report)}
+        for scenario in scenarios:
+            try:
+                entry, scenario_regressions, scenario_artifacts = run_pppar_eval_scenario(scenario, baseline)
+            except EvalBlockedError as exc:
+                blocked_attribution = exc.attribution
+                blocked_reasons.append(str(exc))
+                scenario_results.append(
+                    {
+                        "scenario_id": scenario["scenario_id"],
+                        "scenario_version": scenario["scenario_version"],
+                        "result_status": "blocked",
+                        "verify_refs": scenario["verify_refs"],
+                        "contract_refs": scenario["contract_refs"],
+                        "truth_source_refs": scenario["truth_source_refs"],
+                        "checks": [],
+                        "metrics": {},
+                        "blocked_reason": str(exc),
+                    }
+                )
+                continue
+            except ValueError as exc:
+                blocked_attribution = "toolchain_failure"
+                blocked_reasons.append(str(exc))
+                scenario_results.append(
+                    {
+                        "scenario_id": scenario["scenario_id"],
+                        "scenario_version": scenario["scenario_version"],
+                        "result_status": "blocked",
+                        "verify_refs": scenario["verify_refs"],
+                        "contract_refs": scenario["contract_refs"],
+                        "truth_source_refs": scenario["truth_source_refs"],
+                        "checks": [],
+                        "metrics": {},
+                        "blocked_reason": str(exc),
+                    }
+                )
+                continue
+            scenario_results.append(entry)
+            regressions.extend(scenario_regressions)
+            artifact_paths.update(scenario_artifacts)
     else:
         raise ValueError(f"unsupported execution_mode for domain {domain}: {execution_mode}")
 
@@ -488,10 +801,11 @@ def cmd_eval(args: argparse.Namespace, *, default_domain: str | None = None, com
         scenario_results=scenario_results,
         regressions=regressions,
         blocked_reasons=blocked_reasons,
+        blocked_attribution=blocked_attribution,
         build_dir=args.build_dir,
         cross_file=args.cross_file or "",
         native_file=args.native_file or "",
-        artifact_paths=[str(report)],
+        artifact_paths=sorted(artifact_paths) if execution_mode == "pppar_eval_results" else [str(report)],
     )
     report.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print_json(payload)

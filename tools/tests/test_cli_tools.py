@@ -35,6 +35,66 @@ class CliToolsTest(unittest.TestCase):
         path.write_text(content, encoding="utf-8")
         path.chmod(0o755)
 
+    def write_json(self, path: Path, payload: dict[str, object]) -> None:
+        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+    def stage_fake_pride_runtime(self, root: Path, *, failing: bool = False) -> None:
+        env_file = root / "toolchain" / "env.sh"
+        driver = root / "toolchain" / "bin" / "pdp3"
+        env_file.parent.mkdir(parents=True, exist_ok=True)
+        driver.parent.mkdir(parents=True, exist_ok=True)
+        env_file.write_text(
+            "\n".join(
+                [
+                    f'export PPP_FLOAT_PRIDE_EXECUTABLE="{driver}"',
+                    f'export PPP_FLOAT_PRIDE_BIN_DIR="{driver.parent}"',
+                    'export PATH="$PPP_FLOAT_PRIDE_BIN_DIR:$PATH"',
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        if failing:
+            content = "#!/bin/sh\necho 'runtime failed' >&2\nexit 1\n"
+        else:
+            content = "#!/bin/sh\nsleep 0.01\nexit 0\n"
+        self.write_executable(driver, content)
+        for scenario_name, obs_name in (
+            ("scenario_leo_gracefo_ppp_ar_grac", "grac0010.25o"),
+            ("scenario_leo_gracefo_ppp_float_grad", "grad0010.25o"),
+        ):
+            scenario_root = root / "data" / scenario_name / "inputs"
+            scenario_root.mkdir(parents=True, exist_ok=True)
+            (scenario_root / "config.cfg").write_text("# fake config\n", encoding="utf-8")
+            (scenario_root / obs_name).write_text("fake obs\n", encoding="utf-8")
+
+    def stage_pppar_manifest_and_baseline(
+        self,
+        root: Path,
+        *,
+        runtime_s_max: float,
+        orbit_scale: float = 1.0,
+        tolerance_ratio: float | None = None,
+    ) -> tuple[Path, Path]:
+        manifest = json.loads((REPO_ROOT / "eval" / "domains" / "pppar" / "manifest.json").read_text(encoding="utf-8"))
+        baseline = json.loads(
+            (REPO_ROOT / "eval" / "domains" / "pppar" / "baselines" / "pppfamily_pride_baseline.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        manifest_path = root / "pppar_manifest.json"
+        baseline_path = root / "pppar_baseline.json"
+        manifest["default_baseline"] = str(baseline_path)
+        if tolerance_ratio is not None:
+            baseline["statistics_policy"]["degradation_tolerance_ratio"] = tolerance_ratio
+        baseline["thresholds"]["leo_gracefo_ppp_ar_grac"]["performance"]["runtime_s"] = runtime_s_max
+        baseline["thresholds"]["leo_gracefo_ppp_float_grad"]["performance"]["runtime_s"] = runtime_s_max
+        if orbit_scale != 1.0:
+            baseline["thresholds"]["leo_gracefo_ppp_ar_grac"]["accuracy"]["orbit_3d_rms_m"] *= orbit_scale
+        self.write_json(manifest_path, manifest)
+        self.write_json(baseline_path, baseline)
+        return manifest_path, baseline_path
+
     def test_toolchain_help_includes_examples(self) -> None:
         completed = self.run_cli(TOOLCHAIN, "build", "--help")
         self.assertEqual(completed.returncode, 0, completed.stderr)
@@ -63,22 +123,115 @@ class CliToolsTest(unittest.TestCase):
         self.assertEqual(payload["command"], "eval")
         self.assertTrue(any("time_benchmark" in command for command in payload["commands"]))
 
-    def test_toolchain_eval_pppar_returns_blocked_verdict(self) -> None:
+    def test_toolchain_eval_pppar_dry_run_mentions_external_runtime(self) -> None:
+        completed = self.run_cli(TOOLCHAIN, "eval", "--domain", "pppar", "--dry-run")
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["command"], "eval")
+        self.assertTrue(any("toolchain/bin/pdp3" in command for command in payload["commands"]))
+        self.assertTrue(any("eval_results.json" in note for note in payload["notes"]))
+
+    def test_toolchain_eval_pppar_passes_with_fake_runtime(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            report_path = Path(tmp) / "pppar_eval_report.json"
+            root = Path(tmp)
+            self.stage_fake_pride_runtime(root)
+            manifest_path, _ = self.stage_pppar_manifest_and_baseline(root, runtime_s_max=5.0)
+            report_path = root / "pppar_eval_report.json"
             completed = self.run_cli(
                 TOOLCHAIN,
                 "eval",
                 "--domain",
                 "pppar",
+                "--manifest",
+                str(manifest_path),
                 "--report-path",
                 str(report_path),
                 "--yes",
+                env={"PRIDE_PPPAR_RUNTIME_ROOT": str(root)},
+            )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["verdict"], "pass")
+        self.assertEqual(payload["domain"], "pppar")
+        self.assertEqual(payload["execution_mode"], "pppar_eval_results")
+        self.assertEqual(payload["scenario_count"], 2)
+        self.assertTrue(all(result["result_status"] == "pass" for result in payload["results"]))
+
+    def test_toolchain_eval_pppar_fails_on_regression(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.stage_fake_pride_runtime(root)
+            manifest_path, _ = self.stage_pppar_manifest_and_baseline(root, runtime_s_max=5.0, orbit_scale=0.5)
+            report_path = root / "pppar_eval_report.json"
+            completed = self.run_cli(
+                TOOLCHAIN,
+                "eval",
+                "--domain",
+                "pppar",
+                "--manifest",
+                str(manifest_path),
+                "--report-path",
+                str(report_path),
+                "--yes",
+                env={"PRIDE_PPPAR_RUNTIME_ROOT": str(root)},
+            )
+        self.assertNotEqual(completed.returncode, 0)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["verdict"], "fail")
+        self.assertEqual(payload["attribution"], "algorithm_regression")
+        self.assertTrue(payload["regressions"])
+
+    def test_toolchain_eval_pppar_allows_regression_within_tolerance(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.stage_fake_pride_runtime(root)
+            manifest_path, _ = self.stage_pppar_manifest_and_baseline(
+                root,
+                runtime_s_max=5.0,
+                orbit_scale=0.9,
+                tolerance_ratio=0.2,
+            )
+            report_path = root / "pppar_eval_report.json"
+            completed = self.run_cli(
+                TOOLCHAIN,
+                "eval",
+                "--domain",
+                "pppar",
+                "--manifest",
+                str(manifest_path),
+                "--report-path",
+                str(report_path),
+                "--yes",
+                env={"PRIDE_PPPAR_RUNTIME_ROOT": str(root)},
+            )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["verdict"], "pass")
+        first_check = payload["results"][0]["checks"][0]
+        self.assertGreater(first_check["actual"], first_check["expected"])
+        self.assertTrue(first_check["ok"])
+
+    def test_toolchain_eval_pppar_returns_blocked_when_runtime_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest_path, _ = self.stage_pppar_manifest_and_baseline(root, runtime_s_max=5.0)
+            report_path = root / "pppar_eval_report.json"
+            completed = self.run_cli(
+                TOOLCHAIN,
+                "eval",
+                "--domain",
+                "pppar",
+                "--manifest",
+                str(manifest_path),
+                "--report-path",
+                str(report_path),
+                "--yes",
+                env={"PRIDE_PPPAR_RUNTIME_ROOT": str(root / "missing-runtime")},
             )
         self.assertNotEqual(completed.returncode, 0)
         payload = json.loads(completed.stdout)
         self.assertEqual(payload["verdict"], "blocked")
-        self.assertEqual(payload["domain"], "pppar")
+        self.assertEqual(payload["attribution"], "toolchain_failure")
         self.assertTrue(payload["blocked_reasons"])
 
     def test_traceability_help_includes_examples(self) -> None:
