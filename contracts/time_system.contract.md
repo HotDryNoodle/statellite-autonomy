@@ -26,16 +26,19 @@
 
 ## 3. 数据输入（Inputs）
 
-| 名称 | 来源 | 说明 | 单位 | 类型 |
-| --- | --- | --- | --- | --- |
-| LeapSecondTable | 数据文件 | 闰秒表快照 | s | 表格 |
-| UT1_UTC | EOP / 上游模块 | UT1-UTC 差值 | s | double |
-| CivilTime | 外部接口 | UTC civil 时间 | s | struct |
-| TimeScaleValue | 外部模块 | UTC/UT1/TAI/TT/GPST/BDT 输入 | - | struct |
+
+| 名称              | 来源         | 说明                         | 单位  | 类型     |
+| --------------- | ---------- | -------------------------- | --- | ------ |
+| LeapSecondTable | 数据文件       | 闰秒表快照                      | s   | 表格     |
+| UT1_UTC         | EOP / 上游模块 | UT1-UTC 差值                 | s   | double |
+| CivilTime       | 外部接口       | UTC civil 时间               | s   | struct |
+| TimeScaleValue  | 外部模块       | UTC/UT1/TAI/TT/GPST/BDT 输入 | -   | struct |
+
 
 ## 4. 数据处理与设计约束（Contracts）
 
 ### 4.1 接口契约
+
 @contract{TimeSys_4_1}
 
 Contract：
@@ -46,6 +49,7 @@ Contract：
 - 未初始化对象参与运算时必须返回显式失败。
 
 ### 4.2 状态有效性
+
 @contract{TimeSys_4_2}
 
 Contract：
@@ -54,6 +58,7 @@ Contract：
 - `Get<T>()` 在 `Invalid` / `Uninitialized` 状态下必须显式失败。
 
 ### 4.3 UTC / TAI / TT 转换
+
 @contract{TimeSys_4_4_3}
 
 Contract：
@@ -63,6 +68,7 @@ Contract：
 - `UTC -> TAI -> UTC` 在闰秒定义域内必须可逆。
 
 ### 4.4 UT1 约束
+
 @contract{TimeSys_4_4_4}
 
 Contract：
@@ -72,6 +78,7 @@ Contract：
 - 禁止默认假设 `UT1 = UTC`。
 
 ### 4.5 GPST / BDT 约束
+
 @contract{TimeSys_4_4_5}
 
 Contract：
@@ -81,6 +88,7 @@ Contract：
 - `sec` 必须位于 `[0, 604800)`。
 
 ### 4.6 闰秒数据与行为
+
 @contract{TimeSys_4_6_1}
 @contract{TimeSys_4_6_2}
 
@@ -91,6 +99,7 @@ Contract：
 - 非 UTC 时间尺度不允许闰秒表示。
 
 ### 4.7 错误处理规范
+
 @contract{TimeSys_4_7_1}
 
 以下情况必须失败，不允许 silent fallback：
@@ -105,15 +114,17 @@ Contract：
 
 ## 5. 数据输出（Outputs）
 
-| 名称 | 去向 | 说明 | 单位 | 类型 |
-| --- | --- | --- | --- | --- |
-| UTC_MJD | 上游模块 | UTC 的 MJD 表示 | day | struct |
-| UT1_MJD | 上游模块 | UT1 的 MJD 表示 | day | struct |
-| TAI_MJD | 上游模块 | TAI 的 MJD 表示 | day | struct |
-| TT_MJD | 上游模块 | TT 的 MJD 表示 | day | struct |
-| GPST_WeekSec | 上游模块 | GPS 周秒 | s | struct |
-| BDT_WeekSec | 上游模块 | BDS 周秒 | s | struct |
-| TimeDelta | 上游模块 | `TimeSys - TimeSys` 秒差 | s | duration |
+
+| 名称           | 去向   | 说明                     | 单位  | 类型       |
+| ------------ | ---- | ---------------------- | --- | -------- |
+| UTC_MJD      | 上游模块 | UTC 的 MJD 表示           | day | struct   |
+| UT1_MJD      | 上游模块 | UT1 的 MJD 表示           | day | struct   |
+| TAI_MJD      | 上游模块 | TAI 的 MJD 表示           | day | struct   |
+| TT_MJD       | 上游模块 | TT 的 MJD 表示            | day | struct   |
+| GPST_WeekSec | 上游模块 | GPS 周秒                 | s   | struct   |
+| BDT_WeekSec  | 上游模块 | BDS 周秒                 | s   | struct   |
+| TimeDelta    | 上游模块 | `TimeSys - TimeSys` 秒差 | s   | duration |
+
 
 ## 6. 测试要求（verify）
 
@@ -159,26 +170,29 @@ Contract：
 
 ## 附录A：设计约束表
 
-| ClauseId | 说明 |
-| --- | --- |
-| `@contract{TimeSys_4_1}` | 接口契约 |
-| `@contract{TimeSys_4_2}` | 状态有效性 |
+
+| ClauseId                   | 说明                |
+| -------------------------- | ----------------- |
+| `@contract{TimeSys_4_1}`   | 接口契约              |
+| `@contract{TimeSys_4_2}`   | 状态有效性             |
 | `@contract{TimeSys_4_4_3}` | UTC / TAI / TT 转换 |
-| `@contract{TimeSys_4_4_4}` | UT1 约束 |
-| `@contract{TimeSys_4_4_5}` | GPST / BDT 约束 |
-| `@contract{TimeSys_4_6_1}` | 闰秒数据来源 |
-| `@contract{TimeSys_4_6_2}` | 闰秒行为 |
-| `@contract{TimeSys_4_7_1}` | 错误处理 |
+| `@contract{TimeSys_4_4_4}` | UT1 约束            |
+| `@contract{TimeSys_4_4_5}` | GPST / BDT 约束     |
+| `@contract{TimeSys_4_6_1}` | 闰秒数据来源            |
+| `@contract{TimeSys_4_6_2}` | 闰秒行为              |
+| `@contract{TimeSys_4_7_1}` | 错误处理              |
+
 
 ## 附录B：测试验证表
 
-| verify-ID | 说明 |
-| --- | --- |
+
+| verify-ID              | 说明             |
+| ---------------------- | -------------- |
 | `@verify{TimeSys_6_1}` | round-trip 一致性 |
-| `@verify{TimeSys_6_2}` | 非法闰秒失败 |
-| `@verify{TimeSys_6_3}` | 闰秒边界行为 |
-| `@verify{TimeSys_6_4}` | UT1 依赖行为 |
-| `@verify{TimeSys_6_5}` | 模板类型不匹配 |
-| `@verify{TimeSys_6_6}` | 连续尺度单调性 |
-| `@verify{TimeSys_6_7}` | chrono 运算 |
-| `@verify{TimeSys_6_8}` | 非法输入与缺失依赖 |
+| `@verify{TimeSys_6_2}` | 非法闰秒失败         |
+| `@verify{TimeSys_6_3}` | 闰秒边界行为         |
+| `@verify{TimeSys_6_4}` | UT1 依赖行为       |
+| `@verify{TimeSys_6_5}` | 模板类型不匹配        |
+| `@verify{TimeSys_6_6}` | 连续尺度单调性        |
+| `@verify{TimeSys_6_7}` | chrono 运算      |
+| `@verify{TimeSys_6_8}` | 非法输入与缺失依赖      |

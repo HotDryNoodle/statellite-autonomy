@@ -71,6 +71,31 @@ SOP_COMMAND_SNIPPETS = (
     "sync-governance --task-id",
 )
 
+# Tracked text-like paths checked for POSIX final newline (EditorConfig insert_final_newline).
+_FINAL_NEWLINE_SUFFIXES = frozenset(
+    {
+        ".md",
+        ".cpp",
+        ".c",
+        ".cc",
+        ".cxx",
+        ".h",
+        ".hpp",
+        ".py",
+        ".sh",
+        ".yaml",
+        ".yml",
+        ".json",
+        ".toml",
+        ".ini",
+        ".in",
+        ".cmake",
+        ".plantuml",
+        ".puml",
+    }
+)
+_FINAL_NEWLINE_NAMES = frozenset({"meson.build", "CMakeLists.txt", "Dockerfile"})
+
 
 @dataclass
 class CheckResult:
@@ -122,6 +147,47 @@ def extract_tagged_tests(text: str) -> list[tuple[str, bool, bool]]:
             )
         )
     return tagged
+
+
+def check_final_newline() -> CheckResult:
+    """Require non-empty tracked text files to end with a newline (EditorConfig)."""
+    completed = subprocess.run(
+        ["git", "ls-files"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        return CheckResult(
+            "final_newline",
+            False,
+            completed.stderr.strip() or "git ls-files failed",
+        )
+    bad: list[str] = []
+    for line in completed.stdout.splitlines():
+        path = REPO_ROOT / line
+        if not path.is_file():
+            continue
+        suf = path.suffix.lower()
+        if suf not in _FINAL_NEWLINE_SUFFIXES and path.name not in _FINAL_NEWLINE_NAMES:
+            continue
+        try:
+            data = path.read_bytes()
+        except OSError as exc:
+            return CheckResult("final_newline", False, f"read {line}: {exc}")
+        if not data:
+            continue
+        if not data.endswith(b"\n"):
+            bad.append(line)
+    if bad:
+        preview = bad[:20]
+        extra = f" (+{len(bad) - len(preview)} more)" if len(bad) > len(preview) else ""
+        return CheckResult(
+            "final_newline",
+            False,
+            "missing final newline: " + ", ".join(preview) + extra,
+        )
+    return CheckResult("final_newline", True, "tracked text files end with newline")
 
 
 def check_contract_tags() -> CheckResult:
@@ -605,6 +671,7 @@ def main() -> int:
     checks.append(check_generated_files_not_tracked())
     checks.append(check_contract_tags())
     checks.append(check_test_tags())
+    checks.append(check_final_newline())
 
     ok = all(check.ok for check in checks)
     payload = {"ok": ok, "checks": [check.__dict__ for check in checks]}

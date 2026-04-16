@@ -1,5 +1,6 @@
 ---
-name: project-manager
+
+## name: project-manager
 description: 项目经理 skill。负责任务归约、阶段推进、角色编排、验收收口，以及主路径治理约束的维护。
 version: 1.1.0
 depends_on: []
@@ -13,6 +14,7 @@ triggers:
   - planning
   - coordination
   - acceptance
+
 ---
 
 # Project Manager
@@ -64,3 +66,4 @@ Load only when needed:
 
 - `skills/project-manager/references/load-routing.md`
 - `skills/project-manager/references/control-plane-sop.md`
+
