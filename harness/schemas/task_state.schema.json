@@ -57,6 +57,7 @@
       "type": "object"
     },
     "current_artifact_ref": {"type": "string", "minLength": 0},
+    "architecture_freeze_ref": {"type": "string", "minLength": 0},
     "pending_approvals": {
       "type": "array",
       "items": {"type": "string"}

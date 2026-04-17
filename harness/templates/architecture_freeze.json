@@ -1,0 +1,19 @@
+{
+  "task_id": "",
+  "phase": "contract_freeze",
+  "from_agent": "architecture-expert",
+  "requested_by": "project-manager",
+  "relevant_specs": [],
+  "problem_statement": "",
+  "boundary_decisions": [],
+  "dependency_direction": [],
+  "interface_freeze_points": [],
+  "ownership_lifecycle_constraints": [],
+  "nfr_constraints": [],
+  "forbidden_shortcuts": [],
+  "tradeoffs": [],
+  "blueprint_refs": [],
+  "supporting_evidence_refs": [],
+  "supersedes_freeze_refs": [],
+  "notes": ""
+}

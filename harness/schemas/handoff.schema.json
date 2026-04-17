@@ -22,7 +22,8 @@
     "relevant_specs": {"type": "array", "items": {"type": "string"}},
     "evidence_refs": {"type": "array", "items": {"type": "string"}},
     "blocking_issues": {"type": "array", "items": {"type": "string"}},
-    "recommended_actions": {"type": "array", "items": {"type": "string"}}
+    "recommended_actions": {"type": "array", "items": {"type": "string"}},
+    "architecture_freeze_ref": {"type": "string", "minLength": 0}
   },
   "additionalProperties": true
 }

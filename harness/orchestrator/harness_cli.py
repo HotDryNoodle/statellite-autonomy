@@ -278,6 +278,25 @@ def expert_dispatch_event(
     }
 
 
+def architecture_freeze_event(
+    task_id: str,
+    *,
+    owner: str,
+    requested_by: str,
+    artifact_ref: str,
+    blueprint_refs: list[str],
+) -> dict[str, Any]:
+    return {
+        "timestamp": init_event(task_id, "contract_freeze", owner, "")["timestamp"],
+        "event": "architecture_freeze",
+        "task_id": task_id,
+        "owner": owner,
+        "requested_by": requested_by,
+        "artifact_ref": artifact_ref,
+        "blueprint_refs": blueprint_refs,
+    }
+
+
 def infer_owner_for_phase(phase: str) -> str:
     if phase == "implementation":
         return "coding_agent"
@@ -364,6 +383,7 @@ def build_handoff_artifact(
     evidence_refs: list[str],
     blocking_issues: list[str],
     recommended_actions: list[str],
+    architecture_freeze_ref: str = "",
 ) -> dict[str, Any]:
     return {
         "task_id": task_state["task_id"],
@@ -375,6 +395,7 @@ def build_handoff_artifact(
         "evidence_refs": evidence_refs,
         "blocking_issues": blocking_issues,
         "recommended_actions": recommended_actions,
+        "architecture_freeze_ref": architecture_freeze_ref,
     }
 
 
@@ -499,6 +520,7 @@ def load_task_context(task_state: dict[str, Any]) -> dict[str, Any]:
         "affected_specs": list(task_state.get("affected_specs", [])),
         "task_brief_ref": task_state.get("task_brief_ref", ""),
         "handoff_ref": task_state.get("handoff_ref", ""),
+        "architecture_freeze_ref": task_state.get("architecture_freeze_ref", ""),
         "acceptance_summary": task_state.get("acceptance_summary", ""),
     }
     artifacts_root = artifacts_dir(task_state["task_id"], create=False)
@@ -518,6 +540,14 @@ def load_task_context(task_state: dict[str, Any]) -> dict[str, Any]:
                 context["affected_specs"] = list(payload.get("relevant_specs", []))
             if not context["acceptance_summary"]:
                 context["acceptance_summary"] = payload.get("summary", "")
+            if not context["architecture_freeze_ref"]:
+                context["architecture_freeze_ref"] = str(payload.get("architecture_freeze_ref", "") or "")
+    if not context["architecture_freeze_ref"]:
+        for path in sorted(artifacts_root.glob("architecture_freeze*.json")):
+            context["architecture_freeze_ref"] = artifact_ref_for_path(path)
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            if not context["affected_specs"]:
+                context["affected_specs"] = list(payload.get("relevant_specs", []))
     return context
 
 
@@ -671,6 +701,7 @@ def close_task_internal(
         evidence_refs=combined_evidence,
         blocking_issues=list(state.get("blocking_issues", [])),
         recommended_actions=["Archive task when short-term memory can be cleared."],
+        architecture_freeze_ref=context["architecture_freeze_ref"],
     )
     handoff_ref = write_artifact(task_id, "handoff", handoff, suffix="acceptance")
     state["owner"] = "project-manager"
@@ -983,6 +1014,171 @@ def dispatch_expert_for_task(
     }
 
 
+def validate_blueprint_refs(blueprint_refs: list[str]) -> None:
+    if not blueprint_refs:
+        raise ValueError("architecture_freeze requires at least one blueprint ref")
+    if not any(ref.endswith(".puml") for ref in blueprint_refs):
+        raise ValueError("architecture_freeze blueprint_refs must include at least one .puml path")
+    missing = [ref for ref in blueprint_refs if not (REPO_ROOT / ref).exists()]
+    if missing:
+        raise ValueError("missing blueprint refs: " + ", ".join(missing))
+
+
+def build_architecture_freeze_artifact(
+    task_state: dict[str, Any],
+    *,
+    from_agent: str,
+    requested_by: str,
+    relevant_specs: list[str],
+    problem_statement: str,
+    boundary_decisions: list[str],
+    dependency_direction: list[str],
+    interface_freeze_points: list[str],
+    ownership_lifecycle_constraints: list[str],
+    nfr_constraints: list[str],
+    forbidden_shortcuts: list[str],
+    tradeoffs: list[str],
+    blueprint_refs: list[str],
+    supporting_evidence_refs: list[str],
+    supersedes_freeze_refs: list[str],
+    notes: str,
+) -> dict[str, Any]:
+    return {
+        "task_id": task_state["task_id"],
+        "phase": "contract_freeze",
+        "from_agent": from_agent,
+        "requested_by": requested_by,
+        "relevant_specs": relevant_specs,
+        "problem_statement": problem_statement,
+        "boundary_decisions": boundary_decisions,
+        "dependency_direction": dependency_direction,
+        "interface_freeze_points": interface_freeze_points,
+        "ownership_lifecycle_constraints": ownership_lifecycle_constraints,
+        "nfr_constraints": nfr_constraints,
+        "forbidden_shortcuts": forbidden_shortcuts,
+        "tradeoffs": tradeoffs,
+        "blueprint_refs": blueprint_refs,
+        "supporting_evidence_refs": supporting_evidence_refs,
+        "supersedes_freeze_refs": supersedes_freeze_refs,
+        "notes": notes,
+    }
+
+
+def architecture_freeze_requested(args: argparse.Namespace) -> bool:
+    return any(
+        [
+            args.problem_statement,
+            args.boundary_decision,
+            args.dependency_direction,
+            args.interface_freeze_point,
+            args.ownership_lifecycle_constraint,
+            args.nfr_constraint,
+            args.forbidden_shortcut,
+            args.tradeoff,
+            args.blueprint_ref,
+            args.freeze_evidence,
+            args.supersedes_freeze_ref,
+            args.freeze_note,
+        ]
+    )
+
+
+def validate_architecture_freeze_inputs(
+    *,
+    problem_statement: str,
+    boundary_decisions: list[str],
+    dependency_direction: list[str],
+    interface_freeze_points: list[str],
+    ownership_lifecycle_constraints: list[str],
+    nfr_constraints: list[str],
+) -> None:
+    required_fields = {
+        "problem_statement": bool(problem_statement),
+        "boundary_decisions": bool(boundary_decisions),
+        "dependency_direction": bool(dependency_direction),
+        "interface_freeze_points": bool(interface_freeze_points),
+        "ownership_lifecycle_constraints": bool(ownership_lifecycle_constraints),
+        "nfr_constraints": bool(nfr_constraints),
+    }
+    missing = [name for name, present in required_fields.items() if not present]
+    if missing:
+        raise ValueError("architecture_freeze missing required fields: " + ", ".join(missing))
+
+
+def persist_architecture_freeze(
+    task_id: str,
+    *,
+    from_agent: str,
+    requested_by: str,
+    relevant_specs: list[str],
+    problem_statement: str,
+    boundary_decisions: list[str],
+    dependency_direction: list[str],
+    interface_freeze_points: list[str],
+    ownership_lifecycle_constraints: list[str],
+    nfr_constraints: list[str],
+    forbidden_shortcuts: list[str],
+    tradeoffs: list[str],
+    blueprint_refs: list[str],
+    supporting_evidence_refs: list[str],
+    supersedes_freeze_refs: list[str],
+    notes: str,
+) -> dict[str, Any]:
+    validate_blueprint_refs(blueprint_refs)
+    validate_architecture_freeze_inputs(
+        problem_statement=problem_statement,
+        boundary_decisions=boundary_decisions,
+        dependency_direction=dependency_direction,
+        interface_freeze_points=interface_freeze_points,
+        ownership_lifecycle_constraints=ownership_lifecycle_constraints,
+        nfr_constraints=nfr_constraints,
+    )
+    state = load_state(task_id)
+    if state["phase"] != "contract_freeze":
+        raise ValueError(f"freeze-architecture requires contract_freeze phase; got {state['phase']}")
+    artifact = build_architecture_freeze_artifact(
+        state,
+        from_agent=from_agent,
+        requested_by=requested_by,
+        relevant_specs=relevant_specs,
+        problem_statement=problem_statement,
+        boundary_decisions=boundary_decisions,
+        dependency_direction=dependency_direction,
+        interface_freeze_points=interface_freeze_points,
+        ownership_lifecycle_constraints=ownership_lifecycle_constraints,
+        nfr_constraints=nfr_constraints,
+        forbidden_shortcuts=forbidden_shortcuts,
+        tradeoffs=tradeoffs,
+        blueprint_refs=blueprint_refs,
+        supporting_evidence_refs=supporting_evidence_refs,
+        supersedes_freeze_refs=supersedes_freeze_refs,
+        notes=notes,
+    )
+    freeze_ref = write_artifact(task_id, "architecture_freeze", artifact)
+    combined_evidence = list(dict.fromkeys(list(state.get("evidence_refs", [])) + supporting_evidence_refs + blueprint_refs))
+    state["architecture_freeze_ref"] = freeze_ref
+    state["current_artifact_ref"] = freeze_ref
+    state["affected_specs"] = relevant_specs
+    state["evidence_refs"] = combined_evidence
+    state["updated_at"] = init_event(task_id, state["phase"], state["owner"], state["goal"])["timestamp"]
+    write_json(state_path(task_id), state)
+    append_event(
+        task_id,
+        architecture_freeze_event(
+            task_id,
+            owner=from_agent,
+            requested_by=requested_by,
+            artifact_ref=freeze_ref,
+            blueprint_refs=blueprint_refs,
+        ),
+    )
+    return {
+        "task_state": state,
+        "architecture_freeze_ref": freeze_ref,
+        "artifact": artifact,
+    }
+
+
 def cmd_init_task(args: argparse.Namespace) -> int:
     state = init_task_state(
         args.task_id,
@@ -1051,6 +1247,32 @@ def cmd_dispatch_expert(args: argparse.Namespace) -> int:
         "session_ref": result["session_ref"],
         "knowledge_context": result["knowledge_context"],
     }
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+    return 0
+
+
+def cmd_freeze_architecture(args: argparse.Namespace) -> int:
+    try:
+        payload = persist_architecture_freeze(
+            args.task_id,
+            from_agent=args.from_agent,
+            requested_by=args.requested_by,
+            relevant_specs=args.contract,
+            problem_statement=args.problem_statement,
+            boundary_decisions=args.boundary_decision,
+            dependency_direction=args.dependency_direction,
+            interface_freeze_points=args.interface_freeze_point,
+            ownership_lifecycle_constraints=args.ownership_lifecycle_constraint,
+            nfr_constraints=args.nfr_constraint,
+            forbidden_shortcuts=args.forbidden_shortcut,
+            tradeoffs=args.tradeoff,
+            blueprint_refs=args.blueprint_ref,
+            supporting_evidence_refs=args.freeze_evidence,
+            supersedes_freeze_refs=args.supersedes_freeze_ref,
+            notes=args.freeze_note,
+        )
+    except ValueError as exc:
+        raise SystemExit(f"{exc} for {args.task_id}") from exc
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     return 0
 
@@ -1132,6 +1354,8 @@ def cmd_pm_workflow(args: argparse.Namespace) -> int:
     artifacts: dict[str, str] = {}
     if (args.knowledge_query or args.note) and (args.skip_dispatch or not args.agent):
         raise SystemExit("pm-workflow knowledge query/note requires expert dispatch")
+    if architecture_freeze_requested(args) and not args.blueprint_ref:
+        raise SystemExit("pm-workflow architecture freeze requires at least one --blueprint-ref")
     if state_path(args.task_id).exists():
         state = load_state(args.task_id)
     else:
@@ -1245,6 +1469,33 @@ def cmd_pm_workflow(args: argparse.Namespace) -> int:
             }
         )
 
+    architecture_freeze_ref = str(state.get("architecture_freeze_ref", "") or "")
+    if architecture_freeze_requested(args):
+        freeze_from_agent = args.freeze_from_agent or (args.agent if dispatch_result is not None else "architecture-expert")
+        freeze_requested_by = args.freeze_requested_by or "project-manager"
+        freeze_payload = persist_architecture_freeze(
+            args.task_id,
+            from_agent=freeze_from_agent,
+            requested_by=freeze_requested_by,
+            relevant_specs=state["affected_specs"],
+            problem_statement=args.problem_statement or state["goal"],
+            boundary_decisions=args.boundary_decision,
+            dependency_direction=args.dependency_direction,
+            interface_freeze_points=args.interface_freeze_point,
+            ownership_lifecycle_constraints=args.ownership_lifecycle_constraint,
+            nfr_constraints=args.nfr_constraint,
+            forbidden_shortcuts=args.forbidden_shortcut,
+            tradeoffs=args.tradeoff,
+            blueprint_refs=args.blueprint_ref,
+            supporting_evidence_refs=args.freeze_evidence,
+            supersedes_freeze_refs=args.supersedes_freeze_ref,
+            notes=args.freeze_note,
+        )
+        state = freeze_payload["task_state"]
+        architecture_freeze_ref = freeze_payload["architecture_freeze_ref"]
+        artifacts["architecture_freeze"] = architecture_freeze_ref
+        steps.append({"step": "architecture-freeze", "artifact_ref": architecture_freeze_ref})
+
     if args.advance_to:
         next_owner = args.next_owner or infer_owner_for_phase(args.advance_to)
         state = advance_task_state(
@@ -1271,13 +1522,7 @@ def cmd_pm_workflow(args: argparse.Namespace) -> int:
             else "project-manager prepared downstream handoff without expert dispatch"
         ),
         relevant_specs=state["affected_specs"],
-        evidence_refs=list(
-            dict.fromkeys(
-                (dispatch_result["knowledge_context"] or {}).get("refs", [])
-                if dispatch_result is not None
-                else list(state.get("evidence_refs", []))
-            )
-        ),
+        evidence_refs=list(dict.fromkeys(list(state.get("evidence_refs", [])))),
         blocking_issues=list(state.get("blocking_issues", [])),
         recommended_actions=args.recommended_action
         or (
@@ -1285,6 +1530,7 @@ def cmd_pm_workflow(args: argparse.Namespace) -> int:
             if dispatch_result is not None
             else ["Proceed with implementation against the frozen contracts and current task brief."]
         ),
+        architecture_freeze_ref=architecture_freeze_ref,
     )
     handoff_ref = write_artifact(
         args.task_id,
@@ -1382,6 +1628,27 @@ def build_parser() -> argparse.ArgumentParser:
     dispatch_expert.add_argument("--summary", default="")
     dispatch_expert.set_defaults(handler=cmd_dispatch_expert)
 
+    freeze_architecture = subparsers.add_parser("freeze-architecture")
+    freeze_architecture.add_argument("--task-id", required=True)
+    freeze_architecture.add_argument("--from-agent", default="architecture-expert")
+    freeze_architecture.add_argument("--requested-by", default="project-manager")
+    freeze_architecture.add_argument("--contract", action="append", required=True, default=[])
+    freeze_architecture.add_argument("--problem-statement", required=True)
+    freeze_architecture.add_argument("--boundary-decision", action="append", required=True, default=[])
+    freeze_architecture.add_argument("--dependency-direction", action="append", required=True, default=[])
+    freeze_architecture.add_argument("--interface-freeze-point", action="append", required=True, default=[])
+    freeze_architecture.add_argument(
+        "--ownership-lifecycle-constraint", action="append", required=True, default=[]
+    )
+    freeze_architecture.add_argument("--nfr-constraint", action="append", required=True, default=[])
+    freeze_architecture.add_argument("--forbidden-shortcut", action="append", default=[])
+    freeze_architecture.add_argument("--tradeoff", action="append", default=[])
+    freeze_architecture.add_argument("--blueprint-ref", action="append", required=True, default=[])
+    freeze_architecture.add_argument("--freeze-evidence", action="append", default=[])
+    freeze_architecture.add_argument("--supersedes-freeze-ref", action="append", default=[])
+    freeze_architecture.add_argument("--freeze-note", default="")
+    freeze_architecture.set_defaults(handler=cmd_freeze_architecture)
+
     resume_agent = subparsers.add_parser("resume-agent")
     resume_agent.add_argument("--task-id", required=True)
     resume_agent.add_argument("--agent", required=True)
@@ -1433,6 +1700,20 @@ def build_parser() -> argparse.ArgumentParser:
     pm_target.add_argument("--note", default="")
     pm_workflow.add_argument("--summary", default="")
     pm_workflow.add_argument("--recommended-action", action="append", default=[])
+    pm_workflow.add_argument("--problem-statement", default="")
+    pm_workflow.add_argument("--boundary-decision", action="append", default=[])
+    pm_workflow.add_argument("--dependency-direction", action="append", default=[])
+    pm_workflow.add_argument("--interface-freeze-point", action="append", default=[])
+    pm_workflow.add_argument("--ownership-lifecycle-constraint", action="append", default=[])
+    pm_workflow.add_argument("--nfr-constraint", action="append", default=[])
+    pm_workflow.add_argument("--forbidden-shortcut", action="append", default=[])
+    pm_workflow.add_argument("--tradeoff", action="append", default=[])
+    pm_workflow.add_argument("--blueprint-ref", action="append", default=[])
+    pm_workflow.add_argument("--freeze-evidence", action="append", default=[])
+    pm_workflow.add_argument("--supersedes-freeze-ref", action="append", default=[])
+    pm_workflow.add_argument("--freeze-note", default="")
+    pm_workflow.add_argument("--freeze-from-agent", default="")
+    pm_workflow.add_argument("--freeze-requested-by", default="")
     pm_workflow.add_argument("--close-task", action="store_true")
     pm_workflow.add_argument("--archive-task", action="store_true")
     pm_workflow.add_argument("--close-status", choices=("done", "blocked"), default="done")

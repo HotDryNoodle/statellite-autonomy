@@ -7,5 +7,6 @@
   "relevant_specs": [],
   "evidence_refs": [],
   "blocking_issues": [],
-  "recommended_actions": []
+  "recommended_actions": [],
+  "architecture_freeze_ref": ""
 }

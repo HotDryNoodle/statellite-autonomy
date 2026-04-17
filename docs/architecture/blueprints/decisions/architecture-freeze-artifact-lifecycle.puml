@@ -1,0 +1,41 @@
+@startuml architecture
+!theme aws-orange
+
+skinparam componentStyle rectangle
+skinparam defaultFontSize 11
+skinparam defaultFontColor #000000
+skinparam componentFontColor #000000
+skinparam linetype ortho
+skinparam ArrowThickness 0.8
+skinparam LineThickness 0.8
+skinparam ranksep 24
+skinparam nodesep 18
+skinparam shadowing false
+skinparam DefaultTextAlignment left
+
+skinparam componentBackgroundColor<<core>> #FFF3CD
+skinparam componentBorderColor<<core>>     #C88719
+skinparam componentBackgroundColor<<algo>> #E3F2FD
+skinparam componentBorderColor<<algo>>     #1565C0
+skinparam componentBackgroundColor<<util>> #F2F2F2
+skinparam componentBorderColor<<util>>     #616161
+
+top to bottom direction
+title Architecture Freeze Artifact Lifecycle
+
+component "==<size:14><b>Project Manager</b></size>\nproblem statement\nfreeze request" <<core>> as PM
+component "==<size:14><b>Architecture Expert</b></size>\nboundary / NFR freeze\nblueprint selection" <<core>> as Arch
+component "==<size:14><b>architecture_freeze</b></size>\ncontract_freeze artifact\nrepo-local refs only" <<util>> as Freeze
+component "==<size:14><b>Blueprint Pair</b></size>\n.puml source\n.md lifecycle metadata" <<util>> as Blueprint
+component "==<size:14><b>Downstream Roles</b></size>\ncoding / testing / traceability" <<algo>> as Downstream
+
+PM --> Arch
+Arch --> Freeze
+Freeze --> Blueprint
+Freeze --> Downstream
+
+note right of Freeze
+handoff keeps a reference to architecture_freeze;
+it does not duplicate the full freeze content
+end note
+@enduml

@@ -41,8 +41,8 @@ triggers:
 
 Load only when needed:
 
-- `docs/architecture/agent-collaboration.md`: lifecycle rules, handoff schema, rollback
-- `docs/architecture/harness_product_split.md`: structure or orchestration boundary changes
+- `docs/governance/agent-collaboration.md`: lifecycle rules, handoff schema, rollback
+- `docs/governance/harness_product_split.md`: structure or orchestration boundary changes
 - `docs/traceability/decision_log.md`: frozen constraints
 - `docs/traceability/agent_activity_log.md`: recent execution history
 
@@ -67,3 +67,8 @@ Load only when needed:
 - `skills/project-manager/references/load-routing.md`
 - `skills/project-manager/references/control-plane-sop.md`
 
+## Architecture Handoff Rule
+
+- 当 `contract_freeze` 命中技术路线、模块边界、依赖方向、ownership/lifecycle/concurrency 语义或 NFR 收口问题时，必须吸收 `architecture-expert` 结论。
+- `architecture-expert` 的正式输出应先落为 `architecture_freeze` artifact；`handoff` 只传引用，不复制完整冻结内容。
+- 若需要图纸，主副本固定在 repo 内 `docs/architecture/blueprints/system/` 或 `docs/architecture/blueprints/decisions/`，由 task artifacts 引用，不以外部 wiki 作为权威源。

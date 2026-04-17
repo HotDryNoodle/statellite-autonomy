@@ -1,0 +1,48 @@
+{
+  "task_id": "COLLAB-023",
+  "phase": "contract_freeze",
+  "from_agent": "architecture-expert",
+  "requested_by": "project-manager",
+  "relevant_specs": [
+    "contracts/layer_boundary.contract.md",
+    "governance/harness_workflow.policy.md",
+    "governance/harness_product_boundary.policy.md"
+  ],
+  "problem_statement": "Freeze how architecture decisions are materialized, referenced, and invalidated across harness runtime and repo-local blueprints.",
+  "boundary_decisions": [
+    "architecture_freeze is a first-class harness artifact distinct from handoff.",
+    "handoff carries architecture_freeze_ref instead of duplicating the full freeze payload."
+  ],
+  "dependency_direction": [
+    "project-manager requests freezes; architecture-expert defines them; downstream roles consume them.",
+    "runtime artifacts reference repo-local blueprints; blueprints do not move into harness runtime."
+  ],
+  "interface_freeze_points": [
+    "architecture_freeze schema carries boundary, dependency, interface, ownership, NFR, and forbidden-shortcut fields.",
+    "blueprint_refs must include at least one repo-local .puml source drawing."
+  ],
+  "ownership_lifecycle_constraints": [
+    "project-manager owns task phase transitions and propagates architecture_freeze refs through handoff.",
+    "decision blueprints leave the default read chain when status is superseded or obsolete."
+  ],
+  "nfr_constraints": [
+    "repo-local blueprints remain versioned primary sources.",
+    "quality gates reject missing blueprint refs and inactive decision blueprints in runtime freeze artifacts."
+  ],
+  "forbidden_shortcuts": [
+    "do not stuff full architecture freeze content into generic handoff artifacts.",
+    "do not treat superseded decision blueprints as active defaults."
+  ],
+  "tradeoffs": [
+    "accept extra artifact wiring in exchange for explicit architecture governance and replayable evidence."
+  ],
+  "blueprint_refs": [
+    "docs/architecture/blueprints/system/harness-product-boundary.puml",
+    "docs/architecture/blueprints/system/harness-product-boundary.md",
+    "docs/architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.puml",
+    "docs/architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.md"
+  ],
+  "supporting_evidence_refs": [],
+  "supersedes_freeze_refs": [],
+  "notes": "COLLAB-023 freezes architecture artifact semantics and blueprint lifecycle governance."
+}

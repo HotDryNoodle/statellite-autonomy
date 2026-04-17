@@ -19,7 +19,7 @@
 ## 2026-04-01 Collaboration Entry And Gates
 
 - 仓库级协作入口固定为根目录 `AGENTS.md`。
-- 不新增 `.codex/rules/`；项目规则统一由 `AGENTS.md` 与 `docs/architecture/agent-collaboration.md` 承载。
+- 不新增 `.codex/rules/`；项目规则统一由 `AGENTS.md` 与 `docs/governance/agent-collaboration.md` 承载。
 - 本地质量门禁统一收敛到 `python3 scripts/check_quality.py --report-json`。
 - 验收前必须经过 build、test、traceability 与标签完整性检查。
 
@@ -112,7 +112,7 @@
 
 ## 2026-04-07 Prompt Doc Progressive Disclosure
 
-- `AGENTS.md`、`skills/project-manager/SKILL.md`、`docs/architecture/agent-collaboration.md` 只保留主路径最小入口信息，默认控制在 100 行内。
+- `AGENTS.md`、`skills/project-manager/SKILL.md`、`docs/governance/agent-collaboration.md` 只保留主路径最小入口信息，默认控制在 100 行内。
 - detailed command cookbook 与 role-specific load routing 下沉到 `skills/project-manager/references/`，入口层不再重复维护完整 SOP。
 - 默认读链按角色分流：全局入口只保留最小共识，`decision_log.md`、`agent_activity_log.md`、`agent-collaboration.md` 等长文档改为 conditional load。
 - `scripts/check_quality.py` 负责阻断 prompt docs 回退到超长首屏或重复 SOP 的状态。
@@ -145,3 +145,17 @@
 - `governance/*.policy.md` 成为治理规则的唯一命名空间；harness workflow、harness/product 边界和 eval governance 不再进入 Clause trace。
 - `traceability-cli` 继续负责 product Clause trace，同时新增 `compliance` 入口单独检查 governance policy 合规性。
 - harness/runtime 与治理镜像中的 spec 引用统一改为 `affected_specs` / `allowed_specs` / `relevant_specs`，允许同时绑定 product contracts 与 governance policies。
+
+## 2026-04-16 Architecture Expert Persona And Blueprint Governance
+
+- `architecture-expert` 从泛化架构说明升级为高品位架构裁决角色：优先识别变化轴、边界、依赖方向、ownership/lifecycle 与 NFR 风险，而不是为现有实现补漂亮说辞。
+- 正式架构图纸主副本固定在 repo 内 `docs/architecture/blueprints/`；外部 wiki 如未来存在，只允许承载提炼后的方法论，不作为冻结图纸权威源。
+- `architecture-expert` 的正式输出必须同时覆盖 runtime handoff 和 repo-local blueprint 引用；下游 coding、testing、traceability 必须吸收这些冻结约束。
+- `architecture_expert_agent` 的 workflow eval 不得悬空声明；agent registry 中声明的 `eval_dataset` 路径必须真实存在并通过质量门禁。
+
+## 2026-04-17 Architecture Freeze Artifact And Blueprint Lifecycle
+
+- `architecture-expert` 的正式裁决结果从本轮起固定为独立 `architecture_freeze` artifact；`handoff` 只传引用，不再复制完整冻结字段。
+- `docs/architecture/blueprints/` 分裂为 `system/` 和 `decisions/` 两级：前者保存长期有效总图，后者保存 task 级决策图纸。
+- decision blueprint 必须携带 `active / superseded / obsolete` 生命周期元数据；失效图纸保留历史，但退出默认读链，且必须通过 `replaced_by` 指向新的主副本。
+- runtime `architecture_freeze` 必须至少引用一个 repo-local `.puml` 原图，质量门禁同时检查 blueprint 生命周期和 handoff 对 freeze artifact 的引用完整性。

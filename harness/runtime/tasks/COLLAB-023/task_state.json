@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.1",
+  "task_id": "COLLAB-023",
+  "goal": "Add architecture_freeze artifacts and blueprint lifecycle metadata for architecture-expert governance.",
+  "phase": "acceptance",
+  "owner": "project-manager",
+  "allowed_next_states": [],
+  "evidence_refs": [
+    "docs/architecture/blueprints/system/harness-product-boundary.puml",
+    "docs/architecture/blueprints/system/harness-product-boundary.md",
+    "docs/architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.puml",
+    "docs/architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.md",
+    "python3 -m unittest harness.tests.test_agents_runtime harness.tests.test_harness_cli scripts.tests.test_governance_quality",
+    "python3 tools/traceability-cli/traceability_cli.py compliance --refresh",
+    "python3 scripts/check_quality.py --report-json"
+  ],
+  "blocking_issues": [],
+  "trace_id": "",
+  "run_attempt": 1,
+  "parent_trace_id": "",
+  "session_backend": "local-jsonl",
+  "session_refs": {},
+  "current_artifact_ref": "harness/runtime/tasks/COLLAB-023/artifacts/handoff.acceptance.json",
+  "pending_approvals": [],
+  "affected_specs": [
+    "contracts/layer_boundary.contract.md",
+    "governance/harness_workflow.policy.md",
+    "governance/harness_product_boundary.policy.md"
+  ],
+  "archived": true,
+  "updated_at": "2026-04-17T01:11:48.897535+00:00",
+  "task_brief_ref": "harness/runtime/tasks/COLLAB-023/artifacts/task_brief.contract_freeze.json",
+  "handoff_ref": "harness/runtime/tasks/COLLAB-023/artifacts/handoff.acceptance.json",
+  "architecture_freeze_ref": "harness/runtime/tasks/COLLAB-023/artifacts/architecture_freeze.json",
+  "acceptance_status": "done",
+  "acceptance_summary": "Accepted architecture_freeze artifact support, blueprint lifecycle metadata, active-only decision blueprint loading, and quality-gate enforcement for architecture-expert governance.",
+  "archive_ref": "docs/traceability/task_archive.md"
+}

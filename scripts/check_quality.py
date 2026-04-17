@@ -12,6 +12,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from dashboard_common import (
     ACTIVE_CONTEXT_SECTIONS,
     TASK_ARCHIVE_HEADER,
@@ -31,9 +35,8 @@ from dashboard_common import (
     task_state_path,
     task_status_for_phase,
 )
+from harness.agents_runtime.registry import load_expert_registry
 
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
 TOOLCHAIN = REPO_ROOT / "tools" / "nav-toolchain-cli" / "toolchain_cli.py"
 TRACEABILITY = REPO_ROOT / "tools" / "traceability-cli" / "traceability_cli.py"
 RENDER_DASHBOARD = REPO_ROOT / "scripts" / "render_project_dashboard.py"
@@ -53,9 +56,12 @@ AGENTS_PATH = REPO_ROOT / "AGENTS.md"
 PM_SKILL_PATH = REPO_ROOT / "skills" / "project-manager" / "SKILL.md"
 PM_LOAD_ROUTING_PATH = REPO_ROOT / "skills" / "project-manager" / "references" / "load-routing.md"
 PM_SOP_PATH = REPO_ROOT / "skills" / "project-manager" / "references" / "control-plane-sop.md"
-AGENT_COLLAB_PATH = REPO_ROOT / "docs" / "architecture" / "agent-collaboration.md"
-HARNESS_SPLIT_PATH = REPO_ROOT / "docs" / "architecture" / "harness_product_split.md"
+AGENT_COLLAB_PATH = REPO_ROOT / "docs" / "governance" / "agent-collaboration.md"
+HARNESS_SPLIT_PATH = REPO_ROOT / "docs" / "governance" / "harness_product_split.md"
 TRACEABILITY_README_PATH = REPO_ROOT / "docs" / "traceability" / "README.md"
+BLUEPRINT_ROOT = REPO_ROOT / "docs" / "architecture" / "blueprints"
+SYSTEM_BLUEPRINT_DIR = BLUEPRINT_ROOT / "system"
+DECISION_BLUEPRINT_DIR = BLUEPRINT_ROOT / "decisions"
 PROMPT_DOC_LIMITS = {
     AGENTS_PATH: 100,
     PM_SKILL_PATH: 100,
@@ -95,6 +101,7 @@ _FINAL_NEWLINE_SUFFIXES = frozenset(
     }
 )
 _FINAL_NEWLINE_NAMES = frozenset({"meson.build", "CMakeLists.txt", "Dockerfile"})
+BLUEPRINT_STATUSES = frozenset({"active", "superseded", "obsolete"})
 
 
 @dataclass
@@ -267,6 +274,168 @@ def check_compliance_status() -> CheckResult:
     if not payload.get("ok", False):
         return CheckResult("compliance_status", False, json.dumps(payload, ensure_ascii=False))
     return CheckResult("compliance_status", True, json.dumps(payload, ensure_ascii=False))
+
+
+def check_agent_eval_datasets() -> CheckResult:
+    missing = load_expert_registry(repo_root=REPO_ROOT).missing_eval_datasets(repo_root=REPO_ROOT)
+    if missing:
+        return CheckResult(
+            "agent_eval_datasets",
+            False,
+            "missing eval datasets: " + ", ".join(missing),
+        )
+    return CheckResult("agent_eval_datasets", True, "declared agent eval_dataset paths exist")
+
+
+def parse_simple_frontmatter(path: Path) -> dict[str, object]:
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    if len(lines) < 3 or lines[0].strip() != "---":
+        raise ValueError(f"{path.relative_to(REPO_ROOT)} missing YAML frontmatter")
+    end_index = None
+    for index in range(1, len(lines)):
+        if lines[index].strip() == "---":
+            end_index = index
+            break
+    if end_index is None:
+        raise ValueError(f"{path.relative_to(REPO_ROOT)} missing closing frontmatter delimiter")
+
+    payload: dict[str, object] = {}
+    current_list: str | None = None
+    for raw in lines[1:end_index]:
+        line = raw.rstrip()
+        if not line.strip():
+            continue
+        stripped = line.lstrip()
+        if stripped.startswith("- "):
+            if current_list is None:
+                raise ValueError(f"{path.relative_to(REPO_ROOT)} has list item without key")
+            payload.setdefault(current_list, [])
+            assert isinstance(payload[current_list], list)
+            payload[current_list].append(stripped[2:].strip().strip("'\""))
+            continue
+        if ":" not in line:
+            raise ValueError(f"{path.relative_to(REPO_ROOT)} has invalid frontmatter line: {line}")
+        key, raw_value = line.split(":", 1)
+        key = key.strip()
+        value = raw_value.strip()
+        if not value:
+            payload[key] = []
+            current_list = key
+            continue
+        payload[key] = value.strip("'\"")
+        current_list = None
+    return payload
+
+
+def paired_blueprint_md(path: Path) -> Path:
+    if path.suffix == ".md":
+        return path
+    return path.with_suffix(".md")
+
+
+def resolve_blueprint_status(path: Path) -> str:
+    md_path = paired_blueprint_md(path)
+    payload = parse_simple_frontmatter(md_path)
+    status = str(payload.get("status", "") or "")
+    if status not in BLUEPRINT_STATUSES:
+        raise ValueError(f"{md_path.relative_to(REPO_ROOT)} has invalid status `{status}`")
+    return status
+
+
+def check_architecture_blueprints() -> CheckResult:
+    failures: list[str] = []
+    if not BLUEPRINT_ROOT.exists():
+        failures.append(f"missing {BLUEPRINT_ROOT.relative_to(REPO_ROOT)}")
+    for required in (SYSTEM_BLUEPRINT_DIR, DECISION_BLUEPRINT_DIR):
+        if not required.exists():
+            failures.append(f"missing {required.relative_to(REPO_ROOT)}")
+
+    for directory, expected_type in (
+        (SYSTEM_BLUEPRINT_DIR, "system"),
+        (DECISION_BLUEPRINT_DIR, "decision"),
+    ):
+        if not directory.exists():
+            continue
+        for md_path in sorted(directory.glob("*.md")):
+            puml_path = md_path.with_suffix(".puml")
+            if not puml_path.exists():
+                failures.append(f"{md_path.relative_to(REPO_ROOT)} missing paired {puml_path.name}")
+                continue
+            try:
+                metadata = parse_simple_frontmatter(md_path)
+            except ValueError as exc:
+                failures.append(str(exc))
+                continue
+            blueprint_type = str(metadata.get("blueprint_type", "") or "")
+            status = str(metadata.get("status", "") or "")
+            if blueprint_type != expected_type:
+                failures.append(
+                    f"{md_path.relative_to(REPO_ROOT)} blueprint_type={blueprint_type or 'missing'} != {expected_type}"
+                )
+            if status not in BLUEPRINT_STATUSES:
+                failures.append(f"{md_path.relative_to(REPO_ROOT)} has invalid status `{status or 'missing'}`")
+            effective_specs = metadata.get("effective_specs", [])
+            if not isinstance(effective_specs, list) or not effective_specs:
+                failures.append(f"{md_path.relative_to(REPO_ROOT)} missing effective_specs list")
+            replaced_by = str(metadata.get("replaced_by", "") or "")
+            if expected_type == "decision":
+                if not str(metadata.get("created_from_task", "") or ""):
+                    failures.append(f"{md_path.relative_to(REPO_ROOT)} missing created_from_task")
+                if "valid_for_task" not in metadata:
+                    failures.append(f"{md_path.relative_to(REPO_ROOT)} missing valid_for_task")
+                if "superseded_reason" not in metadata:
+                    failures.append(f"{md_path.relative_to(REPO_ROOT)} missing superseded_reason")
+            if status != "active":
+                if not replaced_by:
+                    failures.append(f"{md_path.relative_to(REPO_ROOT)} missing replaced_by for inactive blueprint")
+                elif not (REPO_ROOT / replaced_by).exists():
+                    failures.append(f"{md_path.relative_to(REPO_ROOT)} replaced_by target missing: {replaced_by}")
+    if failures:
+        return CheckResult("architecture_blueprints", False, "; ".join(failures))
+    return CheckResult("architecture_blueprints", True, "blueprint layout and lifecycle metadata are valid")
+
+
+def check_architecture_freeze_artifacts() -> CheckResult:
+    failures: list[str] = []
+    task_roots = sorted((REPO_ROOT / "harness" / "runtime" / "tasks").glob("*/artifacts"))
+    for artifacts_root in task_roots:
+        for freeze_path in sorted(artifacts_root.glob("architecture_freeze*.json")):
+            try:
+                payload = json.loads(freeze_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError as exc:
+                failures.append(f"{freeze_path.relative_to(REPO_ROOT)} invalid JSON: {exc}")
+                continue
+            refs = [str(ref) for ref in payload.get("blueprint_refs", [])]
+            if not refs:
+                failures.append(f"{freeze_path.relative_to(REPO_ROOT)} missing blueprint_refs")
+                continue
+            if not any(ref.endswith(".puml") for ref in refs):
+                failures.append(f"{freeze_path.relative_to(REPO_ROOT)} missing .puml blueprint ref")
+            for ref in refs:
+                ref_path = REPO_ROOT / ref
+                if not ref_path.exists():
+                    failures.append(f"{freeze_path.relative_to(REPO_ROOT)} references missing blueprint {ref}")
+                    continue
+                try:
+                    status = resolve_blueprint_status(ref_path)
+                except ValueError as exc:
+                    failures.append(str(exc))
+                    continue
+                if "docs/architecture/blueprints/decisions/" in ref and status != "active":
+                    failures.append(
+                        f"{freeze_path.relative_to(REPO_ROOT)} references inactive decision blueprint {ref}"
+                    )
+        for handoff_path in sorted(artifacts_root.glob("handoff*.json")):
+            payload = json.loads(handoff_path.read_text(encoding="utf-8"))
+            freeze_ref = str(payload.get("architecture_freeze_ref", "") or "")
+            if freeze_ref and not (REPO_ROOT / freeze_ref).exists():
+                failures.append(
+                    f"{handoff_path.relative_to(REPO_ROOT)} references missing architecture freeze {freeze_ref}"
+                )
+    if failures:
+        return CheckResult("architecture_freeze_artifacts", False, "; ".join(failures))
+    return CheckResult("architecture_freeze_artifacts", True, "architecture freeze artifacts reference active repo-local blueprints")
 
 
 def check_line_limit(path: Path, limit: int) -> CheckResult:
@@ -605,7 +774,7 @@ def check_prompt_doc_routing() -> CheckResult:
         if snippet in pm_skill_text:
             failures.append(f"skills/project-manager/SKILL.md should not include detailed SOP snippet `{snippet}`")
 
-    if "docs/architecture/agent-collaboration.md" not in pm_skill_text:
+    if "docs/governance/agent-collaboration.md" not in pm_skill_text:
         failures.append("skills/project-manager/SKILL.md must keep conditional loading guidance for agent-collaboration.md")
     if "docs/traceability/decision_log.md" not in pm_skill_text:
         failures.append("skills/project-manager/SKILL.md must keep conditional loading guidance for decision_log.md")
@@ -653,6 +822,9 @@ def main() -> int:
 
     checks.append(check_traceability_baseline())
     checks.append(check_compliance_status())
+    checks.append(check_agent_eval_datasets())
+    checks.append(check_architecture_blueprints())
+    checks.append(check_architecture_freeze_artifacts())
     checks.append(check_line_limit(WORKING_PATH, 50))
     checks.append(check_line_limit(TASK_BOARD_PATH, 120))
     checks.append(check_line_limit(ACTIVE_CONTEXT_PATH, 120))

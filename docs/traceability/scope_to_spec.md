@@ -17,6 +17,8 @@
 | 冻结 harness control-plane 强制入口、runtime record 保留策略与 governance sync 门禁 | `governance/harness_workflow.policy.md`, `governance/harness_product_boundary.policy.md` |
 | 冻结 prompt-doc 主路径压缩、PM role-specific loading 与 progressive disclosure 门禁 | `governance/harness_workflow.policy.md`, `governance/harness_product_boundary.policy.md` |
 | 冻结 Eval Owner 资产治理、统一评测协议与 acceptance verdict 证据 | `governance/eval_governance.policy.md`, `governance/harness_workflow.policy.md`, `governance/harness_product_boundary.policy.md`, `contracts/time_system.contract.md`, `contracts/ppp_family.contract.md` |
+| 冻结 architecture-expert 的高品位裁决人格、repo-local blueprint 主副本和 architecture workflow eval 夹具 | `contracts/layer_boundary.contract.md`, `governance/harness_workflow.policy.md`, `governance/harness_product_boundary.policy.md` |
+| 冻结 `architecture_freeze` artifact、blueprint `system/decisions` 分层与 lifecycle 失效规则 | `contracts/layer_boundary.contract.md`, `governance/harness_workflow.policy.md`, `governance/harness_product_boundary.policy.md` |
 
 
 维护规则：

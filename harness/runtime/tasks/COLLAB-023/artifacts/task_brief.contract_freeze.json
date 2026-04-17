@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "artifact_version": "1.0",
+  "task_id": "COLLAB-023",
+  "goal": "Add architecture_freeze artifacts and blueprint lifecycle metadata for architecture-expert governance.",
+  "phase": "contract_freeze",
+  "affected_specs": [
+    "contracts/layer_boundary.contract.md",
+    "governance/harness_workflow.policy.md",
+    "governance/harness_product_boundary.policy.md"
+  ],
+  "clause_refs": [],
+  "success_criteria": [
+    "official task lifecycle is recorded through harness control-plane artifacts"
+  ],
+  "input_refs": [],
+  "output_expectation": [
+    "validated handoff artifact for downstream implementation"
+  ]
+}

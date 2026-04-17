@@ -82,6 +82,7 @@ def default_task_state(
         "session_backend": session_backend,
         "session_refs": session_refs or {},
         "current_artifact_ref": current_artifact_ref,
+        "architecture_freeze_ref": "",
         "pending_approvals": pending_approvals or [],
         "affected_specs": [],
         "archived": False,

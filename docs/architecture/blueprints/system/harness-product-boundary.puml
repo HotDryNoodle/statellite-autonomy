@@ -1,0 +1,63 @@
+@startuml architecture
+!theme aws-orange
+
+skinparam componentStyle rectangle
+skinparam defaultFontSize 11
+skinparam defaultFontColor #000000
+skinparam componentFontColor #000000
+skinparam linetype ortho
+skinparam ArrowThickness 0.8
+skinparam LineThickness 0.8
+skinparam ranksep 28
+skinparam nodesep 18
+skinparam shadowing false
+skinparam DefaultTextAlignment left
+
+skinparam note {
+  BackgroundColor #FFFFFF
+  BorderColor #BBBBBB
+  FontColor #444444
+}
+
+skinparam componentBackgroundColor<<core>> #FFF3CD
+skinparam componentBorderColor<<core>>     #C88719
+skinparam componentBackgroundColor<<algo>> #E3F2FD
+skinparam componentBorderColor<<algo>>     #1565C0
+skinparam componentBackgroundColor<<util>> #F2F2F2
+skinparam componentBorderColor<<util>>     #616161
+
+top to bottom direction
+title Harness / Product Boundary Freeze
+
+package "Root Governance Layer" {
+  component "==<size:14><b>Contracts</b></size>\nproduct behavior specs" <<core>> as Contracts
+  component "==<size:14><b>Governance Policies</b></size>\nworkflow and process rules" <<core>> as Policies
+  component "==<size:14><b>Architecture Blueprints</b></size>\nrepo-primary design drawings" <<util>> as Blueprints
+}
+
+package "Harness Control Plane" {
+  component "==<size:14><b>Project Manager</b></size>\nflow owner\nphase orchestration" <<core>> as PM
+  component "==<size:14><b>Architecture Expert</b></size>\nboundary / trade-off / NFR\nblueprint freeze" <<core>> as Arch
+  component "==<size:14><b>Harness Runtime</b></size>\ntask state\nhandoff / replay" <<util>> as Runtime
+}
+
+package "Product Plane" {
+  component "==<size:14><b>Product Source</b></size>\nbuildable code\nruntime behavior" <<algo>> as Product
+  component "==<size:14><b>Product Tests</b></size>\nverify behavior\nregression evidence" <<algo>> as Tests
+}
+
+PM --> Runtime
+PM --> Arch
+Arch ..> Blueprints
+Runtime ..> Blueprints
+Contracts ..> Product
+Contracts ..> Tests
+Policies ..> Runtime
+Policies ..> Arch
+Product --> Tests
+
+note right of Blueprints
+formal design drawings stay in repo;
+runtime artifacts keep references only
+end note
+@enduml

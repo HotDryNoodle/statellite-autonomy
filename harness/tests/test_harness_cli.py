@@ -43,6 +43,7 @@ class HarnessCliTest(unittest.TestCase):
             "harness/config/governance_policy.json",
             "harness/config/knowledge_registry.json",
             "harness/config/tool_allowlist.json",
+            "harness/schemas/architecture_freeze.schema.json",
             "harness/schemas/handoff.schema.json",
             "harness/schemas/knowledge_context.schema.json",
             "harness/schemas/task_brief.schema.json",
@@ -455,6 +456,114 @@ esac
             handoff = json.loads((repo / payload["artifacts"]["handoff"]).read_text(encoding="utf-8"))
             self.assertEqual(handoff["from_agent"], "project-manager")
             self.assertEqual(handoff["to_agent"], "coding_agent")
+            self.assertEqual(handoff["architecture_freeze_ref"], "")
+
+    def test_freeze_architecture_persists_artifact_and_links_handoff(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            (repo / "harness" / "runtime").mkdir(parents=True)
+            runtime_cli = self.stage_runtime_repo(repo)
+            blueprint_root = repo / "docs" / "architecture" / "blueprints" / "decisions"
+            blueprint_root.mkdir(parents=True, exist_ok=True)
+            (blueprint_root / "harness-product-boundary.puml").write_text("@startuml\n@enduml\n", encoding="utf-8")
+            (blueprint_root / "harness-product-boundary.md").write_text(
+                "---\nblueprint_type: decision\nstatus: active\ncreated_from_task: COLLAB-TEST\n"
+                "effective_specs:\n  - contracts/layer_boundary.contract.md\nvalid_for_task: COLLAB-TEST\n"
+                "replaced_by: ''\nsuperseded_reason: ''\n---\n",
+                encoding="utf-8",
+            )
+
+            workflow = self.run_cli(
+                runtime_cli,
+                "pm-workflow",
+                "--task-id",
+                "COLLAB-TEST",
+                "--goal",
+                "freeze architecture boundary",
+                "--contract",
+                "contracts/layer_boundary.contract.md",
+                "--skip-dispatch",
+                "--problem-statement",
+                "freeze harness/product separation",
+                "--boundary-decision",
+                "harness owns orchestration only",
+                "--dependency-direction",
+                "product depends on contracts, not on harness runtime",
+                "--interface-freeze-point",
+                "runtime artifacts are orchestration-only",
+                "--ownership-lifecycle-constraint",
+                "project-manager owns phase transitions",
+                "--nfr-constraint",
+                "blueprints must remain repo-local and versioned",
+                "--blueprint-ref",
+                "docs/architecture/blueprints/decisions/harness-product-boundary.puml",
+                "--blueprint-ref",
+                "docs/architecture/blueprints/decisions/harness-product-boundary.md",
+                cwd=repo,
+            )
+            self.assertEqual(workflow.returncode, 0, workflow.stderr)
+            payload = json.loads(workflow.stdout)
+            self.assertIn("architecture_freeze", payload["artifacts"])
+
+            freeze = json.loads((repo / payload["artifacts"]["architecture_freeze"]).read_text(encoding="utf-8"))
+            self.assertEqual(freeze["problem_statement"], "freeze harness/product separation")
+            self.assertIn(
+                "docs/architecture/blueprints/decisions/harness-product-boundary.puml",
+                freeze["blueprint_refs"],
+            )
+
+            handoff = json.loads((repo / payload["artifacts"]["handoff"]).read_text(encoding="utf-8"))
+            self.assertEqual(handoff["architecture_freeze_ref"], payload["artifacts"]["architecture_freeze"])
+
+            state = json.loads(
+                (repo / "harness" / "runtime" / "tasks" / "COLLAB-TEST" / "task_state.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(state["architecture_freeze_ref"], payload["artifacts"]["architecture_freeze"])
+
+    def test_freeze_architecture_requires_blueprint_ref(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            (repo / "harness" / "runtime").mkdir(parents=True)
+            runtime_cli = self.stage_runtime_repo(repo)
+
+            init = self.run_cli(
+                runtime_cli,
+                "init-task",
+                "--task-id",
+                "COLLAB-TEST",
+                "--goal",
+                "freeze architecture",
+                "--phase",
+                "contract_freeze",
+                cwd=repo,
+            )
+            self.assertEqual(init.returncode, 0, init.stderr)
+
+            freeze = self.run_cli(
+                runtime_cli,
+                "freeze-architecture",
+                "--task-id",
+                "COLLAB-TEST",
+                "--contract",
+                "contracts/layer_boundary.contract.md",
+                "--problem-statement",
+                "missing blueprint",
+                "--boundary-decision",
+                "freeze boundary",
+                "--dependency-direction",
+                "one-way dependencies",
+                "--interface-freeze-point",
+                "runtime API is orchestration-only",
+                "--ownership-lifecycle-constraint",
+                "pm owns lifecycle",
+                "--nfr-constraint",
+                "versioned artifacts only",
+                cwd=repo,
+            )
+            self.assertNotEqual(freeze.returncode, 0)
+            self.assertIn("required", freeze.stderr + freeze.stdout)
 
     def test_sync_governance_repairs_active_docs_from_runtime_state(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -37,6 +37,31 @@ class AgentsRuntimeTest(unittest.TestCase):
         )
         self.assertEqual(errors, [])
 
+    def test_architecture_freeze_schema_requires_structured_fields(self) -> None:
+        errors = validate_artifact_payload(
+            "architecture_freeze",
+            {
+                "task_id": "COLLAB-023",
+                "phase": "contract_freeze",
+                "from_agent": "architecture-expert",
+                "requested_by": "project-manager",
+                "relevant_specs": ["contracts/layer_boundary.contract.md"],
+                "problem_statement": "freeze control-plane boundary",
+                "boundary_decisions": ["harness owns orchestration only"],
+                "dependency_direction": ["product must not depend on harness runtime"],
+                "interface_freeze_points": ["task artifacts stay orchestration-only"],
+                "ownership_lifecycle_constraints": ["project-manager owns phase transitions"],
+                "nfr_constraints": ["repo-local blueprints stay versioned"],
+                "forbidden_shortcuts": ["do not embed product code in harness"],
+                "tradeoffs": ["accept extra artifact wiring for stronger freeze semantics"],
+                "blueprint_refs": ["docs/architecture/blueprints/system/harness-product-boundary.puml"],
+                "supporting_evidence_refs": ["governance/harness_workflow.policy.md#architecture-expert"],
+                "supersedes_freeze_refs": [],
+                "notes": "",
+            },
+        )
+        self.assertEqual(errors, [])
+
     def test_tool_allowlist_rejects_unknown_param(self) -> None:
         with self.assertRaisesRegex(ValueError, "disallowed param"):
             sanitize_tool_params("build", {"unexpected": True})
@@ -92,6 +117,10 @@ class AgentsRuntimeTest(unittest.TestCase):
                 "pppar_expert_agent",
                 ["contracts/rdpod_family.contract.md"],
             )
+
+    def test_registry_declared_eval_datasets_exist(self) -> None:
+        registry = load_expert_registry()
+        self.assertEqual(registry.missing_eval_datasets(), [])
 
     def test_resume_requires_same_backend(self) -> None:
         task_state = default_task_state(

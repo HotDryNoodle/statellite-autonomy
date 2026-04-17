@@ -1,0 +1,24 @@
+{
+  "task_id": "COLLAB-023",
+  "phase": "implementation",
+  "from_agent": "project-manager",
+  "to_agent": "coding_agent",
+  "summary": "Freeze architecture artifact and blueprint lifecycle rules for downstream implementation and verification.",
+  "relevant_specs": [
+    "contracts/layer_boundary.contract.md",
+    "governance/harness_workflow.policy.md",
+    "governance/harness_product_boundary.policy.md"
+  ],
+  "evidence_refs": [
+    "docs/architecture/blueprints/system/harness-product-boundary.puml",
+    "docs/architecture/blueprints/system/harness-product-boundary.md",
+    "docs/architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.puml",
+    "docs/architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.md"
+  ],
+  "blocking_issues": [],
+  "recommended_actions": [
+    "Implement runtime artifact and quality-gate changes against the frozen architecture decisions.",
+    "Keep decision blueprints out of the default read chain once superseded."
+  ],
+  "architecture_freeze_ref": "harness/runtime/tasks/COLLAB-023/artifacts/architecture_freeze.json"
+}
