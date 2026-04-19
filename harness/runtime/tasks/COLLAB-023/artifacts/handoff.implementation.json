@@ -6,14 +6,14 @@
   "summary": "Freeze architecture artifact and blueprint lifecycle rules for downstream implementation and verification.",
   "relevant_specs": [
     "contracts/layer_boundary.contract.md",
-    "governance/harness_workflow.policy.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/policies/harness_workflow.policy.md",
+    "governance/policies/harness_product_boundary.policy.md"
   ],
   "evidence_refs": [
-    "docs/architecture/blueprints/system/harness-product-boundary.puml",
-    "docs/architecture/blueprints/system/harness-product-boundary.md",
-    "docs/architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.puml",
-    "docs/architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.md"
+    "architecture/blueprints/system/harness-product-boundary.puml",
+    "architecture/blueprints/system/harness-product-boundary.md",
+    "architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.puml",
+    "architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.md"
   ],
   "blocking_issues": [],
   "recommended_actions": [

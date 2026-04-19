@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.1",
+  "task_id": "COLLAB-021",
+  "goal": "Upgrade architecture-expert persona, workflow duties, and repo-local blueprint governance.",
+  "phase": "acceptance",
+  "owner": "project-manager",
+  "allowed_next_states": [],
+  "evidence_refs": [
+    "python3 -m unittest harness.tests.test_agents_runtime",
+    "python3 -m unittest scripts.tests.test_governance_quality",
+    "python3 tools/traceability-cli/traceability_cli.py compliance --refresh",
+    "python3 scripts/check_quality.py --report-json"
+  ],
+  "blocking_issues": [],
+  "trace_id": "",
+  "run_attempt": 1,
+  "parent_trace_id": "",
+  "session_backend": "local-jsonl",
+  "session_refs": {},
+  "current_artifact_ref": "",
+  "pending_approvals": [],
+  "affected_specs": [
+    "contracts/layer_boundary.contract.md",
+    "governance/policies/harness_workflow.policy.md",
+    "governance/policies/harness_product_boundary.policy.md"
+  ],
+  "archived": true,
+  "updated_at": "2026-04-16T08:05:56.170427+00:00",
+  "acceptance_status": "done",
+  "acceptance_summary": "Upgrade architecture-expert persona, workflow duties, and repo-local blueprint governance.",
+  "archive_ref": "governance/records/task_archive.md"
+}

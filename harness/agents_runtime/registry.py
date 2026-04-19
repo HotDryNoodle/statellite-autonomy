@@ -38,7 +38,18 @@ class ExpertRegistry:
                     f"{agent_name} is not allowed to touch spec: {spec}"
                 )
 
+    def missing_eval_datasets(self, *, repo_root: Path | None = None) -> list[str]:
+        base_root = (repo_root or REPO_ROOT).resolve()
+        missing: list[str] = []
+        for agent_name in self.agent_names():
+            agent = self.require_active(agent_name)
+            dataset = str(agent.get("eval_dataset", "") or "").strip()
+            if dataset and not (base_root / dataset).exists():
+                missing.append(f"{agent_name}:{dataset}")
+        return missing
 
-def load_expert_registry() -> ExpertRegistry:
-    payload = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
+
+def load_expert_registry(*, repo_root: Path | None = None) -> ExpertRegistry:
+    base_root = (repo_root or REPO_ROOT).resolve()
+    payload = json.loads((base_root / "harness" / "config" / "agent_registry.json").read_text(encoding="utf-8"))
     return ExpertRegistry(payload)

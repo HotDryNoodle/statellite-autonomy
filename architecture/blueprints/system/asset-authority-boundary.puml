@@ -1,0 +1,74 @@
+@startuml architecture
+!theme aws-orange
+
+skinparam componentStyle rectangle
+skinparam defaultFontSize 11
+skinparam defaultFontColor #000000
+skinparam componentFontColor #000000
+skinparam linetype ortho
+skinparam ArrowThickness 0.8
+skinparam LineThickness 0.8
+skinparam ranksep 28
+skinparam nodesep 18
+skinparam shadowing false
+skinparam DefaultTextAlignment left
+
+skinparam note {
+  BackgroundColor #FFFFFF
+  BorderColor #BBBBBB
+  FontColor #444444
+}
+
+skinparam componentBackgroundColor<<core>> #FFF3CD
+skinparam componentBorderColor<<core>>     #C88719
+skinparam componentBackgroundColor<<algo>> #E3F2FD
+skinparam componentBorderColor<<algo>>     #1565C0
+skinparam componentBackgroundColor<<util>> #F2F2F2
+skinparam componentBorderColor<<util>>     #616161
+
+left to right direction
+title Asset Authority Boundary Freeze
+
+package "Authority Assets" {
+  component "==<size:14><b>Contracts</b></size>\nproduct behavior\nverify anchors" <<core>> as Contracts
+  component "==<size:14><b>Architecture Blueprints</b></size>\nrepo-primary design freezes\nsystem / decisions" <<core>> as Blueprints
+  component "==<size:14><b>Governance Policies</b></size>\nworkflow rules\nprocess constraints" <<core>> as Policies
+}
+
+package "Evidence Assets" {
+  component "==<size:14><b>Governance Records</b></size>\ndecisions / scope / archive\nhuman-readable history" <<util>> as Records
+  component "==<size:14><b>Domain Eval</b></size>\nscenario / baseline / report schema\nproduct validation assets" <<algo>> as DomainEval
+}
+
+package "Runtime And Guide Assets" {
+  component "==<size:14><b>Harness Runtime</b></size>\ntask state / events\nmachine-verifiable proof" <<util>> as Runtime
+  component "==<size:14><b>Harness Eval</b></size>\nworkflow fixtures\ncontrol-plane eval" <<util>> as HarnessEval
+  component "==<size:14><b>Docs Guides</b></size>\nreadme / index / migration guide\nnon-authority views" <<algo>> as Guides
+}
+
+Contracts -[hidden]-> Blueprints
+Blueprints -[hidden]-> Policies
+Records -[hidden]-> DomainEval
+Runtime -[hidden]-> HarnessEval
+
+Contracts ..> DomainEval
+Blueprints ..> Runtime
+Policies ..> Runtime
+Policies ..> HarnessEval
+Runtime ..> Records
+DomainEval ..> Records
+Guides ..> Contracts
+Guides ..> Blueprints
+Guides ..> Policies
+Guides ..> Records
+
+note top of Runtime
+runtime task records are the only
+machine truth for control-plane execution
+end note
+
+note bottom of Guides
+docs stay readable and navigable,
+but must not duplicate authority sources
+end note
+@enduml

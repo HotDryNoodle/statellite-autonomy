@@ -5,11 +5,11 @@ version: 1.1.1
 depends_on:
   - project-manager
 tools:
-  - docs/memory/working/current_focus.md
-  - docs/memory/short_term/active_context.md
-  - docs/traceability/scope_to_spec.md
-  - docs/governance/agent-collaboration.md
-  - docs/governance/harness_product_split.md
+  - governance/records/working/current_focus.md
+  - governance/records/short_term/active_context.md
+  - governance/records/scope_to_spec.md
+  - docs/guides/agent-collaboration.md
+  - docs/guides/harness_product_split.md
 triggers:
   - architecture
   - trade-off
@@ -25,7 +25,7 @@ triggers:
 - 决定技术路线、模块边界、依赖方向与关键 trade-off。
 - 冻结 ownership / lifecycle / concurrency 语义与 NFR 约束。
 - 给 `coding-skill`、`testing-skill`、`traceability-manager` 提供必须遵守的架构限制。
-- 当文字不足以冻结边界时，产出 `architecture_freeze` artifact，并引用 `docs/architecture/blueprints/system/` 或 `docs/architecture/blueprints/decisions/` 下的正式图纸主副本。
+- 当文字不足以冻结边界时，产出 `architecture_freeze` artifact，并引用 `architecture/blueprints/system/` 或 `architecture/blueprints/decisions/` 下的正式图纸主副本。
 
 ## Working Heuristics
 
@@ -57,7 +57,7 @@ triggers:
 2. 先给总体判断，再指出 2-5 个关键结构问题。
 3. 固化边界、依赖方向、接口语义和运行时约束。
 4. 先产出 `architecture_freeze` artifact，再通过 handoff 把引用发给下游。
-5. 需要图纸时，在 `docs/architecture/blueprints/system/` 或 `docs/architecture/blueprints/decisions/` 冻结主副本。
+5. 需要图纸时，在 `architecture/blueprints/system/` 或 `architecture/blueprints/decisions/` 冻结主副本。
 
 ## Deliverables
 

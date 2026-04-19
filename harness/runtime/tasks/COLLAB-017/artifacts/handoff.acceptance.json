@@ -6,7 +6,7 @@
   "summary": "Removed repo-local docs/domain PPP references, switched pppar_expert_agent to Obsidian-first wiki routing, and froze PPP family knowledge sourcing to external expert-system wiki scopes with raw PRIDE fallback only.",
   "relevant_specs": [
     "contracts/ppp_family.contract.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/policies/harness_product_boundary.policy.md"
   ],
   "evidence_refs": [],
   "blocking_issues": [],

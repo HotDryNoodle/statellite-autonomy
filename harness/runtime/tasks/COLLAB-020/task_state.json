@@ -22,15 +22,15 @@
   "current_artifact_ref": "harness/runtime/tasks/COLLAB-020/artifacts/handoff.acceptance.json",
   "pending_approvals": [],
   "affected_specs": [
-    "governance/harness_workflow.policy.md",
-    "governance/harness_product_boundary.policy.md",
-    "governance/eval_governance.policy.md"
+    "governance/policies/harness_workflow.policy.md",
+    "governance/policies/harness_product_boundary.policy.md",
+    "governance/policies/eval_governance.policy.md"
   ],
   "archived": true,
   "updated_at": "2026-04-10T09:24:25.766055+00:00",
   "task_brief_ref": "harness/runtime/tasks/COLLAB-020/artifacts/task_brief.contract_freeze.json",
   "handoff_ref": "harness/runtime/tasks/COLLAB-020/artifacts/handoff.acceptance.json",
   "acceptance_status": "done",
-  "acceptance_summary": "Split product Clause trace from governance compliance by moving governance rules into governance/*.policy.md, tightening traceability-cli to product contracts only, adding a standalone compliance check, and renaming harness/runtime spec fields to affected_specs/allowed_specs/relevant_specs.",
-  "archive_ref": "docs/traceability/task_archive.md"
+  "acceptance_summary": "Split product Clause trace from governance compliance by moving governance rules into governance/policies/*.policy.md, tightening traceability-cli to product contracts only, adding a standalone compliance check, and renaming harness/runtime spec fields to affected_specs/allowed_specs/relevant_specs.",
+  "archive_ref": "governance/records/task_archive.md"
 }

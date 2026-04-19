@@ -47,19 +47,19 @@ BASELINE_STATUS = {
     "contracts_with_tests": 6,
     "verifies_with_tests": 8,
 }
-WORKING_PATH = REPO_ROOT / "docs" / "memory" / "working" / "current_focus.md"
-TASK_BOARD_PATH = REPO_ROOT / "docs" / "memory" / "short_term" / "task_board.md"
-ACTIVE_CONTEXT_PATH = REPO_ROOT / "docs" / "memory" / "short_term" / "active_context.md"
+WORKING_PATH = REPO_ROOT / "governance" / "records" / "working" / "current_focus.md"
+TASK_BOARD_PATH = REPO_ROOT / "governance" / "records" / "short_term" / "task_board.md"
+ACTIVE_CONTEXT_PATH = REPO_ROOT / "governance" / "records" / "short_term" / "active_context.md"
 PROJECT_STATUS_PATH = REPO_ROOT / "docs" / "_generated" / "project_status.json"
-TASK_ARCHIVE_PATH = REPO_ROOT / "docs" / "traceability" / "task_archive.md"
+TASK_ARCHIVE_PATH = REPO_ROOT / "governance" / "records" / "task_archive.md"
 AGENTS_PATH = REPO_ROOT / "AGENTS.md"
 PM_SKILL_PATH = REPO_ROOT / "skills" / "project-manager" / "SKILL.md"
 PM_LOAD_ROUTING_PATH = REPO_ROOT / "skills" / "project-manager" / "references" / "load-routing.md"
 PM_SOP_PATH = REPO_ROOT / "skills" / "project-manager" / "references" / "control-plane-sop.md"
-AGENT_COLLAB_PATH = REPO_ROOT / "docs" / "governance" / "agent-collaboration.md"
-HARNESS_SPLIT_PATH = REPO_ROOT / "docs" / "governance" / "harness_product_split.md"
-TRACEABILITY_README_PATH = REPO_ROOT / "docs" / "traceability" / "README.md"
-BLUEPRINT_ROOT = REPO_ROOT / "docs" / "architecture" / "blueprints"
+AGENT_COLLAB_PATH = REPO_ROOT / "docs" / "guides" / "agent-collaboration.md"
+HARNESS_SPLIT_PATH = REPO_ROOT / "docs" / "guides" / "harness_product_split.md"
+TRACEABILITY_README_PATH = REPO_ROOT / "governance" / "records" / "README.md"
+BLUEPRINT_ROOT = REPO_ROOT / "architecture" / "blueprints"
 SYSTEM_BLUEPRINT_DIR = BLUEPRINT_ROOT / "system"
 DECISION_BLUEPRINT_DIR = BLUEPRINT_ROOT / "decisions"
 PROMPT_DOC_LIMITS = {
@@ -422,7 +422,7 @@ def check_architecture_freeze_artifacts() -> CheckResult:
                 except ValueError as exc:
                     failures.append(str(exc))
                     continue
-                if "docs/architecture/blueprints/decisions/" in ref and status != "active":
+                if "architecture/blueprints/decisions/" in ref and status != "active":
                     failures.append(
                         f"{freeze_path.relative_to(REPO_ROOT)} references inactive decision blueprint {ref}"
                     )
@@ -755,17 +755,17 @@ def check_prompt_doc_routing() -> CheckResult:
 
     for required in (
         "Load only when needed:",
-        "docs/traceability/decision_log.md",
-        "docs/traceability/agent_activity_log.md",
+        "governance/records/decision_log.md",
+        "governance/records/agent_activity_log.md",
         "Detailed PM command templates live in `skills/project-manager/references/control-plane-sop.md`.",
     ):
         if required not in agents_text:
             failures.append(f"AGENTS.md missing `{required}`")
 
     read_first_section = agents_text.split("## Workflow", 1)[0]
-    if "docs/traceability/decision_log.md" in read_first_section and "Load only when needed:" not in read_first_section:
+    if "governance/records/decision_log.md" in read_first_section and "Load only when needed:" not in read_first_section:
         failures.append("AGENTS.md places decision_log in the eager read chain")
-    if "docs/traceability/agent_activity_log.md" in read_first_section and "Load only when needed:" not in read_first_section:
+    if "governance/records/agent_activity_log.md" in read_first_section and "Load only when needed:" not in read_first_section:
         failures.append("AGENTS.md places agent_activity_log in the eager read chain")
 
     for snippet in SOP_COMMAND_SNIPPETS:
@@ -774,9 +774,9 @@ def check_prompt_doc_routing() -> CheckResult:
         if snippet in pm_skill_text:
             failures.append(f"skills/project-manager/SKILL.md should not include detailed SOP snippet `{snippet}`")
 
-    if "docs/governance/agent-collaboration.md" not in pm_skill_text:
+    if "docs/guides/agent-collaboration.md" not in pm_skill_text:
         failures.append("skills/project-manager/SKILL.md must keep conditional loading guidance for agent-collaboration.md")
-    if "docs/traceability/decision_log.md" not in pm_skill_text:
+    if "governance/records/decision_log.md" not in pm_skill_text:
         failures.append("skills/project-manager/SKILL.md must keep conditional loading guidance for decision_log.md")
 
     if failures:

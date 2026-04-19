@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "task_id": "COLLAB-024",
+  "goal": "Execute the planned document and asset restructuring with full historical path unification.",
+  "phase": "acceptance",
+  "owner": "project-manager",
+  "allowed_next_states": [],
+  "evidence_refs": [
+    "architecture/blueprints/system/asset-authority-boundary.puml",
+    "architecture/blueprints/system/asset-authority-boundary.md",
+    "python3 -m unittest harness.tests.test_agents_runtime harness.tests.test_harness_cli scripts.tests.test_governance_quality tools.tests.test_cli_tools",
+    "python3 tools/traceability-cli/traceability_cli.py status --refresh",
+    "python3 tools/traceability-cli/traceability_cli.py compliance --refresh",
+    "python3 scripts/render_project_dashboard.py",
+    "python3 scripts/check_quality.py --report-json"
+  ],
+  "blocking_issues": [],
+  "trace_id": "",
+  "run_attempt": 1,
+  "parent_trace_id": "",
+  "session_backend": "local-jsonl",
+  "session_refs": {},
+  "current_artifact_ref": "harness/runtime/tasks/COLLAB-024/artifacts/handoff.acceptance.json",
+  "architecture_freeze_ref": "harness/runtime/tasks/COLLAB-024/artifacts/architecture_freeze.json",
+  "pending_approvals": [],
+  "affected_specs": [
+    "governance/policies/harness_product_boundary.policy.md"
+  ],
+  "archived": true,
+  "updated_at": "2026-04-19T08:50:22.471893+00:00",
+  "task_brief_ref": "harness/runtime/tasks/COLLAB-024/artifacts/task_brief.contract_freeze.json",
+  "handoff_ref": "harness/runtime/tasks/COLLAB-024/artifacts/handoff.acceptance.json",
+  "acceptance_status": "done",
+  "acceptance_summary": "Accepted the document and asset reorganization: canonical authority roots now live under architecture/blueprints, governance/policies, governance/records, harness/eval, and harness/runtime; tooling, guides, tests, and historical runtime references were rewritten to the new paths without quality-gate regressions.",
+  "archive_ref": "governance/records/task_archive.md"
+}

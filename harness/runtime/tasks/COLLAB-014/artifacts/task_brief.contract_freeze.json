@@ -5,8 +5,8 @@
   "goal": "Refactor main-path prompt docs for concise role-specific loading",
   "phase": "contract_freeze",
   "affected_specs": [
-    "governance/harness_workflow.policy.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/policies/harness_workflow.policy.md",
+    "governance/policies/harness_product_boundary.policy.md"
   ],
   "clause_refs": [],
   "success_criteria": [

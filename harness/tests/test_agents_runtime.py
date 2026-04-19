@@ -31,7 +31,7 @@ class AgentsRuntimeTest(unittest.TestCase):
                 "task_id": "COLLAB-011",
                 "goal": "wire PM task brief",
                 "phase": "intake",
-                "affected_specs": ["governance/harness_workflow.policy.md"],
+                "affected_specs": ["governance/policies/harness_workflow.policy.md"],
                 "clause_refs": ["HarnessWorkflow_2_2"],
             },
         )
@@ -54,8 +54,8 @@ class AgentsRuntimeTest(unittest.TestCase):
                 "nfr_constraints": ["repo-local blueprints stay versioned"],
                 "forbidden_shortcuts": ["do not embed product code in harness"],
                 "tradeoffs": ["accept extra artifact wiring for stronger freeze semantics"],
-                "blueprint_refs": ["docs/architecture/blueprints/system/harness-product-boundary.puml"],
-                "supporting_evidence_refs": ["governance/harness_workflow.policy.md#architecture-expert"],
+                "blueprint_refs": ["architecture/blueprints/system/harness-product-boundary.puml"],
+                "supporting_evidence_refs": ["governance/policies/harness_workflow.policy.md#architecture-expert"],
                 "supersedes_freeze_refs": [],
                 "notes": "",
             },
@@ -154,7 +154,7 @@ class AgentsRuntimeTest(unittest.TestCase):
     def test_create_agent_graph_includes_architecture_agent(self) -> None:
         graph = create_agent_graph(
             "COLLAB-011",
-            ["governance/harness_workflow.policy.md"],
+            ["governance/policies/harness_workflow.policy.md"],
             {"mode": "sync"},
         )
         self.assertIn("architecture_expert_agent", graph["agents"])

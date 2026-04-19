@@ -5,8 +5,8 @@
   "to_agent": "none",
   "summary": "implemented tracked compact proof retention, compact-runtime, and compacted archive quality gates",
   "relevant_specs": [
-    "governance/harness_workflow.policy.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/policies/harness_workflow.policy.md",
+    "governance/policies/harness_product_boundary.policy.md"
   ],
   "evidence_refs": [
     "python3 -m unittest discover -s harness/tests -p 'test_*.py'",

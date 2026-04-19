@@ -5,8 +5,8 @@
   "to_agent": "coding_agent",
   "summary": "project-manager prepared downstream handoff without expert dispatch",
   "relevant_specs": [
-    "governance/harness_workflow.policy.md",
-    "governance/harness_product_boundary.policy.md",
+    "governance/policies/harness_workflow.policy.md",
+    "governance/policies/harness_product_boundary.policy.md",
     "contracts/time_system.contract.md",
     "contracts/ppp_family.contract.md"
   ],

@@ -6,10 +6,10 @@
       "kind": "architecture",
       "allowed_specs": [
         "contracts/layer_boundary.contract.md",
-        "governance/harness_product_boundary.policy.md",
-        "governance/harness_workflow.policy.md"
+        "governance/policies/harness_product_boundary.policy.md",
+        "governance/policies/harness_workflow.policy.md"
       ],
-      "eval_dataset": "eval/agent_workflow/architecture_expert"
+      "eval_dataset": "harness/eval/agent_workflow/architecture_expert"
     },
     "pppar_expert_agent": {
       "status": "active",
@@ -18,7 +18,7 @@
         "contracts/navigation.contract.md",
         "contracts/ppp_family.contract.md"
       ],
-      "eval_dataset": "eval/agent_workflow/pppar_expert"
+      "eval_dataset": "harness/eval/agent_workflow/pppar_expert"
     },
     "rdpod_analyst_agent": {
       "status": "active",
@@ -27,14 +27,14 @@
         "contracts/navigation.contract.md",
         "contracts/rdpod_family.contract.md"
       ],
-      "eval_dataset": "eval/agent_workflow/rdpod_analyst"
+      "eval_dataset": "harness/eval/agent_workflow/rdpod_analyst"
     },
     "coding_agent": {
       "status": "active",
       "kind": "implementation",
       "allowed_specs": [
-        "governance/harness_product_boundary.policy.md",
-        "governance/harness_workflow.policy.md",
+        "governance/policies/harness_product_boundary.policy.md",
+        "governance/policies/harness_workflow.policy.md",
         "contracts/layer_boundary.contract.md",
         "contracts/navigation.contract.md",
         "contracts/ppp_family.contract.md",
@@ -44,14 +44,14 @@
         "contracts/state_handoff_navigation_to_prediction.contract.md",
         "contracts/time_system.contract.md"
       ],
-      "eval_dataset": "eval/agent_workflow/coding"
+      "eval_dataset": "harness/eval/agent_workflow/coding"
     },
     "testing_agent": {
       "status": "active",
       "kind": "verification",
       "allowed_specs": [
-        "governance/harness_product_boundary.policy.md",
-        "governance/harness_workflow.policy.md",
+        "governance/policies/harness_product_boundary.policy.md",
+        "governance/policies/harness_workflow.policy.md",
         "contracts/layer_boundary.contract.md",
         "contracts/navigation.contract.md",
         "contracts/ppp_family.contract.md",
@@ -61,20 +61,20 @@
         "contracts/state_handoff_navigation_to_prediction.contract.md",
         "contracts/time_system.contract.md"
       ],
-      "eval_dataset": "eval/agent_workflow/testing"
+      "eval_dataset": "harness/eval/agent_workflow/testing"
     },
     "eval_agent": {
       "status": "active",
       "kind": "evaluation",
       "allowed_specs": [
-        "governance/eval_governance.policy.md",
-        "governance/harness_product_boundary.policy.md",
-        "governance/harness_workflow.policy.md",
+        "governance/policies/eval_governance.policy.md",
+        "governance/policies/harness_product_boundary.policy.md",
+        "governance/policies/harness_workflow.policy.md",
         "contracts/time_system.contract.md",
         "contracts/ppp_family.contract.md",
         "contracts/rdpod_family.contract.md"
       ],
-      "eval_dataset": "eval/agent_workflow/eval"
+      "eval_dataset": "harness/eval/agent_workflow/benchmark_evaluator"
     }
   }
 }

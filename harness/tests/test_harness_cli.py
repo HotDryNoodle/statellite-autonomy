@@ -22,9 +22,9 @@ class HarnessCliTest(unittest.TestCase):
             "harness/config",
             "harness/schemas",
             "tools/nav-toolchain-cli",
-            "docs/memory/working",
-            "docs/memory/short_term",
-            "docs/traceability",
+            "governance/records/working",
+            "governance/records/short_term",
+            "governance/records",
         ):
             (repo / relative).mkdir(parents=True, exist_ok=True)
         for relative in (
@@ -49,11 +49,11 @@ class HarnessCliTest(unittest.TestCase):
             "harness/schemas/task_brief.schema.json",
             "tools/nav-toolchain-cli/toolchain_cli.py",
             "tools/nav-toolchain-cli/knowledge_ops.py",
-            "docs/memory/working/current_focus.md",
-            "docs/memory/short_term/task_board.md",
-            "docs/memory/short_term/active_context.md",
-            "docs/traceability/agent_activity_log.md",
-            "docs/traceability/task_archive.md",
+            "governance/records/working/current_focus.md",
+            "governance/records/short_term/task_board.md",
+            "governance/records/short_term/active_context.md",
+            "governance/records/agent_activity_log.md",
+            "governance/records/task_archive.md",
         ):
             target = repo / relative
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -378,22 +378,22 @@ esac
             self.assertEqual(handoff["to_agent"], "coding_agent")
             self.assertEqual(handoff["phase"], "implementation")
 
-            current_focus = (repo / "docs/memory/working/current_focus.md").read_text(encoding="utf-8")
+            current_focus = (repo / "governance/records/working/current_focus.md").read_text(encoding="utf-8")
             self.assertIn("`implementation`", current_focus)
             self.assertIn("COLLAB-TEST", current_focus)
             self.assertIn(payload["artifacts"]["task_brief"], current_focus)
             self.assertIn(payload["artifacts"]["handoff"], current_focus)
 
-            task_board = (repo / "docs/memory/short_term/task_board.md").read_text(encoding="utf-8")
+            task_board = (repo / "governance/records/short_term/task_board.md").read_text(encoding="utf-8")
             self.assertIn("| COLLAB-TEST |", task_board)
             self.assertIn("ready_for_impl", task_board)
             self.assertIn(payload["artifacts"]["handoff"], task_board)
 
-            active_context = (repo / "docs/memory/short_term/active_context.md").read_text(encoding="utf-8")
+            active_context = (repo / "governance/records/short_term/active_context.md").read_text(encoding="utf-8")
             self.assertIn("Current PM workflow task:", active_context)
             self.assertIn(payload["artifacts"]["task_brief"], active_context)
 
-            activity_log = (repo / "docs/traceability/agent_activity_log.md").read_text(encoding="utf-8")
+            activity_log = (repo / "governance/records/agent_activity_log.md").read_text(encoding="utf-8")
             self.assertIn("synchronized PM workflow governance state", activity_log)
             self.assertIn("COLLAB-TEST", activity_log)
 
@@ -436,7 +436,7 @@ esac
                 "--goal",
                 "run PM workflow without expert",
                 "--contract",
-                "governance/harness_workflow.policy.md",
+                "governance/policies/harness_workflow.policy.md",
                 "--skip-dispatch",
                 cwd=repo,
             )
@@ -463,7 +463,7 @@ esac
             repo = Path(tmp)
             (repo / "harness" / "runtime").mkdir(parents=True)
             runtime_cli = self.stage_runtime_repo(repo)
-            blueprint_root = repo / "docs" / "architecture" / "blueprints" / "decisions"
+            blueprint_root = repo / "architecture" / "blueprints" / "decisions"
             blueprint_root.mkdir(parents=True, exist_ok=True)
             (blueprint_root / "harness-product-boundary.puml").write_text("@startuml\n@enduml\n", encoding="utf-8")
             (blueprint_root / "harness-product-boundary.md").write_text(
@@ -496,9 +496,9 @@ esac
                 "--nfr-constraint",
                 "blueprints must remain repo-local and versioned",
                 "--blueprint-ref",
-                "docs/architecture/blueprints/decisions/harness-product-boundary.puml",
+                "architecture/blueprints/decisions/harness-product-boundary.puml",
                 "--blueprint-ref",
-                "docs/architecture/blueprints/decisions/harness-product-boundary.md",
+                "architecture/blueprints/decisions/harness-product-boundary.md",
                 cwd=repo,
             )
             self.assertEqual(workflow.returncode, 0, workflow.stderr)
@@ -508,7 +508,7 @@ esac
             freeze = json.loads((repo / payload["artifacts"]["architecture_freeze"]).read_text(encoding="utf-8"))
             self.assertEqual(freeze["problem_statement"], "freeze harness/product separation")
             self.assertIn(
-                "docs/architecture/blueprints/decisions/harness-product-boundary.puml",
+                "architecture/blueprints/decisions/harness-product-boundary.puml",
                 freeze["blueprint_refs"],
             )
 
@@ -579,17 +579,17 @@ esac
                 "--goal",
                 "repair governance docs",
                 "--contract",
-                "governance/harness_workflow.policy.md",
+                "governance/policies/harness_workflow.policy.md",
                 "--skip-dispatch",
                 cwd=repo,
             )
             self.assertEqual(workflow.returncode, 0, workflow.stderr)
 
-            (repo / "docs/memory/working/current_focus.md").write_text(
+            (repo / "governance/records/working/current_focus.md").write_text(
                 "# Current Focus\n\n## Current Phase\n- `verification`\n\n## In Progress\n- `COLLAB-TEST`: drift\n\n## Current Blockers\n- none\n\n## Active Specs\n- none\n\n## Next Acceptance Target\n- none\n\n## Next Agent\n- `testing_agent`\n",
                 encoding="utf-8",
             )
-            (repo / "docs/memory/short_term/task_board.md").write_text(
+            (repo / "governance/records/short_term/task_board.md").write_text(
                 "# Task Board\n\n| task_id | title | owner_agent | affected_specs | status | acceptance | blockers |\n| --- | --- | --- | --- | --- | --- | --- |\n| COLLAB-TEST | drift | testing_agent | none | ready_for_verify | none | none |\n",
                 encoding="utf-8",
             )
@@ -605,11 +605,11 @@ esac
             payload = json.loads(repaired.stdout)
             self.assertEqual(payload["mode"], "active")
 
-            current_focus = (repo / "docs/memory/working/current_focus.md").read_text(encoding="utf-8")
+            current_focus = (repo / "governance/records/working/current_focus.md").read_text(encoding="utf-8")
             self.assertIn("`implementation`", current_focus)
             self.assertIn("COLLAB-TEST", current_focus)
 
-            task_board = (repo / "docs/memory/short_term/task_board.md").read_text(encoding="utf-8")
+            task_board = (repo / "governance/records/short_term/task_board.md").read_text(encoding="utf-8")
             self.assertIn("| COLLAB-TEST |", task_board)
             self.assertIn("ready_for_impl", task_board)
 
@@ -637,18 +637,18 @@ esac
             self.assertTrue(payload["archived"])
             self.assertIn("archive_ref", payload)
 
-            archive = (repo / "docs/traceability/task_archive.md").read_text(encoding="utf-8")
+            archive = (repo / "governance/records/task_archive.md").read_text(encoding="utf-8")
             self.assertIn("| COLLAB-TEST |", archive)
             self.assertIn("accepted and archived", archive)
 
-            task_board = (repo / "docs/memory/short_term/task_board.md").read_text(encoding="utf-8")
+            task_board = (repo / "governance/records/short_term/task_board.md").read_text(encoding="utf-8")
             self.assertNotIn("| COLLAB-TEST |", task_board)
 
-            current_focus = (repo / "docs/memory/working/current_focus.md").read_text(encoding="utf-8")
+            current_focus = (repo / "governance/records/working/current_focus.md").read_text(encoding="utf-8")
             self.assertIn("- none", current_focus)
             self.assertNotIn("COLLAB-TEST", current_focus)
 
-            active_context = (repo / "docs/memory/short_term/active_context.md").read_text(encoding="utf-8")
+            active_context = (repo / "governance/records/short_term/active_context.md").read_text(encoding="utf-8")
             self.assertNotIn("COLLAB-TEST", active_context)
 
             history = json.loads(
@@ -708,7 +708,7 @@ esac
             self.assertEqual(payload["steps"][1]["step"], "archive-task")
             self.assertIn("archive_ref", payload)
 
-            archive = (repo / "docs/traceability/task_archive.md").read_text(encoding="utf-8")
+            archive = (repo / "governance/records/task_archive.md").read_text(encoding="utf-8")
             self.assertIn("pm workflow archived accepted task", archive)
 
     def test_compact_runtime_moves_artifacts_to_local_spill_and_keeps_tracked_proof(self) -> None:
@@ -763,7 +763,7 @@ esac
                 "--goal",
                 "run PM workflow",
                 "--contract",
-                "governance/harness_workflow.policy.md",
+                "governance/policies/harness_workflow.policy.md",
                 "--skip-dispatch",
                 cwd=repo,
             )

@@ -62,7 +62,7 @@
     "@contract{PppFamily_5_6}"
   ],
   "policy_refs": [
-    "governance/eval_governance.policy.md#baseline-recalibration",
-    "governance/eval_governance.policy.md#verdict-semantics"
+    "governance/policies/eval_governance.policy.md#baseline-recalibration",
+    "governance/policies/eval_governance.policy.md#verdict-semantics"
   ]
 }

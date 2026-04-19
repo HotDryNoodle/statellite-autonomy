@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "artifact_version": "1.0",
+  "task_id": "COLLAB-024",
+  "goal": "Execute the planned document and asset restructuring with full historical path unification.",
+  "phase": "contract_freeze",
+  "affected_specs": [
+    "governance/policies/harness_product_boundary.policy.md"
+  ],
+  "clause_refs": [],
+  "success_criteria": [
+    "official task lifecycle is recorded through harness control-plane artifacts"
+  ],
+  "input_refs": [],
+  "output_expectation": [
+    "validated handoff artifact for downstream implementation"
+  ]
+}

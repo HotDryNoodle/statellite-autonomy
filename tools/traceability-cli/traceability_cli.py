@@ -16,11 +16,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_TRACE_OUTPUT_DIR = REPO_ROOT / "docs" / "_generated" / "traceability"
 DEFAULT_COMPLIANCE_OUTPUT_DIR = REPO_ROOT / "docs" / "_generated" / "compliance"
 CLI_PATH = "python3 tools/traceability-cli/traceability_cli.py"
-GOVERNANCE_CONTRACT_FILES = (
-    "contracts/harness_workflow.contract.md",
-    "contracts/harness_product_boundary.contract.md",
-    "contracts/eval_governance.contract.md",
-)
 COMPLIANCE_SELF_EXEMPT = {
     "tools/traceability-cli/traceability_cli.py",
 }
@@ -182,7 +177,7 @@ def parse_policy_anchors(path: Path) -> list[str]:
 
 def build_policy_index() -> dict[str, object]:
     policies: dict[str, dict[str, object]] = {}
-    policy_root = REPO_ROOT / "governance"
+    policy_root = REPO_ROOT / "governance" / "policies"
     for path in sorted(policy_root.glob("*.policy.md")):
         rel = str(path.relative_to(REPO_ROOT))
         policies[rel] = {
@@ -190,7 +185,7 @@ def build_policy_index() -> dict[str, object]:
             "title": path.read_text(encoding="utf-8").splitlines()[0].lstrip("# ").strip(),
         }
     return {
-        "generated_from": "governance/*.policy.md",
+        "generated_from": "governance/policies/*.policy.md",
         "policies": policies,
     }
 
@@ -220,9 +215,9 @@ def run_compliance_checks(trace_output_dir: Path) -> tuple[dict[str, object], di
     missing_policy_files = [
         path
         for path in (
-            "governance/harness_workflow.policy.md",
-            "governance/harness_product_boundary.policy.md",
-            "governance/eval_governance.policy.md",
+            "governance/policies/harness_workflow.policy.md",
+            "governance/policies/harness_product_boundary.policy.md",
+            "governance/policies/eval_governance.policy.md",
         )
         if not (REPO_ROOT / path).exists()
     ]
@@ -233,10 +228,6 @@ def run_compliance_checks(trace_output_dir: Path) -> tuple[dict[str, object], di
                 "details": missing_policy_files,
             }
         )
-
-    residual_contracts = [path for path in GOVERNANCE_CONTRACT_FILES if (REPO_ROOT / path).exists()]
-    if residual_contracts:
-        failures.append({"check": "contracts_namespace_product_only", "details": residual_contracts})
 
     legacy_field_hits: list[str] = []
     for path in tracked:

@@ -5,8 +5,8 @@
   "requested_by": "project-manager",
   "relevant_specs": [
     "contracts/layer_boundary.contract.md",
-    "governance/harness_workflow.policy.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/policies/harness_workflow.policy.md",
+    "governance/policies/harness_product_boundary.policy.md"
   ],
   "problem_statement": "Freeze how architecture decisions are materialized, referenced, and invalidated across harness runtime and repo-local blueprints.",
   "boundary_decisions": [
@@ -37,10 +37,10 @@
     "accept extra artifact wiring in exchange for explicit architecture governance and replayable evidence."
   ],
   "blueprint_refs": [
-    "docs/architecture/blueprints/system/harness-product-boundary.puml",
-    "docs/architecture/blueprints/system/harness-product-boundary.md",
-    "docs/architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.puml",
-    "docs/architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.md"
+    "architecture/blueprints/system/harness-product-boundary.puml",
+    "architecture/blueprints/system/harness-product-boundary.md",
+    "architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.puml",
+    "architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.md"
   ],
   "supporting_evidence_refs": [],
   "supersedes_freeze_refs": [],

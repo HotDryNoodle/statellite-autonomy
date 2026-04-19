@@ -25,7 +25,7 @@ triggers:
 
 ## 核心职责
 
-- 维护 `docs/traceability/*.md` 中的长期治理记忆、冻结约束与任务历史。
+- 维护 `governance/records/*.md` 中的长期治理记忆、冻结约束与任务历史。
 - 通过仓库内 `traceability` CLI 提取 product contract / code / tests 证据，并执行 governance compliance 检查。
 - 把标准化 Eval report 绑定到 verify 条款、runtime evidence 和 acceptance 记录。
 - 记录关键决策与已知限制。

@@ -20,12 +20,12 @@
   "current_artifact_ref": "",
   "pending_approvals": [],
   "affected_specs": [
-    "governance/harness_workflow.policy.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/policies/harness_workflow.policy.md",
+    "governance/policies/harness_product_boundary.policy.md"
   ],
   "archived": true,
   "acceptance_status": "done",
   "acceptance_summary": "harness becomes the default control plane, governance docs become synchronized mirrors, and runtime-vs-memory quality gates now block bypass paths",
-  "archive_ref": "docs/traceability/task_archive.md",
+  "archive_ref": "governance/records/task_archive.md",
   "updated_at": "2026-04-07T18:12:00+08:00"
 }

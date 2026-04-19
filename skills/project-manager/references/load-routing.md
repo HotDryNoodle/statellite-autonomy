@@ -6,22 +6,22 @@ Use the smallest context that can decide the next step.
 
 1. `AGENTS.md`
 2. `skills/project-manager/SKILL.md`
-3. `docs/memory/working/current_focus.md`
-4. `docs/memory/short_term/task_board.md`
-5. `docs/memory/short_term/active_context.md`
-6. `docs/traceability/known_limitations.md`
-7. `docs/traceability/scope_to_spec.md`
+3. `governance/records/working/current_focus.md`
+4. `governance/records/short_term/task_board.md`
+5. `governance/records/short_term/active_context.md`
+6. `governance/records/known_limitations.md`
+7. `governance/records/scope_to_spec.md`
 8. Relevant `contracts/*.contract.md`
 
 ## Conditional Loads
 
-- `docs/architecture/agent-collaboration.md`
+- `docs/guides/agent-collaboration.md`
   - Need lifecycle, handoff, rollback, or control-plane details
-- `docs/architecture/harness_product_split.md`
+- `docs/guides/harness_product_split.md`
   - Task touches orchestration, repository structure, or toolchain boundaries
-- `docs/traceability/decision_log.md`
+- `governance/records/decision_log.md`
   - Need prior frozen constraints or must add a new one
-- `docs/traceability/agent_activity_log.md`
+- `governance/records/agent_activity_log.md`
   - Need recent task history or restart context
 
 ## Routing Notes

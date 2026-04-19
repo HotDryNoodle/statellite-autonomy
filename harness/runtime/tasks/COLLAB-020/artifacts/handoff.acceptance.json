@@ -3,11 +3,11 @@
   "phase": "acceptance",
   "from_agent": "project-manager",
   "to_agent": "none",
-  "summary": "Split product Clause trace from governance compliance by moving governance rules into governance/*.policy.md, tightening traceability-cli to product contracts only, adding a standalone compliance check, and renaming harness/runtime spec fields to affected_specs/allowed_specs/relevant_specs.",
+  "summary": "Split product Clause trace from governance compliance by moving governance rules into governance/policies/*.policy.md, tightening traceability-cli to product contracts only, adding a standalone compliance check, and renaming harness/runtime spec fields to affected_specs/allowed_specs/relevant_specs.",
   "relevant_specs": [
-    "governance/harness_workflow.policy.md",
-    "governance/harness_product_boundary.policy.md",
-    "governance/eval_governance.policy.md"
+    "governance/policies/harness_workflow.policy.md",
+    "governance/policies/harness_product_boundary.policy.md",
+    "governance/policies/eval_governance.policy.md"
   ],
   "evidence_refs": [
     "python3 -m unittest harness.tests.test_agents_runtime tools.tests.test_cli_tools scripts.tests.test_governance_quality",

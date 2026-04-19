@@ -22,12 +22,12 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "_generated"
 TRACEABILITY = REPO_ROOT / "tools" / "traceability-cli" / "traceability_cli.py"
 
-WORKING_PATH = REPO_ROOT / "docs" / "memory" / "working" / "current_focus.md"
-TASK_BOARD_PATH = REPO_ROOT / "docs" / "memory" / "short_term" / "task_board.md"
-ACTIVE_CONTEXT_PATH = REPO_ROOT / "docs" / "memory" / "short_term" / "active_context.md"
-KNOWN_LIMITATIONS_PATH = REPO_ROOT / "docs" / "traceability" / "known_limitations.md"
-DECISION_LOG_PATH = REPO_ROOT / "docs" / "traceability" / "decision_log.md"
-ACTIVITY_LOG_PATH = REPO_ROOT / "docs" / "traceability" / "agent_activity_log.md"
+WORKING_PATH = REPO_ROOT / "governance" / "records" / "working" / "current_focus.md"
+TASK_BOARD_PATH = REPO_ROOT / "governance" / "records" / "short_term" / "task_board.md"
+ACTIVE_CONTEXT_PATH = REPO_ROOT / "governance" / "records" / "short_term" / "active_context.md"
+KNOWN_LIMITATIONS_PATH = REPO_ROOT / "governance" / "records" / "known_limitations.md"
+DECISION_LOG_PATH = REPO_ROOT / "governance" / "records" / "decision_log.md"
+ACTIVITY_LOG_PATH = REPO_ROOT / "governance" / "records" / "agent_activity_log.md"
 
 LIMITATION_SECTIONS = ("Accepted Limitations", "Open Risks")
 

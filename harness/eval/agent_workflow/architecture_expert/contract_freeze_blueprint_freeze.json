@@ -1,0 +1,34 @@
+{
+  "task_id": "EVAL-ARCH-001",
+  "goal": "exercise architecture expert handoff for boundary freeze and blueprint references",
+  "expected_agents": [
+    "project_manager_agent",
+    "architecture_expert_agent",
+    "coding_agent",
+    "testing_agent",
+    "eval_agent"
+  ],
+  "trigger_conditions": [
+    "module boundary change",
+    "dependency direction review",
+    "ownership/lifecycle freeze"
+  ],
+  "expected_outputs": {
+    "artifact_type": "architecture_freeze",
+    "freeze_fields": [
+      "problem_statement",
+      "boundary_decisions",
+      "dependency_direction",
+      "interface_freeze_points",
+      "ownership_lifecycle_constraints",
+      "nfr_constraints",
+      "blueprint_refs"
+    ],
+    "blueprint_refs": [
+      "architecture/blueprints/system/harness-product-boundary.md",
+      "architecture/blueprints/system/harness-product-boundary.puml",
+      "architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.md",
+      "architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.puml"
+    ]
+  }
+}

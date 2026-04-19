@@ -6,7 +6,7 @@
   "phase": "contract_freeze",
   "affected_specs": [
     "contracts/ppp_family.contract.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/policies/harness_product_boundary.policy.md"
   ],
   "clause_refs": [],
   "success_criteria": [

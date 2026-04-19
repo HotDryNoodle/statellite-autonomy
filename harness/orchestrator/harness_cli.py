@@ -29,11 +29,11 @@ from runtime_model import (
     validate_transition,
 )
 RUNTIME_ROOT = REPO_ROOT / "harness" / "runtime" / "tasks"
-WORKING_PATH = REPO_ROOT / "docs" / "memory" / "working" / "current_focus.md"
-TASK_BOARD_PATH = REPO_ROOT / "docs" / "memory" / "short_term" / "task_board.md"
-ACTIVE_CONTEXT_PATH = REPO_ROOT / "docs" / "memory" / "short_term" / "active_context.md"
-ACTIVITY_LOG_PATH = REPO_ROOT / "docs" / "traceability" / "agent_activity_log.md"
-TASK_ARCHIVE_PATH = REPO_ROOT / "docs" / "traceability" / "task_archive.md"
+WORKING_PATH = REPO_ROOT / "governance" / "records" / "working" / "current_focus.md"
+TASK_BOARD_PATH = REPO_ROOT / "governance" / "records" / "short_term" / "task_board.md"
+ACTIVE_CONTEXT_PATH = REPO_ROOT / "governance" / "records" / "short_term" / "active_context.md"
+ACTIVITY_LOG_PATH = REPO_ROOT / "governance" / "records" / "agent_activity_log.md"
+TASK_ARCHIVE_PATH = REPO_ROOT / "governance" / "records" / "task_archive.md"
 WORKING_SECTIONS = (
     "Current Phase",
     "In Progress",
@@ -505,7 +505,7 @@ def sync_governance_memory(
                 init_event(task_state["task_id"], task_state["phase"], task_state["owner"], task_state["goal"])["timestamp"],
                 "project-manager",
                 task_state["task_id"],
-                "`docs/memory/working/current_focus.md`, `docs/memory/short_term/task_board.md`, `docs/memory/short_term/active_context.md`, `docs/traceability/agent_activity_log.md`",
+                "`governance/records/working/current_focus.md`, `governance/records/short_term/task_board.md`, `governance/records/short_term/active_context.md`, `governance/records/agent_activity_log.md`",
                 ", ".join(f"`{spec}`" for spec in affected_specs) or "`none`",
                 f"`{task_state['owner']}`",
                 f"synchronized PM workflow governance state with task_brief={task_brief_ref} and handoff={handoff_ref}",
@@ -731,7 +731,7 @@ def close_task_internal(
                     state["updated_at"],
                     "project-manager",
                     task_id,
-                    "`docs/memory/working/current_focus.md`, `docs/memory/short_term/task_board.md`, `docs/traceability/agent_activity_log.md`",
+                    "`governance/records/working/current_focus.md`, `governance/records/short_term/task_board.md`, `governance/records/agent_activity_log.md`",
                     ", ".join(f"`{spec}`" for spec in context["affected_specs"]) or "`none`",
                     "`none`",
                     f"closed task at acceptance with status={status} and handoff={handoff_ref}",
@@ -825,7 +825,7 @@ def archive_task_internal(
                     state["updated_at"],
                     "project-manager",
                     task_id,
-                    "`docs/memory/working/current_focus.md`, `docs/memory/short_term/task_board.md`, `docs/memory/short_term/active_context.md`, `docs/traceability/task_archive.md`, `docs/traceability/agent_activity_log.md`",
+                    "`governance/records/working/current_focus.md`, `governance/records/short_term/task_board.md`, `governance/records/short_term/active_context.md`, `governance/records/task_archive.md`, `governance/records/agent_activity_log.md`",
                     ", ".join(f"`{spec}`" for spec in context["affected_specs"]) or "`none`",
                     "`none`",
                     f"archived task with status={status} into {archive_ref} and cleared short-term memory",

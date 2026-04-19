@@ -6,8 +6,8 @@
   "phase": "contract_freeze",
   "affected_specs": [
     "contracts/layer_boundary.contract.md",
-    "governance/harness_workflow.policy.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/policies/harness_workflow.policy.md",
+    "governance/policies/harness_product_boundary.policy.md"
   ],
   "clause_refs": [],
   "success_criteria": [

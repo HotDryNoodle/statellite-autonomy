@@ -16,7 +16,7 @@
   "pending_approvals": [],
   "affected_specs": [
     "contracts/ppp_family.contract.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/policies/harness_product_boundary.policy.md"
   ],
   "archived": true,
   "updated_at": "2026-04-10T06:37:31.660173+00:00",
@@ -24,5 +24,5 @@
   "handoff_ref": "harness/runtime/tasks/COLLAB-017/artifacts/handoff.acceptance.json",
   "acceptance_status": "done",
   "acceptance_summary": "Removed repo-local docs/domain PPP references, switched pppar_expert_agent to Obsidian-first wiki routing, and froze PPP family knowledge sourcing to external expert-system wiki scopes with raw PRIDE fallback only.",
-  "archive_ref": "docs/traceability/task_archive.md"
+  "archive_ref": "governance/records/task_archive.md"
 }

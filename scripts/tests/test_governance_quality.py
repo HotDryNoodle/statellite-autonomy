@@ -35,29 +35,29 @@ class GovernanceQualityTest(unittest.TestCase):
 
     def patch_repo(self, repo: Path) -> None:
         check_quality.REPO_ROOT = repo
-        check_quality.WORKING_PATH = repo / "docs" / "memory" / "working" / "current_focus.md"
-        check_quality.TASK_BOARD_PATH = repo / "docs" / "memory" / "short_term" / "task_board.md"
-        check_quality.ACTIVE_CONTEXT_PATH = repo / "docs" / "memory" / "short_term" / "active_context.md"
-        check_quality.TASK_ARCHIVE_PATH = repo / "docs" / "traceability" / "task_archive.md"
+        check_quality.WORKING_PATH = repo / "governance" / "records" / "working" / "current_focus.md"
+        check_quality.TASK_BOARD_PATH = repo / "governance" / "records" / "short_term" / "task_board.md"
+        check_quality.ACTIVE_CONTEXT_PATH = repo / "governance" / "records" / "short_term" / "active_context.md"
+        check_quality.TASK_ARCHIVE_PATH = repo / "governance" / "records" / "task_archive.md"
         check_quality.PROJECT_STATUS_PATH = repo / "docs" / "_generated" / "project_status.json"
-        check_quality.BLUEPRINT_ROOT = repo / "docs" / "architecture" / "blueprints"
+        check_quality.BLUEPRINT_ROOT = repo / "architecture" / "blueprints"
         check_quality.SYSTEM_BLUEPRINT_DIR = check_quality.BLUEPRINT_ROOT / "system"
         check_quality.DECISION_BLUEPRINT_DIR = check_quality.BLUEPRINT_ROOT / "decisions"
 
     def write_common_files(self, repo: Path) -> None:
         for relative in (
-            "docs/memory/working",
-            "docs/memory/short_term",
-            "docs/traceability",
+            "governance/records/working",
+            "governance/records/short_term",
+            "governance/records",
             "docs/_generated",
-            "docs/architecture/blueprints/system",
-            "docs/architecture/blueprints/decisions",
-            "eval/agent_workflow/architecture_expert",
+            "architecture/blueprints/system",
+            "architecture/blueprints/decisions",
+            "harness/eval/agent_workflow/architecture_expert",
             "harness/config",
             "harness/runtime/tasks",
         ):
             (repo / relative).mkdir(parents=True, exist_ok=True)
-        (repo / "eval" / "agent_workflow" / "architecture_expert" / "README.md").write_text(
+        (repo / "harness" / "eval" / "agent_workflow" / "architecture_expert" / "README.md").write_text(
             "# architecture eval\n",
             encoding="utf-8",
         )
@@ -70,7 +70,7 @@ class GovernanceQualityTest(unittest.TestCase):
                             "status": "active",
                             "kind": "architecture",
                             "allowed_specs": ["contracts/layer_boundary.contract.md"],
-                            "eval_dataset": "eval/agent_workflow/architecture_expert",
+                            "eval_dataset": "harness/eval/agent_workflow/architecture_expert",
                         }
                     },
                 }
@@ -97,7 +97,7 @@ class GovernanceQualityTest(unittest.TestCase):
             ),
             encoding="utf-8",
         )
-        (repo / "docs" / "memory" / "working" / "current_focus.md").write_text(
+        (repo / "governance" / "records" / "working" / "current_focus.md").write_text(
             "# Current Focus\n\n"
             "## Current Phase\n- `acceptance`\n\n"
             "## In Progress\n- none\n\n"
@@ -107,13 +107,13 @@ class GovernanceQualityTest(unittest.TestCase):
             "## Next Agent\n- none\n",
             encoding="utf-8",
         )
-        (repo / "docs" / "memory" / "short_term" / "task_board.md").write_text(
+        (repo / "governance" / "records" / "short_term" / "task_board.md").write_text(
             "# Task Board\n\n"
             "| task_id | title | owner_agent | affected_specs | status | acceptance | blockers |\n"
             "| --- | --- | --- | --- | --- | --- | --- |\n",
             encoding="utf-8",
         )
-        (repo / "docs" / "memory" / "short_term" / "active_context.md").write_text(
+        (repo / "governance" / "records" / "short_term" / "active_context.md").write_text(
             "# Active Context\n\n"
             "## Current Scope\n- none\n\n"
             "## Active Policy Skills\n- none\n\n"
@@ -121,27 +121,27 @@ class GovernanceQualityTest(unittest.TestCase):
             "## Handoff Expectations\n- none\n",
             encoding="utf-8",
         )
-        (repo / "docs" / "traceability" / "task_archive.md").write_text(
+        (repo / "governance" / "records" / "task_archive.md").write_text(
             "# Task Archive\n\n"
             "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
             "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
             "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n",
             encoding="utf-8",
         )
-        (repo / "docs" / "architecture" / "blueprints" / "system" / "harness-product-boundary.puml").write_text(
+        (repo / "architecture" / "blueprints" / "system" / "harness-product-boundary.puml").write_text(
             "@startuml\n@enduml\n",
             encoding="utf-8",
         )
-        (repo / "docs" / "architecture" / "blueprints" / "system" / "harness-product-boundary.md").write_text(
+        (repo / "architecture" / "blueprints" / "system" / "harness-product-boundary.md").write_text(
             "---\nblueprint_type: system\nstatus: active\neffective_specs:\n  - contracts/layer_boundary.contract.md\nreplaced_by: \"\"\n---\n",
             encoding="utf-8",
         )
-        (repo / "docs" / "architecture" / "blueprints" / "decisions" / "freeze-runtime-boundary.puml").write_text(
+        (repo / "architecture" / "blueprints" / "decisions" / "freeze-runtime-boundary.puml").write_text(
             "@startuml\n@enduml\n",
             encoding="utf-8",
         )
-        (repo / "docs" / "architecture" / "blueprints" / "decisions" / "freeze-runtime-boundary.md").write_text(
-            "---\nblueprint_type: decision\nstatus: active\ncreated_from_task: COLLAB-023\neffective_specs:\n  - governance/harness_workflow.policy.md\nvalid_for_task: COLLAB-023\nreplaced_by: \"\"\nsuperseded_reason: \"\"\n---\n",
+        (repo / "architecture" / "blueprints" / "decisions" / "freeze-runtime-boundary.md").write_text(
+            "---\nblueprint_type: decision\nstatus: active\ncreated_from_task: COLLAB-023\neffective_specs:\n  - governance/policies/harness_workflow.policy.md\nvalid_for_task: COLLAB-023\nreplaced_by: \"\"\nsuperseded_reason: \"\"\n---\n",
             encoding="utf-8",
         )
 
@@ -168,7 +168,7 @@ class GovernanceQualityTest(unittest.TestCase):
             "allowed_next_states": [],
             "evidence_refs": [],
             "blocking_issues": [],
-            "affected_specs": ["governance/harness_workflow.policy.md"],
+            "affected_specs": ["governance/policies/harness_workflow.policy.md"],
             "archived": archived,
             "acceptance_status": acceptance_status,
             "updated_at": "2026-04-07T00:00:00+00:00",
@@ -192,11 +192,11 @@ class GovernanceQualityTest(unittest.TestCase):
             repo = Path(tmp)
             self.write_common_files(repo)
             self.patch_repo(repo)
-            (repo / "docs" / "memory" / "short_term" / "task_board.md").write_text(
+            (repo / "governance" / "records" / "short_term" / "task_board.md").write_text(
                 "# Task Board\n\n"
                 "| task_id | title | owner_agent | affected_specs | status | acceptance | blockers |\n"
                 "| --- | --- | --- | --- | --- | --- | --- |\n"
-                "| COLLAB-013 | hard cutover | coding_agent | governance/harness_workflow.policy.md | ready_for_impl | none | none |\n",
+                "| COLLAB-013 | hard cutover | coding_agent | governance/policies/harness_workflow.policy.md | ready_for_impl | none | none |\n",
                 encoding="utf-8",
             )
 
@@ -218,7 +218,7 @@ class GovernanceQualityTest(unittest.TestCase):
                                 "status": "active",
                                 "kind": "architecture",
                                 "allowed_specs": ["contracts/layer_boundary.contract.md"],
-                                "eval_dataset": "eval/agent_workflow/missing_architecture_eval",
+                                "eval_dataset": "harness/eval/agent_workflow/missing_architecture_eval",
                             }
                         },
                     }
@@ -237,12 +237,12 @@ class GovernanceQualityTest(unittest.TestCase):
             self.write_common_files(repo)
             self.patch_repo(repo)
             self.write_runtime_task(repo, "COLLAB-013", phase="implementation", owner="coding_agent")
-            (repo / "docs" / "memory" / "working" / "current_focus.md").write_text(
+            (repo / "governance" / "records" / "working" / "current_focus.md").write_text(
                 "# Current Focus\n\n"
                 "## Current Phase\n- `verification`\n\n"
                 "## In Progress\n- `COLLAB-013`: governance drift\n\n"
                 "## Current Blockers\n- none\n\n"
-                "## Active Specs\n- `governance/harness_workflow.policy.md`\n\n"
+                "## Active Specs\n- `governance/policies/harness_workflow.policy.md`\n\n"
                 "## Next Acceptance Target\n- `COLLAB-013`: governance drift\n\n"
                 "## Next Agent\n- `testing_agent`\n",
                 encoding="utf-8",
@@ -267,12 +267,12 @@ class GovernanceQualityTest(unittest.TestCase):
                 acceptance_status="done",
                 event_names=["init_task", "close_task"],
             )
-            (repo / "docs" / "traceability" / "task_archive.md").write_text(
+            (repo / "governance" / "records" / "task_archive.md").write_text(
                 "# Task Archive\n\n"
                 "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
                 "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
                 "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n"
-                "| COLLAB-013 | hard cutover | project-manager | `governance/harness_workflow.policy.md` | done | archived | `python3 scripts/check_quality.py --report-json` |\n",
+                "| COLLAB-013 | hard cutover | project-manager | `governance/policies/harness_workflow.policy.md` | done | archived | `python3 scripts/check_quality.py --report-json` |\n",
                 encoding="utf-8",
             )
 
@@ -285,12 +285,12 @@ class GovernanceQualityTest(unittest.TestCase):
             repo = Path(tmp)
             self.write_common_files(repo)
             self.patch_repo(repo)
-            (repo / "docs" / "traceability" / "task_archive.md").write_text(
+            (repo / "governance" / "records" / "task_archive.md").write_text(
                 "# Task Archive\n\n"
                 "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
                 "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
                 "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n"
-                "| COLLAB-012 | legacy task | project-manager | `governance/harness_workflow.policy.md` | done | archived | `python3 scripts/check_quality.py --report-json` |\n",
+                "| COLLAB-012 | legacy task | project-manager | `governance/policies/harness_workflow.policy.md` | done | archived | `python3 scripts/check_quality.py --report-json` |\n",
                 encoding="utf-8",
             )
 
@@ -317,12 +317,12 @@ class GovernanceQualityTest(unittest.TestCase):
                 json.dumps({"task_id": "COLLAB-013", "compacted_at": "2026-04-07T00:00:00+00:00"}) + "\n",
                 encoding="utf-8",
             )
-            (repo / "docs" / "traceability" / "task_archive.md").write_text(
+            (repo / "governance" / "records" / "task_archive.md").write_text(
                 "# Task Archive\n\n"
                 "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
                 "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
                 "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n"
-                "| COLLAB-013 | hard cutover | project-manager | `governance/harness_workflow.policy.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
+                "| COLLAB-013 | hard cutover | project-manager | `governance/policies/harness_workflow.policy.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
                 encoding="utf-8",
             )
             result = check_quality.check_runtime_archive_consistency()
@@ -343,12 +343,12 @@ class GovernanceQualityTest(unittest.TestCase):
                 event_names=["init_task", "close_task", "archive_task", "compact_runtime"],
                 retention_mode="compacted",
             )
-            (repo / "docs" / "traceability" / "task_archive.md").write_text(
+            (repo / "governance" / "records" / "task_archive.md").write_text(
                 "# Task Archive\n\n"
                 "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
                 "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
                 "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n"
-                "| COLLAB-013 | hard cutover | project-manager | `governance/harness_workflow.policy.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
+                "| COLLAB-013 | hard cutover | project-manager | `governance/policies/harness_workflow.policy.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
                 encoding="utf-8",
             )
             result = check_quality.check_runtime_archive_consistency()
@@ -377,12 +377,12 @@ class GovernanceQualityTest(unittest.TestCase):
             )
             (task_root / "artifacts").mkdir()
             (task_root / "artifacts" / "handoff.acceptance.json").write_text("{}", encoding="utf-8")
-            (repo / "docs" / "traceability" / "task_archive.md").write_text(
+            (repo / "governance" / "records" / "task_archive.md").write_text(
                 "# Task Archive\n\n"
                 "Record tasks after they are marked `done`, logged in `agent_activity_log.md`, and no longer needed in short-term memory.\n\n\n"
                 "| task_id | title | owner_agent | affected_specs | status | acceptance | evidence |\n"
                 "| ---------- | ---------- | ---------- | ---------- | ---------- | ---------- | ---------- |\n"
-                "| COLLAB-013 | hard cutover | project-manager | `governance/harness_workflow.policy.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
+                "| COLLAB-013 | hard cutover | project-manager | `governance/policies/harness_workflow.policy.md` | done | compacted | `python3 scripts/check_quality.py --report-json` |\n",
                 encoding="utf-8",
             )
             result = check_quality.check_runtime_archive_consistency()
@@ -403,9 +403,9 @@ class GovernanceQualityTest(unittest.TestCase):
             repo = Path(tmp)
             self.write_common_files(repo)
             self.patch_repo(repo)
-            inactive_md = repo / "docs" / "architecture" / "blueprints" / "decisions" / "freeze-runtime-boundary.md"
+            inactive_md = repo / "architecture" / "blueprints" / "decisions" / "freeze-runtime-boundary.md"
             inactive_md.write_text(
-                "---\nblueprint_type: decision\nstatus: superseded\ncreated_from_task: COLLAB-023\neffective_specs:\n  - governance/harness_workflow.policy.md\nvalid_for_task: COLLAB-023\nreplaced_by: docs/architecture/blueprints/system/harness-product-boundary.md\nsuperseded_reason: replaced by stable system blueprint\n---\n",
+                "---\nblueprint_type: decision\nstatus: superseded\ncreated_from_task: COLLAB-023\neffective_specs:\n  - governance/policies/harness_workflow.policy.md\nvalid_for_task: COLLAB-023\nreplaced_by: architecture/blueprints/system/harness-product-boundary.md\nsuperseded_reason: replaced by stable system blueprint\n---\n",
                 encoding="utf-8",
             )
             task_root = repo / "harness" / "runtime" / "tasks" / "COLLAB-023" / "artifacts"
@@ -417,7 +417,7 @@ class GovernanceQualityTest(unittest.TestCase):
                         "phase": "contract_freeze",
                         "from_agent": "architecture-expert",
                         "requested_by": "project-manager",
-                        "relevant_specs": ["governance/harness_workflow.policy.md"],
+                        "relevant_specs": ["governance/policies/harness_workflow.policy.md"],
                         "problem_statement": "freeze runtime boundary",
                         "boundary_decisions": ["harness owns orchestration"],
                         "dependency_direction": ["product does not depend on runtime"],
@@ -427,8 +427,8 @@ class GovernanceQualityTest(unittest.TestCase):
                         "forbidden_shortcuts": [],
                         "tradeoffs": [],
                         "blueprint_refs": [
-                            "docs/architecture/blueprints/decisions/freeze-runtime-boundary.puml",
-                            "docs/architecture/blueprints/decisions/freeze-runtime-boundary.md"
+                            "architecture/blueprints/decisions/freeze-runtime-boundary.puml",
+                            "architecture/blueprints/decisions/freeze-runtime-boundary.md"
                         ],
                         "supporting_evidence_refs": [],
                         "supersedes_freeze_refs": [],

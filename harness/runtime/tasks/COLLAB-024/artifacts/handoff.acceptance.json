@@ -1,0 +1,24 @@
+{
+  "task_id": "COLLAB-024",
+  "phase": "acceptance",
+  "from_agent": "project-manager",
+  "to_agent": "none",
+  "summary": "Accepted the document and asset reorganization: canonical authority roots now live under architecture/blueprints, governance/policies, governance/records, harness/eval, and harness/runtime; tooling, guides, tests, and historical runtime references were rewritten to the new paths without quality-gate regressions.",
+  "relevant_specs": [
+    "governance/policies/harness_product_boundary.policy.md"
+  ],
+  "evidence_refs": [
+    "architecture/blueprints/system/asset-authority-boundary.puml",
+    "architecture/blueprints/system/asset-authority-boundary.md",
+    "python3 -m unittest harness.tests.test_agents_runtime harness.tests.test_harness_cli scripts.tests.test_governance_quality tools.tests.test_cli_tools",
+    "python3 tools/traceability-cli/traceability_cli.py status --refresh",
+    "python3 tools/traceability-cli/traceability_cli.py compliance --refresh",
+    "python3 scripts/render_project_dashboard.py",
+    "python3 scripts/check_quality.py --report-json"
+  ],
+  "blocking_issues": [],
+  "recommended_actions": [
+    "Archive task when short-term memory can be cleared."
+  ],
+  "architecture_freeze_ref": "harness/runtime/tasks/COLLAB-024/artifacts/architecture_freeze.json"
+}

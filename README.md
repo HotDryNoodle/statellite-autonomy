@@ -5,14 +5,16 @@ Contract-driven satellite autonomy engineering workspace with a harness control 
 ## Repository Layout
 
 - `contracts/`: contract source of truth
-- `docs/`: architecture, memory, toolchain, and governance docs
+- `architecture/blueprints/`: canonical architecture freezes and diagrams
+- `governance/policies/`: process and orchestration rules
+- `governance/records/`: synchronized working state and long-term governance records
+- `docs/`: guides, indexes, and reading material only
 - `skills/`: maintained agent roles and workflows
 - `.agents/skills`: Codex project-level discovery path for the maintained `skills/` inventory
-- `harness/`: orchestration artifacts, schemas, templates, and runtime helpers
+- `harness/`: orchestration artifacts, workflow eval fixtures, schemas, templates, and runtime helpers
 - `product/`: implementation and verification trees
 - `tools/`: local toolchain and traceability CLIs
-- `docs/traceability/`: governance docs
-- `docs/_generated/traceability/`: generated evidence
+- `docs/_generated/traceability/`: generated, non-tracked evidence outputs
 
 ## Quick Start
 

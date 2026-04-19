@@ -1,0 +1,39 @@
+{
+  "task_id": "COLLAB-024",
+  "phase": "contract_freeze",
+  "from_agent": "architecture-expert",
+  "requested_by": "project-manager",
+  "relevant_specs": [
+    "governance/policies/harness_product_boundary.policy.md"
+  ],
+  "problem_statement": "The repository currently mixes authority assets, governance mirrors, workflow eval fixtures, and reading guides across overlapping paths, creating duplicate canonical sources and ambiguous read chains.",
+  "boundary_decisions": [
+    "Promote architecture/blueprints, governance/policies, governance/records, harness/runtime, harness/eval, eval/domains, and docs as the only canonical asset roots for blueprint, policy, record, runtime, workflow eval, domain eval, and guide concerns respectively.",
+    "Remove docs/memory and docs/traceability from the default authority chain; keep docs as guide-only and prohibit duplicate tracked mirrors."
+  ],
+  "dependency_direction": [
+    "Harness runtime and workflow tooling may reference governance records and blueprints, but authority assets must not depend on docs guide paths."
+  ],
+  "interface_freeze_points": [
+    "All repo-local CLIs, tests, quality gates, and runtime artifacts must accept only the new canonical paths after migration."
+  ],
+  "ownership_lifecycle_constraints": [
+    "Project-manager owns the reorg flow; architecture freeze constrains path ownership before coding and traceability work updates the synchronized governance views."
+  ],
+  "nfr_constraints": [
+    "The repo must keep one canonical path per asset class and pass quality gates without long-term dual-write compatibility."
+  ],
+  "forbidden_shortcuts": [
+    "Do not preserve tracked duplicate copies under docs for convenience after the new canonical paths exist."
+  ],
+  "tradeoffs": [
+    "A one-time full history rewrite is preferred over stable dual-path compatibility because ambiguous canonical ownership is the root defect."
+  ],
+  "blueprint_refs": [
+    "architecture/blueprints/system/asset-authority-boundary.puml",
+    "architecture/blueprints/system/asset-authority-boundary.md"
+  ],
+  "supporting_evidence_refs": [],
+  "supersedes_freeze_refs": [],
+  "notes": ""
+}

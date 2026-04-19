@@ -1,0 +1,26 @@
+{
+  "task_id": "EVAL-BENCH-001",
+  "goal": "exercise benchmark evaluator handoff for acceptance evidence review",
+  "expected_agents": [
+    "project_manager_agent",
+    "testing_agent",
+    "eval_agent"
+  ],
+  "trigger_conditions": [
+    "verification evidence ready",
+    "traceability closure complete",
+    "acceptance decision pending"
+  ],
+  "expected_outputs": {
+    "artifact_type": "evaluation_summary",
+    "required_inputs": [
+      "verification_report",
+      "traceability_report",
+      "decision_log_refs"
+    ],
+    "required_decisions": [
+      "acceptance recommendation",
+      "residual risk summary"
+    ]
+  }
+}

@@ -7,19 +7,19 @@ This file is the global entrypoint for agent collaboration in this repository.
 Load context in this order:
 
 1. Relevant role skill from `.agents/skills/`
-2. `docs/memory/working/current_focus.md`
-3. `docs/memory/short_term/task_board.md`
-4. `docs/memory/short_term/active_context.md`
-5. `docs/traceability/known_limitations.md`
-6. `docs/traceability/scope_to_spec.md`
-7. Relevant product `contracts/*.contract.md` and, when needed, relevant `governance/*.policy.md`
+2. `governance/records/working/current_focus.md`
+3. `governance/records/short_term/task_board.md`
+4. `governance/records/short_term/active_context.md`
+5. `governance/records/known_limitations.md`
+6. `governance/records/scope_to_spec.md`
+7. Relevant product `contracts/*.contract.md` and, when needed, relevant `governance/policies/*.policy.md`
 
 Load only when needed:
 
-- `docs/architecture/agent-collaboration.md`: lifecycle, handoff, control-plane rules
-- `docs/architecture/harness_product_split.md`: structure, orchestration, toolchain boundaries
-- `docs/traceability/decision_log.md`: frozen constraints or prior decisions
-- `docs/traceability/agent_activity_log.md`: recent execution history
+- `docs/guides/agent-collaboration.md`: lifecycle, handoff, control-plane rules
+- `docs/guides/harness_product_split.md`: structure, orchestration, toolchain boundaries
+- `governance/records/decision_log.md`: frozen constraints or prior decisions
+- `governance/records/agent_activity_log.md`: recent execution history
 
 ## Workflow
 
@@ -45,7 +45,7 @@ Task-specific rules belong in skills or references, not in `AGENTS.md`.
 - Start tasks through `python3 harness/orchestrator/harness_cli.py pm-workflow ...`.
 - Advance phases through `advance` or `pm-workflow`.
 - Close accepted tasks through `close-task` and `archive-task`.
-- Treat `docs/memory/*`, `docs/traceability/agent_activity_log.md`, and `docs/traceability/task_archive.md` as harness-synchronized views; use `sync-governance` only for repair.
+- Treat `governance/records/*` as harness-synchronized views; use `sync-governance` only for repair.
 - Keep `docs/_generated/` out of the default read chain.
 
 ## Approved Entrypoints
@@ -63,6 +63,6 @@ Detailed PM command templates live in `skills/project-manager/references/control
 ## Task Expectations
 
 - Every task must leave current focus, task board, active context, activity log, and relevant evidence updated through the harness path.
-- Update `docs/traceability/decision_log.md` only when a new constraint is frozen.
+- Update `governance/records/decision_log.md` only when a new constraint is frozen.
 - Do not implement behavior outside frozen product contract or governance policy scope; update scope docs and specs first when the boundary changes.
 - If the task includes commit or publish work, load `commit-message-policy` before preparing the commit message.

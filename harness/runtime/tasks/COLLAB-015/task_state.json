@@ -19,8 +19,8 @@
   "current_artifact_ref": "harness/runtime/tasks/COLLAB-015/artifacts/handoff.acceptance.json",
   "pending_approvals": [],
   "affected_specs": [
-    "governance/harness_workflow.policy.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/policies/harness_workflow.policy.md",
+    "governance/policies/harness_product_boundary.policy.md"
   ],
   "archived": true,
   "updated_at": "2026-04-07T09:47:05.504509+00:00",
@@ -28,5 +28,5 @@
   "handoff_ref": "harness/runtime/tasks/COLLAB-015/artifacts/handoff.acceptance.json",
   "acceptance_status": "done",
   "acceptance_summary": "implemented tracked compact proof retention, compact-runtime, and compacted archive quality gates",
-  "archive_ref": "docs/traceability/task_archive.md"
+  "archive_ref": "governance/records/task_archive.md"
 }

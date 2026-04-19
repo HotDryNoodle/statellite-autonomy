@@ -1,0 +1,19 @@
+{
+  "task_id": "COLLAB-024",
+  "phase": "implementation",
+  "from_agent": "project-manager",
+  "to_agent": "coding_agent",
+  "summary": "Freeze the target asset taxonomy and prepare implementation handoff for the repo-wide migration.",
+  "relevant_specs": [
+    "governance/policies/harness_product_boundary.policy.md"
+  ],
+  "evidence_refs": [
+    "architecture/blueprints/system/asset-authority-boundary.puml",
+    "architecture/blueprints/system/asset-authority-boundary.md"
+  ],
+  "blocking_issues": [],
+  "recommended_actions": [
+    "Proceed with implementation against the frozen contracts and current task brief."
+  ],
+  "architecture_freeze_ref": "harness/runtime/tasks/COLLAB-024/artifacts/architecture_freeze.json"
+}

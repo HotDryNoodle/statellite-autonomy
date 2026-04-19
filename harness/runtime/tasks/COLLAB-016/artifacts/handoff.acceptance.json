@@ -6,7 +6,7 @@
   "summary": "Retired the repo-local pppar-expert skill definition, moved PPP reference notes to docs/domain/pppar, and updated active contracts/configs to use the global pride-pppar-expert skill.",
   "relevant_specs": [
     "contracts/ppp_family.contract.md",
-    "governance/harness_product_boundary.policy.md"
+    "governance/policies/harness_product_boundary.policy.md"
   ],
   "evidence_refs": [],
   "blocking_issues": [],
