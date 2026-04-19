@@ -14,15 +14,15 @@ import time
 from pathlib import Path
 from typing import Any
 
-from knowledge_ops import KnowledgeError, build_status as build_knowledge_status
-from knowledge_ops import read_note as read_knowledge_note
-from knowledge_ops import search_notes as search_knowledge_notes
+from meson_knowledge_ops import KnowledgeError, build_status as build_knowledge_status
+from meson_knowledge_ops import read_note as read_knowledge_note
+from meson_knowledge_ops import search_notes as search_knowledge_notes
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BUILD_DIR = REPO_ROOT / "builddir"
 TRACE_OUTPUT_DIR = REPO_ROOT / "docs" / "_generated" / "traceability"
 EVAL_DOMAINS_DIR = REPO_ROOT / "eval" / "domains"
-CLI_PATH = "python3 tools/nav-toolchain-cli/toolchain_cli.py"
+CLI_PATH = "python3 tools/meson-cli/meson_cli.py"
 
 
 class HelpFormatter(argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter):
@@ -596,7 +596,7 @@ def dry_run_eval_command(args: argparse.Namespace, domain: str, command_name: st
         ]
     elif execution_mode == "pppar_eval_results":
         commands = [
-            ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "eval", "--domain", domain, "--report-path", str(report)],
+            ["python3", "tools/meson-cli/meson_cli.py", "eval", "--domain", domain, "--report-path", str(report)],
             ["bash", "-lc", "source /home/hotdry/projects/PRIDE-PPPAR/toolchain/env.sh && /home/hotdry/projects/PRIDE-PPPAR/toolchain/bin/pdp3 -m L -cfg <scenario-config> <observation-file>"],
         ]
         notes = [
@@ -605,7 +605,7 @@ def dry_run_eval_command(args: argparse.Namespace, domain: str, command_name: st
             "Use --yes to acknowledge overwriting an existing report file.",
         ]
     else:
-        commands = [["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "eval", "--domain", domain, "--report-path", str(report)]]
+        commands = [["python3", "tools/meson-cli/meson_cli.py", "eval", "--domain", domain, "--report-path", str(report)]]
         notes = [
             f"Domain {domain} is governance-only; runtime execution currently resolves to a blocked verdict.",
             "Use --yes to acknowledge overwriting an existing report file.",
@@ -993,7 +993,7 @@ def make_parser() -> argparse.ArgumentParser:
         epilog=(
             "Examples:\n"
             f"  {CLI_PATH} build --reconfigure\n"
-            f"  {CLI_PATH} build --cross-file tools/nav-toolchain-cli/config/linux.ini --native-file tools/nav-toolchain-cli/config/linux.ini\n"
+            f"  {CLI_PATH} build --cross-file tools/meson-cli/config/linux.ini --native-file tools/meson-cli/config/linux.ini\n"
             f"  {CLI_PATH} build --dry-run"
         ),
         formatter_class=HelpFormatter,

@@ -83,7 +83,7 @@
 
 ## 2026-04-03 Repo-Local CLI First Tooling
 
-- `tools/nav-toolchain-cli/` 与 `tools/traceability-cli/` 成为仓库内唯一受支持的工程工具入口；原 `*-mcp` 目录、`server.py` 包装和 `scripts/run_uv_mcp.sh` 不再维护。
+- `tools/meson-cli/` 与 `tools/traceability-cli/` 成为仓库内唯一受支持的工程工具入口；原 `*-mcp` 目录、`server.py` 包装和 `scripts/run_uv_mcp.sh` 不再维护。
 - side-effectful CLI 子命令必须至少提供 `--dry-run` 预演能力；写报告或生成产物的入口应提供显式确认开关。
 - 顶层与子命令 `--help` 必须包含可直接复制的 `Examples`，错误输出必须带可执行示例或下一步提示。
 - `traceability-cli` 的 `status` / `query-clause` 默认只读取现有产物；需要重生成时通过 `--refresh` 显式触发。
@@ -98,7 +98,7 @@
 
 ## 2026-04-07 CLI-Only Obsidian Expert Bridge And PPP Family V1
 
-- `expert-system` Obsidian vault 只能通过 repo-local `toolchain_cli.py knowledge ...` wrapper 访问；不得直接读取或写入 vault 文档。
+- `expert-system` Obsidian vault 只能通过 repo-local `meson_cli.py knowledge ...` wrapper 访问；不得直接读取或写入 vault 文档。
 - fresh expert knowledge lookup 必须要求 Obsidian app 已在本机运行；若运行门禁未打开，harness 直接阻断而不是绕过或静默降级。
 - `pppar_expert_agent` 的 session 命名空间冻结为 `expert/<task_id>/pppar_expert_agent`；不得与 `coding/`、`testing/`、`eval/` 会话复用或交叉 resume。
 - `contracts/ppp_family.contract.md` 从占位版升级为 v1：PRIDE-PPPAR 仍是权威实现源，Obsidian supplemental knowledge 只能增强解释，不能覆盖 PRIDE 证据。
@@ -131,7 +131,7 @@
 ## 2026-04-10 Eval Owner Governance And Unified Eval Protocol
 
 - `benchmark-evaluator` 升级为 Eval Owner：负责 `eval/` domain/scenario/baseline 分层治理、baseline 生命周期、统一裁决语义与 acceptance-ready verdict；不负责系统架构、算法实现或 PM 优先级决策。
-- `python3 tools/nav-toolchain-cli/toolchain_cli.py eval` 冻结为统一评测入口；`benchmark` 仅保留为 time domain 兼容别名。
+- `python3 tools/meson-cli/meson_cli.py eval` 冻结为统一评测入口；`benchmark` 仅保留为 time domain 兼容别名。
 - PPPAR LEO 评测资产进入统一 `eval/domains/pppar/` 协议，但在缺少可执行 adapter 前必须输出 `blocked` verdict，而不是伪造 pass/fail。
 
 ## 2026-04-10 Eval Owner Vs Traceability Boundary

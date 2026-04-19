@@ -1,12 +1,12 @@
 [project]
-name = "statellite-plantuml-cli"
+name = "plantuml-cli"
 version = "0.1.0"
 description = "PlantUML rendering and lint helpers for statellite-autonomy-plugin"
 requires-python = ">=3.11"
 dependencies = []
 
 [project.scripts]
-statellite-plantuml = "plantuml_cli.cli:main"
+plantuml-cli = "plantuml_cli.cli:main"
 
 [build-system]
 requires = ["setuptools>=68"]

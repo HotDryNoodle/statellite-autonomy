@@ -1,9 +1,9 @@
 # Build Entrypoints
 
-- `python3 tools/nav-toolchain-cli/toolchain_cli.py build`
-- `./scripts/nav-toolchain build`
-- `UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/nav-toolchain-cli python tools/nav-toolchain-cli/toolchain_cli.py build`
-- `python3 tools/nav-toolchain-cli/toolchain_cli.py build --cross-file <path> --native-file <path>`
+- `python3 tools/meson-cli/meson_cli.py build`
+- `./scripts/meson-cli build`
+- `UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/meson-cli python tools/meson-cli/meson_cli.py build`
+- `python3 tools/meson-cli/meson_cli.py build --cross-file <path> --native-file <path>`
 - `meson setup builddir`
 - `meson compile -C builddir`
 

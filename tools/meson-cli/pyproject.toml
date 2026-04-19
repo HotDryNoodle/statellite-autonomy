@@ -1,0 +1,16 @@
+[project]
+name = "meson-cli"
+version = "0.1.0"
+description = "Local Meson toolchain CLI for statellite-autonomy-plugin"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+meson-cli = "meson_cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["meson_cli", "meson_knowledge_ops"]

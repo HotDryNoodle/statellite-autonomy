@@ -20,10 +20,10 @@ Contract-driven satellite autonomy engineering workspace with a harness control 
 ## Quick Start
 
 ```bash
-python3 tools/nav-toolchain-cli/toolchain_cli.py build --reconfigure
-python3 tools/nav-toolchain-cli/toolchain_cli.py test --no-rebuild
-python3 tools/nav-toolchain-cli/toolchain_cli.py traceability --yes
-python3 tools/nav-toolchain-cli/toolchain_cli.py eval --domain time --report-path eval/reports/time_benchmark_report.json --yes
+python3 tools/meson-cli/meson_cli.py build --reconfigure
+python3 tools/meson-cli/meson_cli.py test --no-rebuild
+python3 tools/meson-cli/meson_cli.py traceability --yes
+python3 tools/meson-cli/meson_cli.py eval --domain time --report-path eval/reports/time_benchmark_report.json --yes
 python3 tools/traceability-cli/traceability_cli.py status
 python3 scripts/check_quality.py --report-json
 ```
@@ -35,20 +35,20 @@ python3 scripts/check_quality.py --report-json
 ```bash
 uv sync --group site --no-default-groups
 
-uv run --group site --no-default-groups statellite-site build
-uv run --group site --no-default-groups statellite-site start
+uv run --group site --no-default-groups site-cli build
+uv run --group site --no-default-groups site-cli start
 # 停止后台预览服务
-uv run --group site --no-default-groups statellite-site stop
+uv run --group site --no-default-groups site-cli stop
 ```
 
 PlantUML rendering is server-only. You can point at an existing server explicitly:
 
 ```bash
 PLANTUML_SERVER_URL=http://127.0.0.1:8080 \
-    uv run --group site --no-default-groups statellite-site build
+    uv run --group site --no-default-groups site-cli build
 ```
 
-If no `PLANTUML_SERVER_URL` is provided, `statellite-plantuml` / `statellite-site build` first try to discover a running `plantuml-server` container and only then start a temporary local container. `uv run --group site --no-default-groups statellite-site serve` keeps the live-reload preview in the foreground; `statellite-site open` serves the already built tree in the foreground; `statellite-site start` / `stop` manage a background preview server for `site/_generated`. PlantUML lint is available via `uv run --group plantuml --no-default-groups statellite-plantuml lint --input <file.puml>`. CI publishes `site/_generated` to GitHub Pages via `.github/workflows/pages.yml`. See `site/README.md` for the full design.
+If no `PLANTUML_SERVER_URL` is provided, `plantuml-cli` / `site-cli build` first try to discover a running `plantuml-server` container and only then start a temporary local container. `uv run --group site --no-default-groups site-cli serve` keeps the live-reload preview in the foreground; `site-cli open` serves the already built tree in the foreground; `site-cli start` / `stop` manage a background preview server for `site/_generated`. PlantUML lint is available via `uv run --group plantuml --no-default-groups plantuml-cli lint --input <file.puml>`. CI publishes `site/_generated` to GitHub Pages via `.github/workflows/pages.yml`. See `site/README.md` for the full design.
 
 ## Collaboration Entry
 

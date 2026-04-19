@@ -22,41 +22,41 @@
 ```bash
 uv sync --group site --no-default-groups
 
-uv run --group site --no-default-groups statellite-site build
-uv run --group site --no-default-groups statellite-site start
+uv run --group site --no-default-groups site-cli build
+uv run --group site --no-default-groups site-cli start
 ```
 
 停止后台预览服务：
 
 ```bash
-uv run --group site --no-default-groups statellite-site stop
+uv run --group site --no-default-groups site-cli stop
 ```
 
 ### 实时预览
 
 ```bash
-uv run --group site --no-default-groups statellite-site serve
+uv run --group site --no-default-groups site-cli serve
 ```
 
 ### 预览最近一次构建的静态产物
 
-在已执行 `statellite-site build` 且存在 `site/_generated/index.html` 时：
+在已执行 `site-cli build` 且存在 `site/_generated/index.html` 时：
 
 ```bash
-uv run --group site --no-default-groups statellite-site open
+uv run --group site --no-default-groups site-cli open
 ```
 
-默认在 `127.0.0.1:8765` 提供静态文件并打开浏览器；仅打印 URL 时用 `statellite-site open --no-browser`。
+默认在 `127.0.0.1:8765` 提供静态文件并打开浏览器；仅打印 URL 时用 `site-cli open --no-browser`。
 
 ### PlantUML server 选择
 
 ```bash
 # 显式指定已有 server
 PLANTUML_SERVER_URL=http://127.0.0.1:8080 \
-    uv run --group site --no-default-groups statellite-site build
+    uv run --group site --no-default-groups site-cli build
 ```
 
-若未提供 `PLANTUML_SERVER_URL`，`statellite-site build` 与 `statellite-plantuml` 会先尝试从现有 `podman` / `docker` 的 `plantuml-server` 容器推断 URL；若仍找不到，再临时拉起容器，成功或失败后都自动清理。
+若未提供 `PLANTUML_SERVER_URL`，`site-cli build` 与 `plantuml-cli` 会先尝试从现有 `podman` / `docker` 的 `plantuml-server` 容器推断 URL；若仍找不到，再临时拉起容器，成功或失败后都自动清理。
 
 ## CI / GitHub Pages
 
@@ -64,7 +64,7 @@ PLANTUML_SERVER_URL=http://127.0.0.1:8080 \
 
 1. 启动 job 级 `plantuml-server` service container，并执行 `uv sync --group site --no-default-groups`。
 2. 刷新 traceability / compliance / dashboard 产物。
-3. 以 `PLANTUML_SERVER_URL=http://127.0.0.1:8080` 执行 `uv run --group site --no-default-groups statellite-site build`。
+3. 以 `PLANTUML_SERVER_URL=http://127.0.0.1:8080` 执行 `uv run --group site --no-default-groups site-cli build`。
 4. 通过 `actions/upload-pages-artifact` + `actions/deploy-pages` 发布 `site/_generated`。
 
 在仓库 **Settings → Pages** 中将 **Build and deployment** 设为 **GitHub Actions**。

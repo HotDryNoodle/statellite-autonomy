@@ -70,7 +70,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser(
         "stop",
-        help="Stop the background HTTP preview server started by `statellite-site start`.",
+        help="Stop the background HTTP preview server started by `site-cli start`.",
     )
     return parser
 
@@ -79,7 +79,7 @@ def _generated_root() -> Path:
     root = build_site.GENERATED_SITE_DIR.resolve()
     index = root / "index.html"
     if not index.is_file():
-        raise RuntimeError(f"no built site at {index}. Run `statellite-site build` first.")
+        raise RuntimeError(f"no built site at {index}. Run `site-cli build` first.")
     return root
 
 

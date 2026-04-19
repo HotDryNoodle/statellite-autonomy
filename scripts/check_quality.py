@@ -37,7 +37,7 @@ from dashboard_common import (
 )
 from harness.agents_runtime.registry import load_expert_registry
 
-TOOLCHAIN = REPO_ROOT / "tools" / "nav-toolchain-cli" / "toolchain_cli.py"
+TOOLCHAIN = REPO_ROOT / "tools" / "meson-cli" / "meson_cli.py"
 TRACEABILITY = REPO_ROOT / "tools" / "traceability-cli" / "traceability_cli.py"
 RENDER_DASHBOARD = REPO_ROOT / "scripts" / "render_project_dashboard.py"
 BASELINE_STATUS = {

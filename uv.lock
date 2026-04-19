@@ -4,9 +4,9 @@ requires-python = ">=3.11"
 
 [manifest]
 members = [
-    "nav-toolchain-cli",
-    "statellite-plantuml-cli",
-    "statellite-site-cli",
+    "meson-cli",
+    "plantuml-cli",
+    "site-cli",
     "statellite-workspace",
     "traceability-cli",
 ]
@@ -288,6 +288,11 @@ wheels = [
 ]
 
 [[package]]
+name = "meson-cli"
+version = "0.1.0"
+source = { editable = "tools/meson-cli" }
+
+[[package]]
 name = "mkdocs"
 version = "1.6.1"
 source = { registry = "https://pypi.org/simple" }
@@ -357,11 +362,6 @@ wheels = [
 ]
 
 [[package]]
-name = "nav-toolchain-cli"
-version = "0.1.0"
-source = { virtual = "tools/nav-toolchain-cli" }
-
-[[package]]
 name = "packaging"
 version = "26.1"
 source = { registry = "https://pypi.org/simple" }
@@ -387,6 +387,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/fa/36/e27608899f9b8d4df
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ef/3c/2c197d226f9ea224a9ab8d197933f9da0ae0aac5b6e0f884e2b8d9c8e9f7/pathspec-1.0.4-py3-none-any.whl", hash = "sha256:fb6ae2fd4e7c921a165808a552060e722767cfa526f99ca5156ed2ce45a5c723", size = 55206, upload-time = "2026-01-27T03:59:45.137Z" },
 ]
+
+[[package]]
+name = "plantuml-cli"
+version = "0.1.0"
+source = { editable = "tools/plantuml-cli" }
 
 [[package]]
 name = "platformdirs"
@@ -539,36 +544,31 @@ wheels = [
 ]
 
 [[package]]
-name = "six"
-version = "1.17.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031, upload-time = "2024-12-04T17:35:28.174Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050, upload-time = "2024-12-04T17:35:26.475Z" },
-]
-
-[[package]]
-name = "statellite-plantuml-cli"
-version = "0.1.0"
-source = { editable = "tools/plantuml-cli" }
-
-[[package]]
-name = "statellite-site-cli"
+name = "site-cli"
 version = "0.1.0"
 source = { editable = "tools/site-cli" }
 dependencies = [
     { name = "mkdocs" },
     { name = "mkdocs-material" },
+    { name = "plantuml-cli" },
     { name = "pymdown-extensions" },
-    { name = "statellite-plantuml-cli" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "mkdocs", specifier = ">=1.6,<2" },
     { name = "mkdocs-material", specifier = ">=9.5,<10" },
+    { name = "plantuml-cli", editable = "tools/plantuml-cli" },
     { name = "pymdown-extensions", specifier = ">=10.12,<11" },
-    { name = "statellite-plantuml-cli", editable = "tools/plantuml-cli" },
+]
+
+[[package]]
+name = "six"
+version = "1.17.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031, upload-time = "2024-12-04T17:35:28.174Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050, upload-time = "2024-12-04T17:35:26.475Z" },
 ]
 
 [[package]]
@@ -581,18 +581,18 @@ dev = [
     { name = "pytest" },
 ]
 plantuml = [
-    { name = "statellite-plantuml-cli" },
+    { name = "plantuml-cli" },
 ]
 site = [
-    { name = "statellite-site-cli" },
+    { name = "site-cli" },
 ]
 
 [package.metadata]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=8.0,<9" }]
-plantuml = [{ name = "statellite-plantuml-cli", editable = "tools/plantuml-cli" }]
-site = [{ name = "statellite-site-cli", editable = "tools/site-cli" }]
+plantuml = [{ name = "plantuml-cli", editable = "tools/plantuml-cli" }]
+site = [{ name = "site-cli", editable = "tools/site-cli" }]
 
 [[package]]
 name = "traceability-cli"

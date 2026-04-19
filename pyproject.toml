@@ -10,10 +10,10 @@ dev = [
   "pytest>=8.0,<9",
 ]
 site = [
-  "statellite-site-cli",
+  "site-cli",
 ]
 plantuml = [
-  "statellite-plantuml-cli",
+  "plantuml-cli",
 ]
 
 [tool.uv]
@@ -21,12 +21,12 @@ package = false
 default-groups = []
 
 [tool.uv.sources]
-statellite-site-cli = { workspace = true }
-statellite-plantuml-cli = { workspace = true }
+site-cli = { workspace = true }
+plantuml-cli = { workspace = true }
 
 [tool.uv.workspace]
 members = [
-  "tools/nav-toolchain-cli",
+  "tools/meson-cli",
   "tools/traceability-cli",
   "tools/site-cli",
   "tools/plantuml-cli",

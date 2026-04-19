@@ -57,7 +57,7 @@ triggers:
 2. 先给总体判断，再指出 2-5 个关键结构问题。
 3. 固化边界、依赖方向、接口语义和运行时约束。
 4. 先产出 `architecture_freeze` artifact，再通过 handoff 把引用发给下游。
-5. 需要图纸时，在 `architecture/blueprints/system/` 或 `architecture/blueprints/decisions/` 冻结主副本，并在提交前运行 `statellite-plantuml lint --input <file.puml>` 确认可解析。
+5. 需要图纸时，在 `architecture/blueprints/system/` 或 `architecture/blueprints/decisions/` 冻结主副本，并在提交前运行 `plantuml-cli lint --input <file.puml>` 确认可解析。
 
 ## Deliverables
 

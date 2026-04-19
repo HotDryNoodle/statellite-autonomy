@@ -6,7 +6,7 @@ depends_on:
   - contract-driven-coding
   - coding-style-rules
 tools:
-  - python3 tools/nav-toolchain-cli/toolchain_cli.py
+  - python3 tools/meson-cli/meson_cli.py
   - python3 tools/traceability-cli/traceability_cli.py
 triggers:
   - implementation
@@ -30,7 +30,7 @@ triggers:
 - 遵守本仓库方法型 skills：
   - `skills/contract-driven-coding/`
   - `skills/coding-style-rules/`
-- 通过仓库内 `nav-toolchain` CLI 做 build / test 验证。
+- 通过仓库内 `meson-cli` CLI 做 build / test 验证。
 - 通过仓库内 `traceability` CLI 检查 ClauseId 到代码证据是否完整。
 
 ## 典型输入
@@ -67,7 +67,7 @@ triggers:
 - 上游：`project-manager`
 - 架构输入：`architecture-expert`
 - 协同：`testing-skill`、`traceability-manager`
-- 工具：`python3 tools/nav-toolchain-cli/toolchain_cli.py`、`python3 tools/traceability-cli/traceability_cli.py`
+- 工具：`python3 tools/meson-cli/meson_cli.py`、`python3 tools/traceability-cli/traceability_cli.py`
 
 ## 触发场景
 
@@ -81,7 +81,7 @@ triggers:
 2. 提取条款清单、失败语义和 test obligation。
 3. 映射 ClauseId 到代码位置。
 4. 编写实现并补 `@contract` 标签。
-5. 用 `nav-toolchain` CLI 做构建验证。
+5. 用 `meson-cli` CLI 做构建验证。
 6. 用 `traceability` CLI 检查 ClauseId 映射是否可被提取。
 
 ## 交付物

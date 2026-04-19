@@ -1,5 +1,5 @@
 [project]
-name = "statellite-site-cli"
+name = "site-cli"
 version = "0.1.0"
 description = "Static site build CLI for statellite-autonomy-plugin"
 requires-python = ">=3.11"
@@ -7,14 +7,14 @@ dependencies = [
   "mkdocs>=1.6,<2",
   "mkdocs-material>=9.5,<10",
   "pymdown-extensions>=10.12,<11",
-  "statellite-plantuml-cli",
+  "plantuml-cli",
 ]
 
 [project.scripts]
-statellite-site = "site_cli.cli:main"
+site-cli = "site_cli.cli:main"
 
 [tool.uv.sources]
-statellite-plantuml-cli = { workspace = true }
+plantuml-cli = { workspace = true }
 
 [build-system]
 requires = ["setuptools>=68"]

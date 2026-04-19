@@ -2,47 +2,47 @@
   "version": "1.0",
   "tools": {
     "build": {
-      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "build"],
+      "command": ["python3", "tools/meson-cli/meson_cli.py", "build"],
       "allowed_params": ["build_dir", "cross_file", "native_file", "reconfigure", "meson_option", "compile_arg", "dry_run", "yes"],
       "artifact_params": []
     },
     "test": {
-      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "test"],
+      "command": ["python3", "tools/meson-cli/meson_cli.py", "test"],
       "allowed_params": ["build_dir", "test_name", "no_rebuild", "cross_file", "native_file", "reconfigure", "meson_option", "dry_run", "yes"],
       "artifact_params": []
     },
     "traceability": {
-      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "traceability"],
+      "command": ["python3", "tools/meson-cli/meson_cli.py", "traceability"],
       "allowed_params": ["output_dir", "dry_run", "yes"],
       "artifact_params": ["output_dir"]
     },
     "benchmark": {
-      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "benchmark"],
+      "command": ["python3", "tools/meson-cli/meson_cli.py", "benchmark"],
       "allowed_params": ["build_dir", "cross_file", "native_file", "manifest", "baseline", "scenario", "report_path", "dry_run", "yes"],
       "artifact_params": ["report_path"]
     },
     "eval": {
-      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "eval"],
+      "command": ["python3", "tools/meson-cli/meson_cli.py", "eval"],
       "allowed_params": ["build_dir", "cross_file", "native_file", "domain", "manifest", "baseline", "scenario", "report_path", "dry_run", "yes"],
       "artifact_params": ["report_path"]
     },
     "status": {
-      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "status"],
+      "command": ["python3", "tools/meson-cli/meson_cli.py", "status"],
       "allowed_params": ["build_dir", "cross_file", "native_file"],
       "artifact_params": []
     },
     "knowledge_status": {
-      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "knowledge", "status"],
+      "command": ["python3", "tools/meson-cli/meson_cli.py", "knowledge", "status"],
       "allowed_params": ["agent"],
       "artifact_params": []
     },
     "knowledge_search": {
-      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "knowledge", "search"],
+      "command": ["python3", "tools/meson-cli/meson_cli.py", "knowledge", "search"],
       "allowed_params": ["agent", "query", "limit"],
       "artifact_params": []
     },
     "knowledge_read": {
-      "command": ["python3", "tools/nav-toolchain-cli/toolchain_cli.py", "knowledge", "read"],
+      "command": ["python3", "tools/meson-cli/meson_cli.py", "knowledge", "read"],
       "allowed_params": ["agent", "note"],
       "artifact_params": []
     }

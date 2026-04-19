@@ -1,8 +1,8 @@
 # Traceability Entrypoints
 
-- `python3 tools/nav-toolchain-cli/toolchain_cli.py traceability --yes`
-- `./scripts/nav-toolchain traceability`
-- `UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/nav-toolchain-cli python tools/nav-toolchain-cli/toolchain_cli.py traceability --yes`
+- `python3 tools/meson-cli/meson_cli.py traceability --yes`
+- `./scripts/meson-cli traceability`
+- `UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/meson-cli python tools/meson-cli/meson_cli.py traceability --yes`
 - `python3 tools/traceability-cli/traceability_cli.py status`
 - `python3 tools/traceability-cli/traceability_cli.py query-clause TimeSys_4_4_4`
 

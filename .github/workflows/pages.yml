@@ -46,7 +46,7 @@ jobs:
       - name: Build static site
         env:
           PLANTUML_SERVER_URL: http://127.0.0.1:8080
-        run: uv run --group site --no-default-groups statellite-site build
+        run: uv run --group site --no-default-groups site-cli build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

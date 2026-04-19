@@ -5,7 +5,7 @@ version: 1.0.0
 depends_on:
   - contract-driven-testing
 tools:
-  - python3 tools/nav-toolchain-cli/toolchain_cli.py
+  - python3 tools/meson-cli/meson_cli.py
   - python3 tools/traceability-cli/traceability_cli.py
 triggers:
   - testing
@@ -63,7 +63,7 @@ triggers:
 - 上游：`project-manager`
 - 架构输入：`architecture-expert`
 - 协同：`coding-skill`、`traceability-manager`
-- 工具：`python3 tools/nav-toolchain-cli/toolchain_cli.py`、`python3 tools/traceability-cli/traceability_cli.py`
+- 工具：`python3 tools/meson-cli/meson_cli.py`、`python3 tools/traceability-cli/traceability_cli.py`
 
 ## 触发场景
 
@@ -77,7 +77,7 @@ triggers:
 2. 抽取 invariants、failure contracts、容差来源。
 3. 设计测试场景和标签。
 4. 实现带 `@verify/@covers` 的 GTest。
-5. 通过 `nav-toolchain` CLI 运行并归档结果。
+5. 通过 `meson-cli` CLI 运行并归档结果。
 6. 调用 `traceability` CLI 确认 verify 与 code 证据闭环。
 
 ## 交付物

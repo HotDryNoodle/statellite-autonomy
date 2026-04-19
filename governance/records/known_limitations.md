@@ -4,7 +4,7 @@
 
 - Navigation / Prediction / Mission Planning 暂无业务实现。
 - `contracts/ppp_family.contract.md` 已升级到 family v1，但 RD-POD 合同仍为占位版本。
-- `nav-toolchain` 和 `traceability` 当前作为仓库内 plain CLI 工具维护，不走 Codex 项目级配置自动加载。
+- `meson-cli` 和 `traceability` 当前作为仓库内 plain CLI 工具维护，不走 Codex 项目级配置自动加载。
 - harness 当前只实现 Agents SDK v1 adapter 骨架、本地 session/backend 规则和 workflow 测试脚手架；尚未接入真实 OpenAI hosted tracing、background mode 或 hosted retrieval。
 - Obsidian expert bridge 当前只对 `pppar_expert_agent` 开放，且依赖本机已有运行中的 Obsidian app。
 - `COLLAB-013` 之前的历史任务仍然视为 legacy docs-only 记录，不回填 committed runtime task records。

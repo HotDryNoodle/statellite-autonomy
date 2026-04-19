@@ -12,7 +12,7 @@
 - 项目 `.agents/skills`
 
 `.agents/skills` 是项目级发现路径，实际维护内容仍放在根 `skills/`。
-`nav-toolchain` 和 `traceability` 两个工具仍然保留在仓库中，但只作为 repo-local CLI 使用，不通过 plugin 或项目级配置暴露给 Codex。
+`meson-cli` 和 `traceability` 两个工具仍然保留在仓库中，但只作为 repo-local CLI 使用，不通过 plugin 或项目级配置暴露给 Codex。
 这样做是为了把默认入口收敛回官方项目模型，并避免额外集成链路直接影响 Codex 启动。
 
 ## 让 Codex 感知并加载
@@ -33,7 +33,7 @@
 
 仓库内仍保留两个 repo-local CLI：
 
-- `tools/nav-toolchain-cli/toolchain_cli.py`
+- `tools/meson-cli/meson_cli.py`
 - `tools/traceability-cli/traceability_cli.py`
 
 默认工作流是手动运行仓库内 CLI，而不是让 Codex 在启动时自动发现任何额外集成。
@@ -49,20 +49,20 @@
 
 仓库内保留的 CLI 入口如下，供人工或脚本显式调用：
 
-- `python3 tools/nav-toolchain-cli/toolchain_cli.py`
+- `python3 tools/meson-cli/meson_cli.py`
 - `python3 tools/traceability-cli/traceability_cli.py`
 
 推荐手动入口：
 
 ```bash
-python3 tools/nav-toolchain-cli/toolchain_cli.py status
-python3 tools/nav-toolchain-cli/toolchain_cli.py build --reconfigure
-python3 tools/nav-toolchain-cli/toolchain_cli.py test --no-rebuild
-python3 tools/nav-toolchain-cli/toolchain_cli.py traceability --yes
-python3 tools/nav-toolchain-cli/toolchain_cli.py eval --domain time --report-path eval/reports/time_benchmark_report.json --yes
-python3 tools/nav-toolchain-cli/toolchain_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes
-./scripts/nav-toolchain build --reconfigure
-UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/nav-toolchain-cli python tools/nav-toolchain-cli/toolchain_cli.py status
+python3 tools/meson-cli/meson_cli.py status
+python3 tools/meson-cli/meson_cli.py build --reconfigure
+python3 tools/meson-cli/meson_cli.py test --no-rebuild
+python3 tools/meson-cli/meson_cli.py traceability --yes
+python3 tools/meson-cli/meson_cli.py eval --domain time --report-path eval/reports/time_benchmark_report.json --yes
+python3 tools/meson-cli/meson_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes
+./scripts/meson-cli build --reconfigure
+UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/meson-cli python tools/meson-cli/meson_cli.py status
 python3 tools/traceability-cli/traceability_cli.py status
 python3 tools/traceability-cli/traceability_cli.py query-clause TimeSys_4_4_4
 ```

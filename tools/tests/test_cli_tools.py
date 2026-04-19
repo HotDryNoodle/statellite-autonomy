@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-TOOLCHAIN = REPO_ROOT / "tools" / "nav-toolchain-cli" / "toolchain_cli.py"
+TOOLCHAIN = REPO_ROOT / "tools" / "meson-cli" / "meson_cli.py"
 TRACEABILITY = REPO_ROOT / "tools" / "traceability-cli" / "traceability_cli.py"
 
 
@@ -99,7 +99,7 @@ class CliToolsTest(unittest.TestCase):
         completed = self.run_cli(TOOLCHAIN, "build", "--help")
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertIn("Examples:", completed.stdout)
-        self.assertIn("toolchain_cli.py build --reconfigure", completed.stdout)
+        self.assertIn("meson_cli.py build --reconfigure", completed.stdout)
 
     def test_toolchain_build_dry_run_is_machine_readable(self) -> None:
         completed = self.run_cli(TOOLCHAIN, "build", "--dry-run")

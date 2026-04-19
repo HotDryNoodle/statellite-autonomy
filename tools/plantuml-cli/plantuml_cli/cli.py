@@ -171,7 +171,7 @@ def managed_server(
     engine = _choose_container_engine()
     port = _pick_free_port()
     url = f"http://{DEFAULT_SERVER_HOST}:{port}"
-    container_name = f"statellite-plantuml-{uuid.uuid4().hex[:8]}"
+    container_name = f"plantuml-cli-{uuid.uuid4().hex[:8]}"
     run_cmd = [
         engine,
         "run",

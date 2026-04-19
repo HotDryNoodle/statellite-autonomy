@@ -6,7 +6,7 @@ depends_on:
   - project-manager
   - traceability-manager
 tools:
-  - python3 tools/nav-toolchain-cli/toolchain_cli.py
+  - python3 tools/meson-cli/meson_cli.py
 triggers:
   - benchmark
   - regression
@@ -26,7 +26,7 @@ triggers:
 ## 核心职责
 
 - 维护 `eval/` 下的 domain / scenario / baseline 分层与变更记录。
-- 通过仓库内 `nav-toolchain` CLI 执行统一 eval / regression 入口。
+- 通过仓库内 `meson-cli` CLI 执行统一 eval / regression 入口。
 - 管理 baseline 冻结、重标定提案与裁决口径。
 - 形成 verdict / risk / attribution，并输出可用于 acceptance 的签字证据。
 
@@ -59,7 +59,7 @@ triggers:
 ## 协作关系
 
 - 接受 `project-manager` 调度
-- 依赖 `python3 tools/nav-toolchain-cli/toolchain_cli.py`
+- 依赖 `python3 tools/meson-cli/meson_cli.py`
 - 与 `traceability-manager` 同步结果
 
 ## 触发场景

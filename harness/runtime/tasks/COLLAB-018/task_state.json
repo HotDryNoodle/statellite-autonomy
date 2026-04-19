@@ -7,9 +7,9 @@
   "allowed_next_states": [],
   "evidence_refs": [
     "python3 -m unittest harness.tests.test_agents_runtime tools.tests.test_cli_tools",
-    "python3 tools/nav-toolchain-cli/toolchain_cli.py eval --domain pppar --report-path /tmp/pppar_eval_report.json --yes",
+    "python3 tools/meson-cli/meson_cli.py eval --domain pppar --report-path /tmp/pppar_eval_report.json --yes",
     "python3 tools/traceability-cli/traceability_cli.py status --refresh",
-    "python3 tools/nav-toolchain-cli/toolchain_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes",
+    "python3 tools/meson-cli/meson_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes",
     "python3 scripts/check_quality.py --report-json"
   ],
   "blocking_issues": [],

@@ -33,7 +33,7 @@
 ## Stable Entrypoints
 
 - 根目录 Meson 入口保持稳定，但只做薄封装并转交 `product/`。
-- `python3 tools/nav-toolchain-cli/toolchain_cli.py`
+- `python3 tools/meson-cli/meson_cli.py`
 - `python3 tools/traceability-cli/traceability_cli.py`
 - `python3 scripts/check_quality.py --report-json`
 

@@ -6,7 +6,7 @@ depends_on:
   - project-manager
 tools:
   - python3 tools/traceability-cli/traceability_cli.py
-  - python3 tools/nav-toolchain-cli/toolchain_cli.py
+  - python3 tools/meson-cli/meson_cli.py
 triggers:
   - traceability
   - governance

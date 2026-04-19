@@ -5,7 +5,7 @@
 - Root entrypoint: `AGENTS.md`
 - Role cards: `.agents/skills/` with content maintained in `skills/`
 - Control plane: `python3 harness/orchestrator/harness_cli.py`
-- Engineering tools: `python3 tools/nav-toolchain-cli/toolchain_cli.py`, `python3 tools/traceability-cli/traceability_cli.py`
+- Engineering tools: `python3 tools/meson-cli/meson_cli.py`, `python3 tools/traceability-cli/traceability_cli.py`
 
 From `COLLAB-013` onward, official tasks must keep `task_state.json` and `events.jsonl` under `harness/runtime/tasks/<task_id>/`.
 
