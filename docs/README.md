@@ -22,3 +22,9 @@
 - `eval/domains/`
 - `harness/runtime/`
 - `harness/eval/`
+
+## Project static site (read-only aggregate)
+
+面向开发者的只读静态站点由 **`site/`**（MkDocs）生成，入口脚本为 `site/scripts/build_site.py`；设计与命令见根目录 `README.md` 中的 **Project Site** 小节与 `site/README.md`。
+
+本仓库**不再**使用基于 Node/VitePress 的 `docs/` 内嵌站点；若文档或 CI 仍提及 VitePress、`.vitepress` 或 `docs/.vitepress/dist`，应视为过时并改为指向 `site/`。

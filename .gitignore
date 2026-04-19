@@ -6,6 +6,7 @@ __pycache__/
 .codex
 docs/_generated/
 eval/reports/
+site/build/
 tools/*/.venv/
 tools/*/__pycache__/
 data/

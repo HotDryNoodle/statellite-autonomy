@@ -1,0 +1,107 @@
+site_name: 卫星自主插件工程
+site_description: 合同驱动的卫星自主工程工作区 — 面向仓库内开发者的只读项目视图。
+site_url: ""
+repo_url: https://github.com/hotdry/statellite-autonomy-plugin
+repo_name: statellite-autonomy-plugin
+edit_uri: ""
+
+docs_dir: build/docs
+site_dir: build/site
+use_directory_urls: true
+strict: true
+
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - content.code.copy
+    - content.tabs.link
+    - search.highlight
+    - search.share
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: deep orange
+      toggle:
+        icon: material/weather-sunny
+        name: 切换至深色模式
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: deep orange
+      toggle:
+        icon: material/weather-night
+        name: 切换至浅色模式
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - admonition
+  - attr_list
+  - def_list
+  - tables
+  - footnotes
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+plugins:
+  - search
+
+extra:
+  generator: false
+
+# Nav 由 site/scripts/build_site.py 在 staging 阶段追加写入本文件的下方。
+# 分隔符：# --- AUTO_NAV_BEGIN ---
+nav:
+  - "首页": index.md
+  - "项目仪表盘": dashboard.md
+  - "产品合同":
+    - "概述": contracts/README.md
+    - "分层边界": contracts/layer_boundary.contract.md
+    - "任务规划": contracts/mission_planning.contract.md
+    - "导航": contracts/navigation.contract.md
+    - "PPP 族": contracts/ppp_family.contract.md
+    - "预测": contracts/prediction.contract.md
+    - "RD-POD 族": contracts/rdpod_family.contract.md
+    - "导航到预测交接": contracts/state_handoff_navigation_to_prediction.contract.md
+    - "时间系统": contracts/time_system.contract.md
+  - "架构蓝图":
+    - "概述": architecture/blueprints/README.md
+    - "系统蓝图":
+      - "资产权威边界": architecture/blueprints/system/asset-authority-boundary.md
+      - "产品与 Harness 边界": architecture/blueprints/system/harness-product-boundary.md
+    - "决策蓝图":
+      - "架构冻结工件生命周期": architecture/blueprints/decisions/architecture-freeze-artifact-lifecycle.md
+  - "Harness 运行时":
+    - "任务摘要": harness/tasks.md
+  - "追溯与合规": traceability/coverage.md
+  - "评测": eval/index.md
+  - "协作指南":
+    - "Agent 协作流程": guides/agent-collaboration.md
+    - "Harness / Product 拆分": guides/harness_product_split.md
+  - "工具链":
+    - "基准入口": toolchain/benchmark_entrypoints.md
+    - "构建入口": toolchain/build_entrypoints.md
+    - "测试入口": toolchain/test_entrypoints.md
+    - "追溯入口": toolchain/traceability_entrypoints.md
+# --- AUTO_NAV_END ---

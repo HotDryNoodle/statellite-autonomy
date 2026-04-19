@@ -27,6 +27,29 @@ python3 tools/traceability-cli/traceability_cli.py status
 python3 scripts/check_quality.py --report-json
 ```
 
+## Project Site
+
+`site/` 生成面向仓库内开发者的只读静态项目视图（合同、架构蓝图、仪表盘、Harness 任务摘要等）；侧栏与站点元数据以中文为主。站点为派生视图，不修改任何权威资产。
+
+```bash
+pip install -r site/requirements.txt
+sudo dnf install -y plantuml graphviz   # or: apt-get install plantuml graphviz
+
+python3 site/scripts/build_site.py --build
+python3 -m http.server -d site/build/site 8000
+```
+
+If `plantuml` is not installed locally, the bundled podman image works too:
+
+```bash
+podman run -d --rm --name plantuml-server -p 8080:8080 \
+    docker.io/plantuml/plantuml-server:jetty
+PLANTUML_MODE=server PLANTUML_SERVER_URL=http://localhost:8080 \
+    python3 site/scripts/build_site.py --build
+```
+
+`python3 site/scripts/build_site.py --serve` gives a live-reload preview. CI publishes the same output to GitHub Pages via `.github/workflows/pages.yml`. See `site/README.md` for the full design.
+
 ## Collaboration Entry
 
 Start from `AGENTS.md`. That file defines the repository workflow, required artifacts, and approved tool entrypoints.
