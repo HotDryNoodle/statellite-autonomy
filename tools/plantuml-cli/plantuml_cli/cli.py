@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import http.client
 import os
 import shutil
 import socket
 import subprocess
 import sys
 import tempfile
+import textwrap
 import time
 import urllib.error
 import urllib.request
@@ -20,12 +22,52 @@ from pathlib import Path
 from typing import Iterator
 
 DEFAULT_SERVER_HOST = "127.0.0.1"
-DEFAULT_SERVER_PORT = 8080
-DEFAULT_SERVER_URL = f"http://{DEFAULT_SERVER_HOST}:{DEFAULT_SERVER_PORT}"
 DEFAULT_IMAGE = "docker.io/plantuml/plantuml-server:jetty"
 DEFAULT_TIMEOUT_S = 30.0
 PLANTUML_B64 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
 _READINESS_SOURCE = "@startuml\nAlice -> Bob\n@enduml\n"
+
+
+class _DefaultsWithRawEpilogFormatter(
+    argparse.ArgumentDefaultsHelpFormatter,
+    argparse.RawDescriptionHelpFormatter,
+):
+    """Show per-argument defaults; keep description/epilog as authored (multiline Examples)."""
+
+
+_ROOT_DESCRIPTION = (
+    "Render or lint PlantUML via a PlantUML server over HTTP. "
+    "If --server-url is omitted, tries a running plantuml-server container, "
+    "then starts a temporary podman/docker container."
+)
+
+_ROOT_EPILOG = textwrap.dedent(
+    """\
+    Environment:
+      PLANTUML_SERVER_URL   Default base URL when --server-url is omitted.
+
+    Examples:
+      plantuml-cli render --input diagram.puml --output diagram.svg --server-url http://127.0.0.1:8080
+      PLANTUML_SERVER_URL=http://127.0.0.1:8080 plantuml-cli lint --input diagram.puml
+      plantuml-cli render --input diagram.puml --output diagram.svg
+    """
+)
+
+_RENDER_EPILOG = textwrap.dedent(
+    """\
+    Examples:
+      plantuml-cli render --input arch/system/foo.puml --output arch/system/foo.svg --server-url http://127.0.0.1:8080
+      plantuml-cli render --input diagram.puml --output out.svg --timeout 60
+    """
+)
+
+_LINT_EPILOG = textwrap.dedent(
+    """\
+    Examples:
+      plantuml-cli lint --input diagram.puml --server-url http://127.0.0.1:8080
+      PLANTUML_SERVER_URL=http://127.0.0.1:8080 plantuml-cli lint --input diagram.puml
+    """
+)
 
 
 def _encode_six_bit(b: int) -> str:
@@ -61,6 +103,15 @@ def _probe_svg(server_url: str, source: str) -> bytes:
         return resp.read()
 
 
+_RETRIABLE_SERVER_ERRORS = (
+    urllib.error.URLError,
+    TimeoutError,
+    ConnectionResetError,
+    http.client.RemoteDisconnected,
+    OSError,
+)
+
+
 def _render_via_server(src: Path, dst: Path, server_url: str) -> None:
     payload = _probe_svg(server_url, src.read_text(encoding="utf-8"))
     if not payload.lstrip().startswith(b"<"):
@@ -74,7 +125,7 @@ def _render_via_server(src: Path, dst: Path, server_url: str) -> None:
 def render_plantuml(src: Path, dst: Path, server_url: str) -> None:
     try:
         _render_via_server(src, dst, server_url)
-    except urllib.error.URLError as exc:
+    except _RETRIABLE_SERVER_ERRORS as exc:
         raise RuntimeError(f"PlantUML server request failed for {src}: {exc}") from exc
 
 
@@ -84,11 +135,26 @@ def lint_plantuml(src: Path, server_url: str) -> None:
         render_plantuml(src, dst, server_url)
 
 
+def _container_engine_missing_message() -> str:
+    return textwrap.dedent(
+        """\
+        No container engine found (expected `podman` or `docker` on PATH).
+        Without a server URL, this tool can start a temporary PlantUML server via a container.
+
+        Fix one of:
+          - Install podman or docker, then retry; or
+          - Point at an existing PlantUML server (no container needed), e.g.
+              PLANTUML_SERVER_URL=http://127.0.0.1:8080 plantuml-cli render --input diagram.puml --output out.svg
+              plantuml-cli lint --input diagram.puml --server-url http://127.0.0.1:8080
+        """
+    ).strip()
+
+
 def _choose_container_engine() -> str:
     for engine in ("podman", "docker"):
         if shutil.which(engine):
             return engine
-    raise RuntimeError("No container engine found. Install `podman` or `docker`, or pass --server-url.")
+    raise RuntimeError(_container_engine_missing_message())
 
 
 def _available_container_engines() -> list[str]:
@@ -110,7 +176,7 @@ def _wait_for_server(server_url: str, timeout_s: float) -> None:
             if payload.lstrip().startswith(b"<"):
                 return
             last_error = f"unexpected readiness payload: {payload[:40]!r}"
-        except (urllib.error.URLError, TimeoutError) as exc:
+        except _RETRIABLE_SERVER_ERRORS as exc:
             last_error = str(exc)
         time.sleep(0.5)
     raise RuntimeError(f"Timed out waiting for PlantUML server at {server_url}: {last_error}")
@@ -213,25 +279,73 @@ def managed_server(
             )
 
 
+def _formatter() -> type[argparse.HelpFormatter]:
+    return _DefaultsWithRawEpilogFormatter
+
+
+def _shared_server_parent() -> argparse.ArgumentParser:
+    parent = argparse.ArgumentParser(add_help=False, formatter_class=_formatter())
+    parent.add_argument(
+        "--server-url",
+        metavar="URL",
+        default=os.environ.get("PLANTUML_SERVER_URL"),
+        help="PlantUML server base URL. If unset, discover a running container or start a temporary one.",
+    )
+    parent.add_argument(
+        "--timeout",
+        type=float,
+        default=DEFAULT_TIMEOUT_S,
+        metavar="SEC",
+        help="Seconds to wait for a temporary PlantUML server to become ready.",
+    )
+    parent.add_argument(
+        "--image",
+        default=DEFAULT_IMAGE,
+        metavar="REF",
+        help="Image for temporary PlantUML server (podman/docker run).",
+    )
+    return parent
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=_ROOT_DESCRIPTION,
+        epilog=_ROOT_EPILOG,
+        formatter_class=_formatter(),
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    render = subparsers.add_parser("render")
-    render.add_argument("--input", required=True, type=Path)
-    render.add_argument("--output", required=True, type=Path)
-    render.add_argument("--server-url", default=os.environ.get("PLANTUML_SERVER_URL"))
+    shared = _shared_server_parent()
 
-    lint = subparsers.add_parser("lint")
-    lint.add_argument("--input", required=True, type=Path)
-    lint.add_argument("--server-url", default=os.environ.get("PLANTUML_SERVER_URL"))
+    render = subparsers.add_parser(
+        "render",
+        parents=[shared],
+        description="Render a .puml file to SVG using the PlantUML server.",
+        epilog=_RENDER_EPILOG,
+        formatter_class=_formatter(),
+    )
+    render.add_argument("--input", required=True, type=Path, help="Input .puml file.")
+    render.add_argument("--output", required=True, type=Path, help="Output .svg path.")
+
+    lint = subparsers.add_parser(
+        "lint",
+        parents=[shared],
+        description="Validate a .puml file by rendering to a temporary SVG (discards output).",
+        epilog=_LINT_EPILOG,
+        formatter_class=_formatter(),
+    )
+    lint.add_argument("--input", required=True, type=Path, help="Input .puml file.")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
-        with managed_server(args.server_url) as server_url:
+        with managed_server(
+            args.server_url,
+            image=args.image,
+            timeout_s=args.timeout,
+        ) as server_url:
             if args.command == "render":
                 render_plantuml(args.input, args.output, server_url)
                 print(f"rendered {args.input} -> {args.output} via {server_url}")

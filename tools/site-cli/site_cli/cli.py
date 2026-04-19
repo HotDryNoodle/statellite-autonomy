@@ -11,11 +11,19 @@ import signal
 import socketserver
 import subprocess
 import sys
+import textwrap
 import time
 import webbrowser
 from pathlib import Path
 
 from . import build_site
+
+
+class _DefaultsWithRawEpilogFormatter(
+    argparse.ArgumentDefaultsHelpFormatter,
+    argparse.RawDescriptionHelpFormatter,
+):
+    """Show per-argument defaults; keep description/epilog as authored (multiline Examples)."""
 
 
 class _ReuseAddrTCPServer(socketserver.ThreadingTCPServer):
@@ -24,16 +32,97 @@ class _ReuseAddrTCPServer(socketserver.ThreadingTCPServer):
 
 PREVIEW_RUNTIME_DIR = build_site.SITE_DIR / "_runtime"
 PREVIEW_STATE_PATH = PREVIEW_RUNTIME_DIR / "preview_server.json"
+_PREVIEW_STATE_REL = PREVIEW_STATE_PATH.relative_to(build_site.REPO_ROOT)
+
+_ROOT_DESCRIPTION = (
+    "Stage documentation into site/_staging, optionally render PlantUML to SVG, "
+    "and run MkDocs (build or serve). Preview commands serve site/_generated over HTTP."
+)
+
+_ROOT_EPILOG = textwrap.dedent(
+    f"""\
+    Environment:
+      PLANTUML_SERVER_URL   Passed through to staging when PlantUML rendering runs.
+
+    Preview state (after `site-cli start`):
+      {_PREVIEW_STATE_REL}
+
+    Examples:
+      site-cli build
+      site-cli build --skip-puml
+      site-cli serve
+      PLANTUML_SERVER_URL=http://127.0.0.1:8080 site-cli build
+      site-cli start --port 8765 --no-browser
+      site-cli stop
+    """
+)
+
+_BUILD_EPILOG = textwrap.dedent(
+    """\
+    Runs staging, optional PlantUML render, then `mkdocs build --strict` into site/_generated.
+
+    Examples:
+      site-cli build
+      site-cli build --skip-puml
+      PLANTUML_SERVER_URL=http://127.0.0.1:8080 site-cli build
+    """
+)
+
+_SERVE_EPILOG = textwrap.dedent(
+    """\
+    Runs staging, optional PlantUML render, then `mkdocs serve` (long-running; Ctrl+C to stop).
+
+    Examples:
+      site-cli serve
+      site-cli serve --skip-puml
+    """
+)
+
+_OPEN_EPILOG = textwrap.dedent(
+    f"""\
+    Foreground HTTP server for site/_generated; blocks until Ctrl+C. Opens a browser unless
+    --no-browser is set. For automation, prefer `site-cli start` (background) and read
+    {_PREVIEW_STATE_REL} or use `site-cli start --json`.
+
+    Examples:
+      site-cli open
+      site-cli open --port 9000 --no-browser
+    """
+)
+
+_START_EPILOG = textwrap.dedent(
+    f"""\
+    Background `http.server` for site/_generated. Writes state to {_PREVIEW_STATE_REL}.
+
+    Examples:
+      site-cli start --port 8765 --no-browser
+      site-cli start --json --no-browser
+    """
+)
+
+
+def _formatter() -> type[argparse.HelpFormatter]:
+    return _DefaultsWithRawEpilogFormatter
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=_ROOT_DESCRIPTION,
+        epilog=_ROOT_EPILOG,
+        formatter_class=_formatter(),
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    build = subparsers.add_parser("build")
+    build = subparsers.add_parser(
+        "build",
+        description="Stage docs and run `mkdocs build --strict`.",
+        epilog=_BUILD_EPILOG,
+        formatter_class=_formatter(),
+    )
     build.add_argument(
         "--server-url",
         default=None,
+        metavar="URL",
         help="Reuse an existing PlantUML server instead of container discovery/temporary startup.",
     )
     build.add_argument(
@@ -42,10 +131,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Skip PlantUML rendering (blueprint pages will link to raw .puml only).",
     )
 
-    serve = subparsers.add_parser("serve")
+    serve = subparsers.add_parser(
+        "serve",
+        description="Stage docs and run `mkdocs serve` for live preview.",
+        epilog=_SERVE_EPILOG,
+        formatter_class=_formatter(),
+    )
     serve.add_argument(
         "--server-url",
         default=None,
+        metavar="URL",
         help="Reuse an existing PlantUML server instead of container discovery/temporary startup.",
     )
     serve.add_argument(
@@ -57,6 +152,9 @@ def build_parser() -> argparse.ArgumentParser:
     open_p = subparsers.add_parser(
         "open",
         help="Serve the latest built static site (site/_generated) and open it in a browser.",
+        description="Foreground HTTP server for the last `site-cli build` output.",
+        epilog=_OPEN_EPILOG,
+        formatter_class=_formatter(),
     )
     open_p.add_argument("--port", type=int, default=8765)
     open_p.add_argument("--no-browser", action="store_true")
@@ -64,9 +162,17 @@ def build_parser() -> argparse.ArgumentParser:
     start = subparsers.add_parser(
         "start",
         help="Start a background HTTP preview server for site/_generated.",
+        description="Background preview of site/_generated.",
+        epilog=_START_EPILOG,
+        formatter_class=_formatter(),
     )
     start.add_argument("--port", type=int, default=8765)
     start.add_argument("--no-browser", action="store_true")
+    start.add_argument(
+        "--json",
+        action="store_true",
+        help="Print one JSON object on stdout (pid, port, url, root, state_path); for automation.",
+    )
 
     subparsers.add_parser(
         "stop",
@@ -130,11 +236,15 @@ def _open_generated_site(port: int, open_browser: bool) -> int:
         httpd.server_close()
 
 
-def _start_preview_server(port: int, open_browser: bool) -> int:
+def _start_preview_server(port: int, open_browser: bool, json_output: bool) -> int:
     root = _generated_root()
     state = _load_preview_state()
     if state and isinstance(state.get("pid"), int) and _is_process_alive(int(state["pid"])):
-        print(f"error: preview server already running at {state.get('url', 'unknown url')}", file=sys.stderr)
+        msg = f"error: preview server already running at {state.get('url', 'unknown url')}"
+        if json_output:
+            print(json.dumps({"error": "already_running", "url": state.get("url")}), file=sys.stdout)
+        else:
+            print(msg, file=sys.stderr)
         return 1
     if state:
         _clear_preview_state()
@@ -159,6 +269,16 @@ def _start_preview_server(port: int, open_browser: bool) -> int:
         start_new_session=True,
     )
     url = f"http://127.0.0.1:{port}/"
+    started_at = int(time.time())
+    state_path_str = str(PREVIEW_STATE_PATH.resolve())
+    payload = {
+        "pid": proc.pid,
+        "port": port,
+        "url": url,
+        "root": str(root),
+        "started_at": started_at,
+        "state_path": state_path_str,
+    }
     PREVIEW_STATE_PATH.write_text(
         json.dumps(
             {
@@ -166,7 +286,7 @@ def _start_preview_server(port: int, open_browser: bool) -> int:
                 "port": port,
                 "url": url,
                 "root": str(root),
-                "started_at": int(time.time()),
+                "started_at": started_at,
             },
             ensure_ascii=False,
             indent=2,
@@ -176,7 +296,10 @@ def _start_preview_server(port: int, open_browser: bool) -> int:
     )
     if open_browser:
         webbrowser.open(url)
-    print(f"Started preview server at {url}")
+    if json_output:
+        print(json.dumps(payload, ensure_ascii=False))
+    else:
+        print(f"Started preview server at {url}")
     return 0
 
 
@@ -212,7 +335,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "open":
         return _open_generated_site(args.port, open_browser=not args.no_browser)
     if args.command == "start":
-        return _start_preview_server(args.port, open_browser=not args.no_browser)
+        return _start_preview_server(
+            args.port,
+            open_browser=not args.no_browser,
+            json_output=args.json,
+        )
     if args.command == "stop":
         return _stop_preview_server()
 

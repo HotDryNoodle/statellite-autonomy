@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import os
+import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -18,6 +22,15 @@ for path in (str(SITE_CLI_PKG), str(PLANTUML_PKG)):
         sys.path.insert(0, path)
 PYTHONPATH = f"{SITE_CLI_PKG}{os.pathsep}{PLANTUML_PKG}"
 SITE_RUNTIME = REPO_ROOT / "site" / "_runtime" / "preview_server.json"
+
+
+def _fake_generated_root() -> Path:
+    tmp = Path(tempfile.mkdtemp(prefix="site-cli-test-"))
+    (tmp / "index.html").write_text(
+        "<!DOCTYPE html><html><head><title>t</title></head><body></body></html>\n",
+        encoding="utf-8",
+    )
+    return tmp
 
 
 def _env(extra: dict[str, str] | None = None) -> dict[str, str]:
@@ -41,27 +54,22 @@ class SiteToolingTest(unittest.TestCase):
             )
 
     def test_site_cli_start_and_stop(self) -> None:
-        completed = subprocess.run(
-            [sys.executable, "-m", "site_cli.cli", "start", "--port", "8876", "--no-browser"],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            env=_env(),
-        )
-        self.assertEqual(completed.returncode, 0, completed.stderr)
-        self.assertTrue(SITE_RUNTIME.exists())
-        state = json.loads(SITE_RUNTIME.read_text(encoding="utf-8"))
-        self.assertEqual(state["port"], 8876)
+        import site_cli.cli as site_cli_mod
 
-        stop = subprocess.run(
-            [sys.executable, "-m", "site_cli.cli", "stop"],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            env=_env(),
-        )
-        self.assertEqual(stop.returncode, 0, stop.stderr)
-        self.assertFalse(SITE_RUNTIME.exists())
+        fake_root = _fake_generated_root()
+        try:
+            with mock.patch.object(site_cli_mod, "_generated_root", return_value=fake_root):
+                rc = site_cli_mod.main(["start", "--port", "8876", "--no-browser"])
+            self.assertEqual(rc, 0)
+            self.assertTrue(SITE_RUNTIME.exists())
+            state = json.loads(SITE_RUNTIME.read_text(encoding="utf-8"))
+            self.assertEqual(state["port"], 8876)
+
+            rc_stop = site_cli_mod.main(["stop"])
+            self.assertEqual(rc_stop, 0)
+            self.assertFalse(SITE_RUNTIME.exists())
+        finally:
+            shutil.rmtree(fake_root, ignore_errors=True)
 
     def test_site_cli_open_help(self) -> None:
         completed = subprocess.run(
@@ -74,6 +82,71 @@ class SiteToolingTest(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertIn("--port", completed.stdout)
         self.assertIn("--no-browser", completed.stdout)
+
+    def test_site_cli_root_help_has_examples(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, "-m", "site_cli.cli", "--help"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            env=_env(),
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn("Examples:", completed.stdout)
+        self.assertIn("site-cli build", completed.stdout)
+        # Epilog must stay multiline (copy-paste per command), not wrapped into one paragraph.
+        self.assertRegex(
+            completed.stdout,
+            r"Examples:\n  site-cli build\n  site-cli build --skip-puml\n  site-cli serve\n",
+        )
+
+    def test_plantuml_cli_root_help_examples_multiline(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, "-m", "plantuml_cli.cli", "--help"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            env=_env(),
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertRegex(
+            completed.stdout,
+            r"Examples:\n  plantuml-cli render --input diagram\.puml --output diagram\.svg --server-url http://127\.0\.0\.1:8080\n",
+        )
+
+    def test_plantuml_cli_render_help_has_examples(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, "-m", "plantuml_cli.cli", "render", "--help"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            env=_env(),
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn("Examples:", completed.stdout)
+        self.assertIn("plantuml-cli render", completed.stdout)
+        self.assertRegex(
+            completed.stdout,
+            r"Examples:\n  plantuml-cli render --input arch/system/foo\.puml --output arch/system/foo\.svg --server-url http://127\.0\.0\.1:8080\n",
+        )
+
+    def test_site_cli_start_json(self) -> None:
+        import site_cli.cli as site_cli_mod
+
+        fake_root = _fake_generated_root()
+        buf = io.StringIO()
+        try:
+            with mock.patch.object(site_cli_mod, "_generated_root", return_value=fake_root), contextlib.redirect_stdout(buf):
+                rc = site_cli_mod.main(["start", "--port", "8877", "--no-browser", "--json"])
+            self.assertEqual(rc, 0)
+            payload = json.loads(buf.getvalue().strip())
+            self.assertEqual(payload["port"], 8877)
+            self.assertIn("url", payload)
+            self.assertIn("state_path", payload)
+            rc_stop = site_cli_mod.main(["stop"])
+            self.assertEqual(rc_stop, 0)
+        finally:
+            shutil.rmtree(fake_root, ignore_errors=True)
 
     def test_plantuml_cli_uses_explicit_server_url_without_container(self) -> None:
         import plantuml_cli.cli as plantuml_cli
@@ -122,6 +195,18 @@ class SiteToolingTest(unittest.TestCase):
 
         self.assertEqual(calls[0][:2], ["podman", "run"])
         self.assertEqual(calls[-1][:3], ["podman", "rm", "-f"])
+
+    def test_plantuml_wait_for_server_retries_connection_reset(self) -> None:
+        import plantuml_cli.cli as plantuml_cli
+
+        with mock.patch.object(
+            plantuml_cli,
+            "_probe_svg",
+            side_effect=[ConnectionResetError(104, "Connection reset by peer"), b"<svg></svg>"],
+        ) as probe_mock, mock.patch("time.sleep", return_value=None):
+            plantuml_cli._wait_for_server("http://127.0.0.1:18080", timeout_s=1.0)
+
+        self.assertEqual(probe_mock.call_count, 2)
 
 
 if __name__ == "__main__":
