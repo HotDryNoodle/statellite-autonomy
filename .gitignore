@@ -4,11 +4,16 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .codex
+.venv/
 docs/_generated/
 eval/reports/
 site/build/
+site/_staging/
+site/_generated/
+site/_runtime/
 tools/*/.venv/
 tools/*/__pycache__/
+tools/*/*.egg-info/
 data/
 subprojects/*
 !subprojects/*.wrap

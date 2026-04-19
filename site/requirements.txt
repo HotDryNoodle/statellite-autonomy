@@ -1,3 +1,5 @@
+# Compatibility-only fallback.
+# Preferred workflow: `uv sync --group site --no-default-groups`.
 mkdocs==1.6.1
 mkdocs-material==9.5.49
 pymdown-extensions==10.12

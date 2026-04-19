@@ -15,6 +15,7 @@ Contract-driven satellite autonomy engineering workspace with a harness control 
 - `product/`: implementation and verification trees
 - `tools/`: local toolchain and traceability CLIs
 - `docs/_generated/traceability/`: generated, non-tracked evidence outputs
+- `site/_generated/`: generated static site output
 
 ## Quick Start
 
@@ -32,23 +33,22 @@ python3 scripts/check_quality.py --report-json
 `site/` 生成面向仓库内开发者的只读静态项目视图（合同、架构蓝图、仪表盘、Harness 任务摘要等）；侧栏与站点元数据以中文为主。站点为派生视图，不修改任何权威资产。
 
 ```bash
-pip install -r site/requirements.txt
-sudo dnf install -y plantuml graphviz   # or: apt-get install plantuml graphviz
+uv sync --group site --no-default-groups
 
-python3 site/scripts/build_site.py --build
-python3 -m http.server -d site/build/site 8000
+uv run --group site --no-default-groups statellite-site build
+uv run --group site --no-default-groups statellite-site start
+# 停止后台预览服务
+uv run --group site --no-default-groups statellite-site stop
 ```
 
-If `plantuml` is not installed locally, the bundled podman image works too:
+PlantUML rendering is server-only. You can point at an existing server explicitly:
 
 ```bash
-podman run -d --rm --name plantuml-server -p 8080:8080 \
-    docker.io/plantuml/plantuml-server:jetty
-PLANTUML_MODE=server PLANTUML_SERVER_URL=http://localhost:8080 \
-    python3 site/scripts/build_site.py --build
+PLANTUML_SERVER_URL=http://127.0.0.1:8080 \
+    uv run --group site --no-default-groups statellite-site build
 ```
 
-`python3 site/scripts/build_site.py --serve` gives a live-reload preview. CI publishes the same output to GitHub Pages via `.github/workflows/pages.yml`. See `site/README.md` for the full design.
+If no `PLANTUML_SERVER_URL` is provided, `statellite-plantuml` / `statellite-site build` first try to discover a running `plantuml-server` container and only then start a temporary local container. `uv run --group site --no-default-groups statellite-site serve` keeps the live-reload preview in the foreground; `statellite-site open` serves the already built tree in the foreground; `statellite-site start` / `stop` manage a background preview server for `site/_generated`. PlantUML lint is available via `uv run --group plantuml --no-default-groups statellite-plantuml lint --input <file.puml>`. CI publishes `site/_generated` to GitHub Pages via `.github/workflows/pages.yml`. See `site/README.md` for the full design.
 
 ## Collaboration Entry
 

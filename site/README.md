@@ -20,49 +20,57 @@
 ## 本地构建
 
 ```bash
-pip install -r site/requirements.txt
+uv sync --group site --no-default-groups
 
-# 方案 A：本机已安装 plantuml（推荐）
-sudo dnf install -y plantuml graphviz   # Fedora
-# 或：sudo apt-get install -y plantuml graphviz   # Debian/Ubuntu
-
-python3 site/scripts/build_site.py --build
-python3 -m http.server -d site/build/site 8000
+uv run --group site --no-default-groups statellite-site build
+uv run --group site --no-default-groups statellite-site start
 ```
 
-### 方案 B：使用 podman 的 plantuml-server
-
-若本机未安装 `plantuml`，可用 podman 镜像作为渲染后端：
+停止后台预览服务：
 
 ```bash
-podman run -d --rm --name plantuml-server -p 8080:8080 \
-    docker.io/plantuml/plantuml-server:jetty
-```
-
-```bash
-PLANTUML_MODE=server PLANTUML_SERVER_URL=http://localhost:8080 \
-    python3 site/scripts/build_site.py --build
+uv run --group site --no-default-groups statellite-site stop
 ```
 
 ### 实时预览
 
 ```bash
-python3 site/scripts/build_site.py --serve
+uv run --group site --no-default-groups statellite-site serve
 ```
+
+### 预览最近一次构建的静态产物
+
+在已执行 `statellite-site build` 且存在 `site/_generated/index.html` 时：
+
+```bash
+uv run --group site --no-default-groups statellite-site open
+```
+
+默认在 `127.0.0.1:8765` 提供静态文件并打开浏览器；仅打印 URL 时用 `statellite-site open --no-browser`。
+
+### PlantUML server 选择
+
+```bash
+# 显式指定已有 server
+PLANTUML_SERVER_URL=http://127.0.0.1:8080 \
+    uv run --group site --no-default-groups statellite-site build
+```
+
+若未提供 `PLANTUML_SERVER_URL`，`statellite-site build` 与 `statellite-plantuml` 会先尝试从现有 `podman` / `docker` 的 `plantuml-server` 容器推断 URL；若仍找不到，再临时拉起容器，成功或失败后都自动清理。
 
 ## CI / GitHub Pages
 
 `.github/workflows/pages.yml` 在推送到 `main` 时：
 
-1. 通过 apt 安装 `plantuml`、`graphviz`，并安装 `site/requirements.txt`。
+1. 启动 job 级 `plantuml-server` service container，并执行 `uv sync --group site --no-default-groups`。
 2. 刷新 traceability / compliance / dashboard 产物。
-3. 以 `PLANTUML_MODE=cli` 执行 `python3 site/scripts/build_site.py --build`。
-4. 通过 `actions/upload-pages-artifact` + `actions/deploy-pages` 发布 `site/build/site`。
+3. 以 `PLANTUML_SERVER_URL=http://127.0.0.1:8080` 执行 `uv run --group site --no-default-groups statellite-site build`。
+4. 通过 `actions/upload-pages-artifact` + `actions/deploy-pages` 发布 `site/_generated`。
 
 在仓库 **Settings → Pages** 中将 **Build and deployment** 设为 **GitHub Actions**。
 
 ## 扩展站点
 
-- 新增顶层栏目：在 `site/scripts/build_site.py::main` 中增加 `stage_*` 并返回 `NavNode`。
-- PlantUML：`site/scripts/render_plantuml.py` 已支持 `cli`、`server`、`auto`。
-- 导航由构建脚本重写 `site/mkdocs.yml` 中 `# --- AUTO_NAV_BEGIN ---` 与 `# --- AUTO_NAV_END ---` 之间的内容；手工编辑时请保留这两个标记。
+- 新增顶层栏目：在 `tools/site-cli/site_cli/build_site.py::main` 中增加 `stage_*` 并返回 `NavNode`。
+- PlantUML：`tools/plantuml-cli/plantuml_cli/cli.py` 只提供 server-based `render` / `lint`。
+- 导航由构建脚本写入 `site/_staging/mkdocs.generated.yml`；`site/mkdocs.yml` 只作为模板保留。

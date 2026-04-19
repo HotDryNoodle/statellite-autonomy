@@ -1,0 +1,33 @@
+[project]
+name = "statellite-workspace"
+version = "0.1.0"
+description = "Workspace root for statellite-autonomy-plugin Python tooling"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0,<9",
+]
+site = [
+  "statellite-site-cli",
+]
+plantuml = [
+  "statellite-plantuml-cli",
+]
+
+[tool.uv]
+package = false
+default-groups = []
+
+[tool.uv.sources]
+statellite-site-cli = { workspace = true }
+statellite-plantuml-cli = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+  "tools/nav-toolchain-cli",
+  "tools/traceability-cli",
+  "tools/site-cli",
+  "tools/plantuml-cli",
+]

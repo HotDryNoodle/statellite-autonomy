@@ -1,21 +1,5 @@
 #!/usr/bin/env python3
-"""Stage repo assets into site/build/docs, render PlantUML, and build the MkDocs site.
-
-Design principles:
-
-- The site is a *derived* reading view. No canonical asset is moved; we only
-  copy-and-transform into ``site/build/docs/``.
-- PlantUML sources are pre-rendered to SVG so the resulting site has no runtime
-  JS dependency. Rendering uses site/scripts/render_plantuml.py which supports a
-  local ``plantuml`` binary or an HTTP plantuml-server.
-- Contracts and blueprints are priority-1 content: every single ``*.md`` under
-  those roots becomes an independent page; any referenced ``.puml`` is embedded
-  inline in the same page as SVG.
-- Governance records are not listed directly; the only surface is the Dashboard
-  page, which is enriched with a "Recent Tasks" table (latest 3).
-- Harness runtime exposes only a summary view derived from each
-  ``task_state.json``.
-"""
+"""Stage repo assets into site/_staging/docs, render PlantUML, and build MkDocs."""
 
 from __future__ import annotations
 
@@ -31,14 +15,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
 
-SITE_DIR = Path(__file__).resolve().parents[1]
-REPO_ROOT = SITE_DIR.parent
+from plantuml_cli.cli import managed_server, render_plantuml
 
-sys.path.insert(0, str(SITE_DIR / "scripts"))
-from render_plantuml import render_plantuml  # noqa: E402
+PACKAGE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = PACKAGE_DIR.parents[2]
+SITE_DIR = REPO_ROOT / "site"
 
-BUILD_DIR = SITE_DIR / "build"
-STAGE_DOCS = BUILD_DIR / "docs"
+STAGING_DIR = SITE_DIR / "_staging"
+STAGE_DOCS = STAGING_DIR / "docs"
+GENERATED_SITE_DIR = SITE_DIR / "_generated"
+GENERATED_MKDOCS_YML = STAGING_DIR / "mkdocs.generated.yml"
 MKDOCS_YML = SITE_DIR / "mkdocs.yml"
 
 CONTRACTS_DIR = REPO_ROOT / "contracts"
@@ -60,13 +46,9 @@ PUML_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)\s]+\.puml)\)")
 MD_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
 SKIP_EXTS = (".svg", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".puml")
 
-# repo-relative posix path -> site-relative posix path (under build/docs/).
 PATH_MAP: dict[str, str] = {}
-# (repo_rel, site_rel) pairs of staged markdown files that may contain repo
-# cross-references and need a post-pass rewrite.
 STAGED_MD: list[tuple[str, str]] = []
 
-# 站点侧栏与导航标题（面向仓库内开发者，中文优先）
 CONTRACT_NAV_TITLE: dict[str, str] = {
     "README.md": "概述",
     "layer_boundary.contract.md": "分层边界",
@@ -121,17 +103,14 @@ class NavNode:
             return [f"{pad}- {yaml_quote(self.title)}: {self.path}"]
         lines = [f"{pad}- {yaml_quote(self.title)}:"]
         if self.path:
-            lines.append(
-                f"{pad}  - {yaml_quote(self.overview_label)}: {self.path}"
-            )
+            lines.append(f"{pad}  - {yaml_quote(self.overview_label)}: {self.path}")
         for child in self.children:
             lines.extend(child.to_yaml_lines(indent + 1))
         return lines
 
 
 def yaml_quote(text: str) -> str:
-    """Return a scalar suitable for use as a YAML key in mkdocs nav."""
-    if re.fullmatch(r"[A-Za-z0-9 _./()+\-]+", text) and ":" not in text:
+    if re.fullmatch(r"[A-Za-z0-9 _./()+\\-]+", text) and ":" not in text:
         return text
     escaped = text.replace("\\", "\\\\").replace('"', '\\"')
     return f'"{escaped}"'
@@ -176,30 +155,25 @@ def strip_frontmatter(text: str) -> tuple[dict[str, str], str]:
     return meta, body
 
 
-def transform_puml_links(md_text: str) -> str:
-    """Replace links to sibling .puml files with an inline SVG embed plus raw source.
-
-    The replacement is a single logical line so it does not break surrounding
-    markdown list context.
-    """
-
+def transform_puml_links(md_text: str, render_svg: bool = True) -> str:
     def _repl(match: re.Match[str]) -> str:
         label = match.group(1)
         target = match.group(2)
         if target.startswith(("http://", "https://")):
             return match.group(0)
+        if not render_svg:
+            return f"[{label}]({target})"
         svg_target = target[:-5] + ".svg"
-        return (
-            f"![{label}]({svg_target})"
-            f' <small>[PlantUML 源码]({target})</small>'
-        )
+        return f"![{label}]({svg_target}) <small>[PlantUML 源码]({target})</small>"
 
     return PUML_LINK_RE.sub(_repl, md_text)
 
 
 def reset_stage() -> None:
-    if BUILD_DIR.exists():
-        shutil.rmtree(BUILD_DIR)
+    if STAGING_DIR.exists():
+        shutil.rmtree(STAGING_DIR)
+    if GENERATED_SITE_DIR.exists():
+        shutil.rmtree(GENERATED_SITE_DIR)
     STAGE_DOCS.mkdir(parents=True, exist_ok=True)
     PATH_MAP.clear()
     STAGED_MD.clear()
@@ -210,7 +184,6 @@ def _site_rel(path: Path) -> str:
 
 
 def register_mapping(repo_src: Path | None, stage_path: Path) -> None:
-    """Track that a repo file now lives at stage_path inside the site."""
     site_rel = _site_rel(stage_path)
     if repo_src is not None:
         try:
@@ -234,11 +207,7 @@ def copy_staged(src: Path, dst: Path) -> None:
     register_mapping(src, dst)
 
 
-def _rewrite_link(
-    origin_repo_dir: str,
-    site_rel_path: str,
-    match: re.Match[str],
-) -> str:
+def _rewrite_link(origin_repo_dir: str, site_rel_path: str, match: re.Match[str]) -> str:
     label = match.group(1)
     href = match.group(2)
     if href.startswith(("http://", "https://", "mailto:", "#")) or "://" in href:
@@ -386,7 +355,7 @@ def stage_dashboard() -> NavNode | None:
     return NavNode("项目仪表盘", "dashboard.md")
 
 
-def stage_contracts() -> NavNode | None:
+def stage_contracts(render_svg: bool) -> NavNode | None:
     if not CONTRACTS_DIR.is_dir():
         return None
     node = NavNode("产品合同")
@@ -398,13 +367,10 @@ def stage_contracts() -> NavNode | None:
     md_files = sorted(p for p in CONTRACTS_DIR.glob("*.md") if p.name != "README.md")
     for src in md_files:
         text = src.read_text(encoding="utf-8")
-        text = transform_puml_links(text)
+        text = transform_puml_links(text, render_svg=render_svg)
         rel = Path("contracts") / src.name
         write_staged(STAGE_DOCS / rel, text, repo_src=src)
-        title = CONTRACT_NAV_TITLE.get(
-            src.name,
-            read_first_heading(src) or slug_title(src.name),
-        )
+        title = CONTRACT_NAV_TITLE.get(src.name, read_first_heading(src) or slug_title(src.name))
         node.children.append(NavNode(title, rel.as_posix()))
     return node
 
@@ -413,12 +379,13 @@ def _stage_blueprint_dir(
     root: Path,
     rel_root: Path,
     puml_targets: list[tuple[Path, Path]],
+    render_svg: bool,
 ) -> list[NavNode]:
     nodes: list[NavNode] = []
     md_files = sorted(p for p in root.glob("*.md") if p.name != "README.md")
     for src in md_files:
         text = src.read_text(encoding="utf-8")
-        text = transform_puml_links(text)
+        text = transform_puml_links(text, render_svg=render_svg)
         rel = rel_root / src.name
         write_staged(STAGE_DOCS / rel, text, repo_src=src)
 
@@ -432,10 +399,7 @@ def _stage_blueprint_dir(
 
         meta, _ = strip_frontmatter(src.read_text(encoding="utf-8"))
         status = meta.get("status", "").strip().lower()
-        base = BLUEPRINT_NAV_TITLE.get(
-            src.stem,
-            read_first_heading(src) or slug_title(src.name),
-        )
+        base = BLUEPRINT_NAV_TITLE.get(src.stem, read_first_heading(src) or slug_title(src.name))
         suffix = BLUEPRINT_STATUS_NAV_SUFFIX.get(status, "")
         if status and status != "active" and not suffix:
             suffix = f" [{status}]"
@@ -444,7 +408,10 @@ def _stage_blueprint_dir(
     return nodes
 
 
-def stage_blueprints(puml_targets: list[tuple[Path, Path]]) -> NavNode | None:
+def stage_blueprints(
+    puml_targets: list[tuple[Path, Path]],
+    render_svg: bool,
+) -> NavNode | None:
     if not BLUEPRINTS_DIR.is_dir():
         return None
     node = NavNode("架构蓝图")
@@ -461,6 +428,7 @@ def stage_blueprints(puml_targets: list[tuple[Path, Path]]) -> NavNode | None:
                 system_dir,
                 Path("architecture/blueprints/system"),
                 puml_targets,
+                render_svg,
             )
         )
         if sys_node.children:
@@ -474,6 +442,7 @@ def stage_blueprints(puml_targets: list[tuple[Path, Path]]) -> NavNode | None:
                 decisions_dir,
                 Path("architecture/blueprints/decisions"),
                 puml_targets,
+                render_svg,
             )
         )
         if dec_node.children:
@@ -488,6 +457,7 @@ def stage_flat_dir(
     nav_title: str,
     include_readme: bool = False,
     nav_title_map: dict[str, str] | None = None,
+    render_svg: bool = True,
 ) -> NavNode | None:
     if not src_dir.is_dir():
         return None
@@ -496,7 +466,7 @@ def stage_flat_dir(
     for src in files:
         if src.name == "README.md" and not include_readme:
             continue
-        text = transform_puml_links(src.read_text(encoding="utf-8"))
+        text = transform_puml_links(src.read_text(encoding="utf-8"), render_svg=render_svg)
         rel = Path(stage_subdir) / src.name
         write_staged(STAGE_DOCS / rel, text, repo_src=src)
         if nav_title_map and src.name in nav_title_map:
@@ -557,11 +527,9 @@ def stage_harness_summary() -> NavNode | None:
             state = json.loads(state_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             continue
-        events_path = task_dir / "events.jsonl"
-        summaries.append(_summarize_task(state, events_path))
+        summaries.append(_summarize_task(state, task_dir / "events.jsonl"))
 
     summaries.sort(key=lambda row: row.get("updated_at", ""), reverse=True)
-
     lines: list[str] = [
         "# Harness 运行时任务摘要",
         "",
@@ -586,7 +554,6 @@ def stage_harness_summary() -> NavNode | None:
                 )
             )
     lines.append("")
-
     lines.append("## 各任务目标与验收")
     lines.append("")
     for row in summaries:
@@ -625,10 +592,7 @@ def stage_eval_overview() -> NavNode | None:
         if d_readme.exists():
             rel = Path("eval") / "domains" / f"{domain_dir.name}.md"
             copy_staged(d_readme, STAGE_DOCS / rel)
-            title = EVAL_DOMAIN_NAV_TITLE.get(
-                domain_dir.name,
-                read_first_heading(d_readme) or domain_dir.name,
-            )
+            title = EVAL_DOMAIN_NAV_TITLE.get(domain_dir.name, read_first_heading(d_readme) or domain_dir.name)
             node.children.append(NavNode(title, rel.as_posix()))
     return node if node.children or node.path else None
 
@@ -653,12 +617,16 @@ def stage_traceability_evidence() -> NavNode | None:
     if compliance_status.exists():
         try:
             data = json.loads(compliance_status.read_text(encoding="utf-8"))
-            parts.append("## 治理合规")
-            parts.append("")
-            parts.append(f"- ok: `{data.get('ok')}`")
-            parts.append(f"- 策略数: `{data.get('policy_count')}`")
-            parts.append(f"- 失败项: `{len(data.get('failures') or [])}`")
-            parts.append("")
+            parts.extend(
+                [
+                    "## 治理合规",
+                    "",
+                    f"- ok: `{data.get('ok')}`",
+                    f"- 策略数: `{data.get('policy_count')}`",
+                    f"- 失败项: `{len(data.get('failures') or [])}`",
+                    "",
+                ]
+            )
         except json.JSONDecodeError:
             pass
 
@@ -669,14 +637,14 @@ def stage_traceability_evidence() -> NavNode | None:
     return NavNode("追溯与合规", "traceability/coverage.md")
 
 
-def render_all_puml(targets: Iterable[tuple[Path, Path]], mode: str) -> None:
+def render_all_puml(targets: Iterable[tuple[Path, Path]], server_url: str) -> None:
     unique: dict[Path, Path] = {}
     for src, dst in targets:
         unique[src.resolve()] = dst
     for src_abs, dst in unique.items():
         src = Path(src_abs)
-        log(f"rendering {src.relative_to(REPO_ROOT)} -> {dst.relative_to(BUILD_DIR)}")
-        render_plantuml(src, dst, mode)
+        log(f"rendering {src.relative_to(REPO_ROOT)} -> {dst.relative_to(STAGING_DIR)}")
+        render_plantuml(src, dst, server_url)
 
 
 def load_project_status() -> dict | None:
@@ -699,30 +667,30 @@ def write_nav(nav_nodes: list[NavNode]) -> None:
     start = mkdocs_text.find(NAV_BEGIN)
     end = mkdocs_text.find(NAV_END)
     if start == -1 or end == -1:
-        raise RuntimeError(
-            f"mkdocs.yml missing AUTO_NAV sentinels ({NAV_BEGIN} / {NAV_END})"
-        )
+        raise RuntimeError(f"mkdocs.yml missing AUTO_NAV sentinels ({NAV_BEGIN} / {NAV_END})")
     head = mkdocs_text[: start + len(NAV_BEGIN) + 1]
     tail = mkdocs_text[end:]
-    new_text = head + nav_block + tail
-    MKDOCS_YML.write_text(new_text, encoding="utf-8")
+    generated = head + nav_block + tail
+    generated = re.sub(r"^docs_dir:\s+.*$", "docs_dir: docs", generated, flags=re.MULTILINE)
+    generated = re.sub(r"^site_dir:\s+.*$", "site_dir: ../_generated", generated, flags=re.MULTILINE)
+    GENERATED_MKDOCS_YML.parent.mkdir(parents=True, exist_ok=True)
+    GENERATED_MKDOCS_YML.write_text(generated, encoding="utf-8")
 
 
 def run_mkdocs(action: str) -> int:
-    cmd = [sys.executable, "-m", "mkdocs", action, "-f", str(MKDOCS_YML)]
+    cmd = [sys.executable, "-m", "mkdocs", action, "-f", str(GENERATED_MKDOCS_YML)]
     if action == "build":
         cmd.append("--strict")
     log(" ".join(cmd))
-    return subprocess.call(cmd, cwd=str(SITE_DIR))
+    return subprocess.call(cmd, cwd=str(STAGING_DIR))
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--mode",
-        choices=["auto", "cli", "server"],
-        default=os.environ.get("PLANTUML_MODE", "auto"),
-        help="PlantUML rendering mode; can also be set via PLANTUML_MODE env var.",
+        "--server-url",
+        default=os.environ.get("PLANTUML_SERVER_URL"),
+        help="Reuse an existing PlantUML server instead of starting a temporary local container.",
     )
     parser.add_argument(
         "--skip-puml",
@@ -739,25 +707,24 @@ def main() -> int:
         action="store_true",
         help="After staging, run `mkdocs build --strict`.",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     log(f"repo_root={REPO_ROOT}")
     log(f"site_dir={SITE_DIR}")
 
     reset_stage()
     puml_targets: list[tuple[Path, Path]] = []
-
     project_status = load_project_status()
-    nav: list[NavNode] = []
+    nav: list[NavNode] = [stage_home(project_status)]
 
-    nav.append(stage_home(project_status))
     dashboard = stage_dashboard()
     if dashboard:
         nav.append(dashboard)
-    contracts = stage_contracts()
+    render_svg = not args.skip_puml
+    contracts = stage_contracts(render_svg)
     if contracts:
         nav.append(contracts)
-    blueprints = stage_blueprints(puml_targets)
+    blueprints = stage_blueprints(puml_targets, render_svg)
     if blueprints:
         nav.append(blueprints)
     harness = stage_harness_summary()
@@ -770,7 +737,11 @@ def main() -> int:
     if eval_overview:
         nav.append(eval_overview)
     guides = stage_flat_dir(
-        GUIDES_DIR, "guides", "协作指南", nav_title_map=GUIDE_NAV_TITLE
+        GUIDES_DIR,
+        "guides",
+        "协作指南",
+        nav_title_map=GUIDE_NAV_TITLE,
+        render_svg=render_svg,
     )
     if guides:
         nav.append(guides)
@@ -779,21 +750,23 @@ def main() -> int:
         "toolchain",
         "工具链",
         nav_title_map=TOOLCHAIN_NAV_TITLE,
+        render_svg=render_svg,
     )
     if toolchain:
         nav.append(toolchain)
 
     rewrite_cross_refs()
 
+    write_nav(nav)
+    log(f"staged {len(list(STAGE_DOCS.rglob('*')))} files under {STAGE_DOCS}")
+
     if not args.skip_puml and puml_targets:
         try:
-            render_all_puml(puml_targets, args.mode)
+            with managed_server(args.server_url) as server_url:
+                render_all_puml(puml_targets, server_url)
         except RuntimeError as exc:
             log(f"PlantUML rendering failed: {exc}")
             return 2
-
-    write_nav(nav)
-    log(f"staged {len(list(STAGE_DOCS.rglob('*')))} files under {STAGE_DOCS}")
 
     if args.serve:
         return run_mkdocs("serve")

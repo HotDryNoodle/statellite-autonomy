@@ -18,6 +18,11 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      plantuml-server:
+        image: docker.io/plantuml/plantuml-server:jetty
+        ports:
+          - 8080:8080
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,11 +32,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install PlantUML and Graphviz
-        run: sudo apt-get update && sudo apt-get install -y plantuml graphviz
+      - uses: astral-sh/setup-uv@v6
 
-      - name: Install MkDocs dependencies
-        run: python -m pip install --upgrade pip && pip install -r site/requirements.txt
+      - name: Install site tooling
+        run: uv sync --group site --no-default-groups
 
       - name: Refresh traceability + compliance + dashboard
         run: |
@@ -41,13 +45,13 @@ jobs:
 
       - name: Build static site
         env:
-          PLANTUML_MODE: cli
-        run: python3 site/scripts/build_site.py --build
+          PLANTUML_SERVER_URL: http://127.0.0.1:8080
+        run: uv run --group site --no-default-groups statellite-site build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/build/site
+          path: site/_generated
 
   deploy:
     needs: build

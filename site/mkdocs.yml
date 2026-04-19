@@ -5,8 +5,8 @@ repo_url: https://github.com/hotdry/statellite-autonomy-plugin
 repo_name: statellite-autonomy-plugin
 edit_uri: ""
 
-docs_dir: build/docs
-site_dir: build/site
+docs_dir: _staging/docs
+site_dir: _generated
 use_directory_urls: true
 strict: true
 
@@ -70,7 +70,7 @@ plugins:
 extra:
   generator: false
 
-# Nav 由 site/scripts/build_site.py 在 staging 阶段追加写入本文件的下方。
+# Nav 由 tools/site-cli 在 staging 阶段写入临时 mkdocs.generated.yml。
 # 分隔符：# --- AUTO_NAV_BEGIN ---
 nav:
   - "首页": index.md

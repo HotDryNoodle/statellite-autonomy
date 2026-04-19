@@ -55,6 +55,8 @@ Use repo-local command families only:
 - `python3 harness/orchestrator/harness_cli.py ...`
 - `python3 tools/nav-toolchain-cli/toolchain_cli.py ...`
 - `python3 tools/traceability-cli/traceability_cli.py ...`
+- `uv run --group site --no-default-groups statellite-site ...`
+- `uv run --group plantuml --no-default-groups statellite-plantuml ...`
 - `python3 scripts/check_quality.py --report-json`
 - `python3 scripts/render_project_dashboard.py`
 
