@@ -41,7 +41,7 @@ jobs:
         run: |
           python3 tools/traceability-cli/traceability_cli.py status --refresh || true
           python3 tools/traceability-cli/traceability_cli.py compliance --refresh || true
-          python3 scripts/render_project_dashboard.py || true
+          python3 tools/governance-cli/governance_cli.py dashboard || true
 
       - name: Build static site
         env:

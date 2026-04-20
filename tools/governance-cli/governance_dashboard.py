@@ -10,7 +10,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from dashboard_common import (
+from governance_common import (
     ACTIVE_CONTEXT_SECTIONS,
     WORKING_SECTIONS,
     parse_bullet_sections,
@@ -18,7 +18,7 @@ from dashboard_common import (
 )
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "_generated"
 TRACEABILITY = REPO_ROOT / "tools" / "traceability-cli" / "traceability_cli.py"
 
@@ -30,6 +30,11 @@ DECISION_LOG_PATH = REPO_ROOT / "governance" / "records" / "decision_log.md"
 ACTIVITY_LOG_PATH = REPO_ROOT / "governance" / "records" / "agent_activity_log.md"
 
 LIMITATION_SECTIONS = ("Accepted Limitations", "Open Risks")
+LEGACY_COMMAND_DISPLAY_MAP = {
+    "python3 scripts/check_quality.py --report-json": "python3 tools/governance-cli/governance_cli.py quality --report-json",
+    "python3 scripts/render_project_dashboard.py": "python3 tools/governance-cli/governance_cli.py dashboard",
+    "python3 tools/nav-toolchain-cli/toolchain_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes": "python3 tools/meson-cli/meson_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes",
+}
 
 
 def read_lines(path: Path) -> list[str]:
@@ -120,6 +125,10 @@ def strip_code_ticks(text: str) -> str:
     return text.replace("`", "")
 
 
+def normalize_display_command(text: str) -> str:
+    return LEGACY_COMMAND_DISPLAY_MAP.get(text, text)
+
+
 def build_status_payload(
     working: dict[str, list[str]],
     tasks: list[dict[str, str]],
@@ -169,7 +178,7 @@ def build_status_payload(
         "blocked_tasks": blocked_tasks,
         "current_scope": [strip_code_ticks(item) for item in context["Current Scope"]],
         "active_policy_skills": [strip_code_ticks(item) for item in context["Active Policy Skills"]],
-        "acceptance_gates": [strip_code_ticks(item) for item in context["Acceptance Gates"]],
+        "acceptance_gates": [normalize_display_command(strip_code_ticks(item)) for item in context["Acceptance Gates"]],
         "handoff_expectations": [strip_code_ticks(item) for item in context["Handoff Expectations"]],
         "recent_activity": recent_activity[:5],
         "recent_decisions": decisions[-3:],
@@ -286,52 +295,53 @@ def write_if_changed(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
-def main() -> int:
+def run_dashboard(output_dir: Path) -> dict[str, str]:
+    working = parse_bullet_sections(WORKING_PATH, WORKING_SECTIONS)
+    tasks = parse_task_board(TASK_BOARD_PATH)
+    context = parse_bullet_sections(ACTIVE_CONTEXT_PATH, ACTIVE_CONTEXT_SECTIONS)
+    limitations = parse_limitations(KNOWN_LIMITATIONS_PATH)
+    decisions = parse_decisions(DECISION_LOG_PATH)
+    activities = parse_recent_activity(ACTIVITY_LOG_PATH)
+    traceability_status = run_traceability_status()
+    compliance_status = run_compliance_status()
+    status = build_status_payload(
+        working,
+        tasks,
+        context,
+        limitations,
+        decisions,
+        activities,
+        traceability_status,
+        compliance_status,
+    )
+    dashboard_text = render_dashboard(status)
+
+    dashboard_path = output_dir / "project_dashboard.md"
+    status_path = output_dir / "project_status.json"
+    write_if_changed(dashboard_path, dashboard_text)
+    write_if_changed(status_path, json.dumps(status, ensure_ascii=False, indent=2) + "\n")
+    return {
+        "dashboard": str(dashboard_path),
+        "status": str(status_path),
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR))
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     output_dir = Path(args.output_dir)
     if not output_dir.is_absolute():
         output_dir = REPO_ROOT / output_dir
 
     try:
-        working = parse_bullet_sections(WORKING_PATH, WORKING_SECTIONS)
-        tasks = parse_task_board(TASK_BOARD_PATH)
-        context = parse_bullet_sections(ACTIVE_CONTEXT_PATH, ACTIVE_CONTEXT_SECTIONS)
-        limitations = parse_limitations(KNOWN_LIMITATIONS_PATH)
-        decisions = parse_decisions(DECISION_LOG_PATH)
-        activities = parse_recent_activity(ACTIVITY_LOG_PATH)
-        traceability_status = run_traceability_status()
-        compliance_status = run_compliance_status()
-        status = build_status_payload(
-            working,
-            tasks,
-            context,
-            limitations,
-            decisions,
-            activities,
-            traceability_status,
-            compliance_status,
-        )
-        dashboard_text = render_dashboard(status)
+        payload = run_dashboard(output_dir)
     except (OSError, ValueError, RuntimeError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
 
-    dashboard_path = output_dir / "project_dashboard.md"
-    status_path = output_dir / "project_status.json"
-    write_if_changed(dashboard_path, dashboard_text)
-    write_if_changed(status_path, json.dumps(status, ensure_ascii=False, indent=2) + "\n")
-    print(
-        json.dumps(
-            {
-                "dashboard": str(dashboard_path),
-                "status": str(status_path),
-            },
-            indent=2,
-        )
-    )
+    print(json.dumps(payload, indent=2))
     return 0
 
 

@@ -13,7 +13,8 @@ Contract-driven satellite autonomy engineering workspace with a harness control 
 - `.agents/skills`: Codex project-level discovery path for the maintained `skills/` inventory
 - `harness/`: orchestration artifacts, workflow eval fixtures, schemas, templates, and runtime helpers
 - `product/`: implementation and verification trees
-- `tools/`: local toolchain and traceability CLIs
+- `tools/`: formal repo-local engineering and governance CLIs
+- `scripts/`: lightweight repository scripts such as hook installers and validators
 - `docs/_generated/traceability/`: generated, non-tracked evidence outputs
 - `site/_generated/`: generated static site output
 
@@ -25,7 +26,7 @@ python3 tools/meson-cli/meson_cli.py test --no-rebuild
 python3 tools/meson-cli/meson_cli.py traceability --yes
 python3 tools/meson-cli/meson_cli.py eval --domain time --report-path eval/reports/time_benchmark_report.json --yes
 python3 tools/traceability-cli/traceability_cli.py status
-python3 scripts/check_quality.py --report-json
+python3 tools/governance-cli/governance_cli.py quality --report-json
 ```
 
 ## Project Site

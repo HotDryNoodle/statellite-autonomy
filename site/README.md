@@ -13,7 +13,7 @@
 | Harness 运行时 | `harness/runtime/tasks/<id>/task_state.json` + `events.jsonl` | 仅摘要，不展开 artifacts。 |
 | 追溯与合规 | `docs/_generated/traceability/*.md` + `compliance_status.json` | 生成证据。 |
 | 评测 | `eval/domains/README.md` 与各域 `README.md` | |
-| 协作指南 / 工具链 | `docs/guides/`、`docs/toolchain/` | |
+| 协作指南 / 工具链 | `docs/guides/`、`docs/toolchain/` | `docs/toolchain/` 同时覆盖 `tools/` 正式 CLI 与 `scripts/` 中保留的轻量脚本。 |
 
 `governance/records/**` **不**作为独立页面上架；相关信息仅通过仪表盘汇总呈现。
 
@@ -73,4 +73,5 @@ PLANTUML_SERVER_URL=http://127.0.0.1:8080 \
 
 - 新增顶层栏目：在 `tools/site-cli/site_cli/build_site.py::main` 中增加 `stage_*` 并返回 `NavNode`。
 - PlantUML：`tools/plantuml-cli/plantuml_cli/cli.py` 只提供 server-based `render` / `lint`。
+- 治理入口：`tools/governance-cli/governance_cli.py` 提供 `quality` / `dashboard`；`scripts/` 只保留轻量脚本。
 - 导航由构建脚本写入 `site/_staging/mkdocs.generated.yml`；`site/mkdocs.yml` 只作为模板保留。

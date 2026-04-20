@@ -100,8 +100,14 @@ nav:
     - "Agent 协作流程": guides/agent-collaboration.md
     - "Harness / Product 拆分": guides/harness_product_split.md
   - "工具链":
+    - "总览": toolchain/overview.md
     - "基准入口": toolchain/benchmark_entrypoints.md
     - "构建入口": toolchain/build_entrypoints.md
+    - "质量门入口": toolchain/governance_quality_entrypoints.md
+    - "仪表盘入口": toolchain/dashboard_entrypoints.md
+    - "站点入口": toolchain/site_entrypoints.md
+    - "图示入口": toolchain/diagram_entrypoints.md
+    - "提交脚本": toolchain/commit_workflow_scripts.md
     - "测试入口": toolchain/test_entrypoints.md
     - "追溯入口": toolchain/traceability_entrypoints.md
 # --- AUTO_NAV_END ---

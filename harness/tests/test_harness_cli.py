@@ -628,7 +628,7 @@ esac
                 "--acceptance-summary",
                 "accepted and archived",
                 "--evidence",
-                "python3 scripts/check_quality.py --report-json",
+                "python3 tools/governance-cli/governance_cli.py quality --report-json",
                 "--archive",
                 cwd=repo,
             )
@@ -665,7 +665,7 @@ esac
                 "--acceptance-summary",
                 "accepted and archived",
                 "--evidence",
-                "python3 scripts/check_quality.py --report-json",
+                "python3 tools/governance-cli/governance_cli.py quality --report-json",
                 "--archive",
                 cwd=repo,
             )
@@ -699,7 +699,7 @@ esac
                 "--acceptance-summary",
                 "pm workflow archived accepted task",
                 "--evidence",
-                "python3 scripts/check_quality.py --report-json",
+                "python3 tools/governance-cli/governance_cli.py quality --report-json",
                 cwd=repo,
             )
             self.assertEqual(workflow.returncode, 0, workflow.stderr)

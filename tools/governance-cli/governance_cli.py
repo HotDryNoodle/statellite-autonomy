@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Repository-local quality gate for build, test, traceability, and evidence tags."""
+"""Governance quality and dashboard entrypoints for the repository."""
 
 from __future__ import annotations
 
@@ -12,11 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-from dashboard_common import (
+from governance_common import (
     ACTIVE_CONTEXT_SECTIONS,
     TASK_ARCHIVE_HEADER,
     TASK_BOARD_HEADER,
@@ -35,11 +31,18 @@ from dashboard_common import (
     task_state_path,
     task_status_for_phase,
 )
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from governance_dashboard import main as dashboard_main
 from harness.agents_runtime.registry import load_expert_registry
+
 
 TOOLCHAIN = REPO_ROOT / "tools" / "meson-cli" / "meson_cli.py"
 TRACEABILITY = REPO_ROOT / "tools" / "traceability-cli" / "traceability_cli.py"
-RENDER_DASHBOARD = REPO_ROOT / "scripts" / "render_project_dashboard.py"
+GOVERNANCE_CLI = REPO_ROOT / "tools" / "governance-cli" / "governance_cli.py"
 BASELINE_STATUS = {
     "contract_count": 15,
     "verify_count": 12,
@@ -77,7 +80,6 @@ SOP_COMMAND_SNIPPETS = (
     "sync-governance --task-id",
 )
 
-# Tracked text-like paths checked for POSIX final newline (EditorConfig insert_final_newline).
 _FINAL_NEWLINE_SUFFIXES = frozenset(
     {
         ".md",
@@ -157,7 +159,6 @@ def extract_tagged_tests(text: str) -> list[tuple[str, bool, bool]]:
 
 
 def check_final_newline() -> CheckResult:
-    """Require non-empty tracked text files to end with a newline (EditorConfig)."""
     completed = subprocess.run(
         ["git", "ls-files"],
         cwd=REPO_ROOT,
@@ -784,13 +785,7 @@ def check_prompt_doc_routing() -> CheckResult:
     return CheckResult("prompt_doc_routing", True, "prompt-doc routing follows progressive disclosure")
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--report-json", action="store_true")
-    parser.add_argument("--skip-build-test", action="store_true")
-    parser.add_argument("--skip-project-dashboard", action="store_true")
-    args = parser.parse_args()
-
+def run_quality(args: argparse.Namespace) -> int:
     checks: list[CheckResult] = []
 
     commands: list[tuple[str, list[str]]] = []
@@ -804,9 +799,8 @@ def main() -> int:
     commands.append(("traceability_generate", [sys.executable, str(TOOLCHAIN), "traceability", "--yes"]))
     commands.append(("harness_tests", [sys.executable, "-m", "unittest", "discover", "-s", "harness/tests", "-p", "test_*.py"]))
     commands.append(("cli_tests", [sys.executable, "-m", "unittest", "discover", "-s", "tools/tests", "-p", "test_*.py"]))
-    commands.append(("scripts_tests", [sys.executable, "-m", "unittest", "discover", "-s", "scripts/tests", "-p", "test_*.py"]))
     if not args.skip_project_dashboard:
-        commands.append(("project_dashboard", [sys.executable, str(RENDER_DASHBOARD)]))
+        commands.append(("project_dashboard", [sys.executable, str(GOVERNANCE_CLI), "dashboard"]))
 
     for name, command in commands:
         ok, stdout, stderr = run_command(command)
@@ -854,6 +848,39 @@ def main() -> int:
             state = "PASS" if check.ok else "FAIL"
             print(f"[{state}] {check.name}: {check.details}")
     return 0 if ok else 1
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Governance maintenance CLI for quality gates and generated dashboard artifacts.",
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    quality = subparsers.add_parser(
+        "quality",
+        help="Run repository quality gates, governance consistency checks, and test suites.",
+    )
+    quality.add_argument("--report-json", action="store_true")
+    quality.add_argument("--skip-build-test", action="store_true")
+    quality.add_argument("--skip-project-dashboard", action="store_true")
+
+    dashboard = subparsers.add_parser(
+        "dashboard",
+        help="Render project dashboard and status artifacts under docs/_generated.",
+    )
+    dashboard.add_argument("--output-dir", default="docs/_generated")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.command == "quality":
+        return run_quality(args)
+    if args.command == "dashboard":
+        return dashboard_main(["--output-dir", args.output_dir])
+    parser.error(f"unsupported command: {args.command}")
+    return 2
 
 
 if __name__ == "__main__":

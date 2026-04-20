@@ -2,7 +2,6 @@
 
 - `python3 tools/meson-cli/meson_cli.py eval --domain time --report-path eval/reports/time_benchmark_report.json`
 - `python3 tools/meson-cli/meson_cli.py benchmark --yes`
-- `./scripts/meson-cli benchmark`
 - `UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/meson-cli python tools/meson-cli/meson_cli.py benchmark --yes`
 - `python3 tools/meson-cli/meson_cli.py benchmark --report-path eval/reports/custom.json`
 

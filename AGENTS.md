@@ -55,10 +55,9 @@ Use repo-local command families only:
 - `python3 harness/orchestrator/harness_cli.py ...`
 - `python3 tools/meson-cli/meson_cli.py ...`
 - `python3 tools/traceability-cli/traceability_cli.py ...`
+- `python3 tools/governance-cli/governance_cli.py ...`
 - `uv run --group site --no-default-groups site-cli ...`
 - `uv run --group plantuml --no-default-groups plantuml-cli ...`
-- `python3 scripts/check_quality.py --report-json`
-- `python3 scripts/render_project_dashboard.py`
 
 Detailed PM command templates live in `skills/project-manager/references/control-plane-sop.md`.
 

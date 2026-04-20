@@ -33,9 +33,10 @@
 ## Stable Entrypoints
 
 - 根目录 Meson 入口保持稳定，但只做薄封装并转交 `product/`。
+- `tools/` 承载正式 repo-local CLI 本体；`scripts/` 只保留轻量脚本、hook 安装器和验证器。
 - `python3 tools/meson-cli/meson_cli.py`
 - `python3 tools/traceability-cli/traceability_cli.py`
-- `python3 scripts/check_quality.py --report-json`
+- `python3 tools/governance-cli/governance_cli.py quality --report-json`
 
 ## Runtime And Governance
 

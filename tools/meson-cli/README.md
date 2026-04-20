@@ -27,12 +27,12 @@ python3 tools/meson-cli/meson_cli.py status
 推荐的手动 CLI 入口：
 
 ```bash
-./scripts/meson-cli build --reconfigure
-./scripts/meson-cli test --no-rebuild
-./scripts/meson-cli traceability --yes
-./scripts/meson-cli eval --domain time --report-path eval/reports/time_benchmark_report.json --yes
-./scripts/meson-cli benchmark --report-path eval/reports/time_benchmark_report.json --yes
-./scripts/meson-cli knowledge status --agent pppar_expert_agent
+python3 tools/meson-cli/meson_cli.py build --reconfigure
+python3 tools/meson-cli/meson_cli.py test --no-rebuild
+python3 tools/meson-cli/meson_cli.py traceability --yes
+python3 tools/meson-cli/meson_cli.py eval --domain time --report-path eval/reports/time_benchmark_report.json --yes
+python3 tools/meson-cli/meson_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes
+python3 tools/meson-cli/meson_cli.py knowledge status --agent pppar_expert_agent
 ```
 
 `knowledge` 子命令只允许通过 Obsidian CLI 访问 `expert-system` vault；不得直接读取或写入 vault 文档。

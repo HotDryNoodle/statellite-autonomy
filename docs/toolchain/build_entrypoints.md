@@ -1,7 +1,6 @@
 # Build Entrypoints
 
 - `python3 tools/meson-cli/meson_cli.py build`
-- `./scripts/meson-cli build`
 - `UV_CACHE_DIR=/tmp/uv-cache uv run --project tools/meson-cli python tools/meson-cli/meson_cli.py build`
 - `python3 tools/meson-cli/meson_cli.py build --cross-file <path> --native-file <path>`
 - `meson setup builddir`
@@ -19,3 +18,4 @@
 说明：
 
 - 根目录 Meson 入口保持不变，但真实产品源码位于 `product/src/`。
+- `scripts/meson-cli` 已移除，避免把兼容 shim 误读成正式工具本体。

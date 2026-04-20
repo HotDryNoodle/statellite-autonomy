@@ -26,7 +26,7 @@
 - none
 
 ## Acceptance Gates
-- `python3 scripts/check_quality.py --report-json`
+- `python3 tools/governance-cli/governance_cli.py quality --report-json`
 - `python3 tools/traceability-cli/traceability_cli.py status`
 - `python3 tools/meson-cli/meson_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes`
 

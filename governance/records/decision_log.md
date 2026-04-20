@@ -20,7 +20,7 @@
 
 - 仓库级协作入口固定为根目录 `AGENTS.md`。
 - 不新增 `.codex/rules/`；项目规则统一由 `AGENTS.md` 与 `docs/guides/agent-collaboration.md` 承载。
-- 本地质量门禁统一收敛到 `python3 scripts/check_quality.py --report-json`。
+- 2026-04-01 时的本地质量门禁曾收敛到 `python3 scripts/check_quality.py --report-json`；该历史入口已于 2026-04-20 被 `python3 tools/governance-cli/governance_cli.py quality --report-json` 取代。
 - 验收前必须经过 build、test、traceability 与标签完整性检查。
 
 ## 2026-04-02 Git, CI, And Benchmark Baseline
@@ -115,7 +115,7 @@
 - `AGENTS.md`、`skills/project-manager/SKILL.md`、`docs/guides/agent-collaboration.md` 只保留主路径最小入口信息，默认控制在 100 行内。
 - detailed command cookbook 与 role-specific load routing 下沉到 `skills/project-manager/references/`，入口层不再重复维护完整 SOP。
 - 默认读链按角色分流：全局入口只保留最小共识，`decision_log.md`、`agent_activity_log.md`、`agent-collaboration.md` 等长文档改为 conditional load。
-- `scripts/check_quality.py` 负责阻断 prompt docs 回退到超长首屏或重复 SOP 的状态。
+- 2026-04-07 起，prompt docs 回退到超长首屏或重复 SOP 的阻断职责由当时的 `scripts/check_quality.py` 承担；当前等价职责已迁移到 `python3 tools/governance-cli/governance_cli.py quality --report-json`。
 
 ## 2026-04-10 Global PPP Expert Skill Cutover
 
@@ -165,3 +165,10 @@
 - 权威资产目录冻结为 `contracts/`、`architecture/blueprints/`、`governance/policies/`、`governance/records/`、`eval/domains/`、`harness/runtime/` 与 `harness/eval/`。
 - `docs/` 从本轮起只承载 guide、索引和迁移说明，不再承载 authority blueprint、policy 或 tracked governance mirror 主副本。
 - 历史 runtime artifacts、治理记录、skills、tests 和 quality gate 统一重写到新 canonical 路径，不保留长期双路径兼容。
+
+## 2026-04-20 Governance CLI And Script Boundary
+
+- 当前正式质量门入口冻结为 `python3 tools/governance-cli/governance_cli.py quality --report-json`。
+- 当前正式 dashboard 生成入口冻结为 `python3 tools/governance-cli/governance_cli.py dashboard`。
+- `tools/` 承载正式 repo-local CLI 本体；`scripts/` 只保留轻量脚本、hook 安装器与验证器。
+- 历史 `harness/runtime/tasks/**`、`task_archive.md`、`agent_activity_log.md` 中保留的 `scripts/check_quality.py`、`scripts/render_project_dashboard.py` 等 evidence refs 视为历史记录，不代表当前推荐入口。

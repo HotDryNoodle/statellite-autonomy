@@ -75,6 +75,12 @@ GUIDE_NAV_TITLE: dict[str, str] = {
 TOOLCHAIN_NAV_TITLE: dict[str, str] = {
     "benchmark_entrypoints.md": "基准入口",
     "build_entrypoints.md": "构建入口",
+    "commit_workflow_scripts.md": "提交脚本",
+    "dashboard_entrypoints.md": "仪表盘入口",
+    "diagram_entrypoints.md": "图示入口",
+    "governance_quality_entrypoints.md": "质量门入口",
+    "overview.md": "总览",
+    "site_entrypoints.md": "站点入口",
     "test_entrypoints.md": "测试入口",
     "traceability_entrypoints.md": "追溯入口",
 }
@@ -462,7 +468,11 @@ def stage_flat_dir(
     if not src_dir.is_dir():
         return None
     node = NavNode(nav_title)
-    files = sorted(p for p in src_dir.glob("*.md"))
+    order_map = {name: idx for idx, name in enumerate(nav_title_map or {})}
+    files = sorted(
+        (p for p in src_dir.glob("*.md")),
+        key=lambda path: (order_map.get(path.name, len(order_map)), path.name),
+    )
     for src in files:
         if src.name == "README.md" and not include_readme:
             continue

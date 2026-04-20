@@ -26,6 +26,7 @@ plantuml-cli = { workspace = true }
 
 [tool.uv.workspace]
 members = [
+  "tools/governance-cli",
   "tools/meson-cli",
   "tools/traceability-cli",
   "tools/site-cli",
