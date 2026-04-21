@@ -17,7 +17,7 @@ from harness.agents_runtime.sessions import (
     session_ref_for_agent,
     validate_resume_backend,
 )
-from harness.agents_runtime.tracing import redact_text
+from harness.agents_runtime.tracing import REPO_ROOT, redact_text
 from harness.orchestrator.runtime_model import default_task_state, validate_transition
 
 
@@ -145,9 +145,9 @@ class AgentsRuntimeTest(unittest.TestCase):
             adapter.run_phase(task_state, "verification", {})
 
     def test_tracing_redaction_masks_repo_root_and_tokens(self) -> None:
-        redacted = redact_text(
-            "token=secret-value path=/home/hotdry/projects/statellite-autonomy-plugin/file"
-        )
+        # 必须使用当前 clone 的真实 REPO_ROOT；硬编码本机路径在 CI 上会无法被替换为 <repo>
+        sample = f"token=secret-value path={REPO_ROOT / 'file'}"
+        redacted = redact_text(sample)
         self.assertIn("[REDACTED]", redacted)
         self.assertIn("<repo>", redacted)
 

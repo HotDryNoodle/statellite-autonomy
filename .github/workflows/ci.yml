@@ -83,8 +83,14 @@ jobs:
           python-version: "3.12"
       - name: Install Meson and Ninja
         run: python -m pip install meson ninja
+      # 与单测相同：time 域 benchmark 依赖 gitignored 的 data/leap_seconds.csv
       - name: Run benchmark
-        run: python3 tools/meson-cli/meson_cli.py benchmark --report-path eval/reports/time_benchmark_report.json
+        run: |
+          if [ ! -f data/leap_seconds.csv ] && [ ! -f data/eop/leap_seconds.csv ]; then
+            echo "Skipping benchmark: no leap_seconds.csv under data/ (not in clone)."
+            exit 0
+          fi
+          python3 tools/meson-cli/meson_cli.py benchmark --report-path eval/reports/time_benchmark_report.json --yes
       - name: Upload benchmark report
         if: always()
         uses: actions/upload-artifact@v4
